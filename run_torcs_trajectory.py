@@ -62,9 +62,6 @@ for i in range(episode_count):
 
     total_reward = 0.
 
-    if step == max_steps and not done and collect_data_mode:
-        agent.next_dataset()
-
     for j in range(max_steps):
         action = agent.act(ob, reward, done, step)  #Steering/Acceleration/Gear/Brake
 
@@ -100,7 +97,7 @@ for i in range(episode_count):
             print("Almost at the end of the lap")
             save = True
         if distFromStart < 3:   # as soon as the car pass the finish line check if it was the best time and save new trajectory
-            print('Lap Finisched')
+            print('Lap Finished')
             if save == True and lastLapTime > 0:    # this check is to save just once at each lap
                 save = False    # so that it save only once
                 df = pd.DataFrame(obs_dic)
