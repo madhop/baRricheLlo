@@ -10,6 +10,9 @@ def distance(r,r1,p):   # distance line-point
     return np.linalg.norm((r1[1]-r[1])*p[0]-(r1[0]-r[0])*p[1]+r1[0]*r[1]-r1[1]*r[0])/np.linalg.norm(r1-r)
 
 def realtive_features(p, r):
+    """
+        realtive feature with new reference system are needed
+    """
     if r[1] > 0:
         rotation_angle = -np.arccos(np.dot(np.array([1,0]),r)/(1 * np.linalg.norm(r)))
     else:
@@ -20,6 +23,11 @@ def realtive_features(p, r):
 
 # Position Features
 def position(r, r1, p): # inputs must be np.array
+    """
+        p: actual position vector at time t
+        r: nn reference position vector
+        r1: next reference position vector
+    """
     rel_p = realtive_features(p-r, r1-r)
     rho = np.linalg.norm(p-r)
     if np.array_equal(p-r, np.array([0,0])):
@@ -37,10 +45,11 @@ def curvature(p, p1, p2):   # p_t, p_t-1 and p_t-2
         c = -c
     return c
 
-#
 def velocity_acceleration(p, r):
     """ if you pass speed it will compute speed features,
         acceleration otherwise
+        p: actual velocity or acceleration vector
+        r: reference velocity or acceleration vector
     """
     actual_module = np.linalg.norm(p)
     ref_module = np.linalg.norm(r)
@@ -120,7 +129,6 @@ for i in range(1,200,10):
     p = car_df.iloc[i]
     p_1 = car_df.iloc[i-1]
     p_2 = car_df.iloc[i-2]
-    #p = np.array([car_df.iloc[i]['x'], car_df.iloc[i]['y']])
     nn = nn_ahead(np.array([p['x'], p['y']]), last_ref)
     last_ref = nn
     r = ref_df.iloc[nn]
