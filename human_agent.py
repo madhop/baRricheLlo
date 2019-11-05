@@ -83,11 +83,11 @@ class HumanAgent(object):
         steer = self.prev_steer
 
         if right is 1 and left is 0:
-            steer += 0.07
+            steer += 0.03
             if steer > 1:
                 steer = 1.0
         elif right is 0 and left is 1:
-            steer -= 0.07
+            steer -= 0.03
             if steer < -1:
                 steer = -1.0
         else:
@@ -115,7 +115,7 @@ class HumanAgent(object):
         gear = self.prev_gear
 
         # Manual gear shift
-        if up and gear < 6 and not self.prev_up:
+        if up and gear < 7 and not self.prev_up:
             gear += 1
         elif down and gear > -1 and not self.prev_down:
             gear -= 1
