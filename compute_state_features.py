@@ -4,7 +4,30 @@ import matplotlib.pyplot as plt
 
 
 ref_df = pd.read_csv('ref_trajectory_monza.csv') # reference trajectory
-car_df = pd.read_csv('car_trajectory_monza.csv') # car trajectory
+car_df = pd.read_csv('car_trajectory.csv') # car trajectory         car_trajectory_monza
+
+def add_row_at_top(df):
+    df.loc[-1] = np.zeros(df.shape[1])  # adding a row
+    df.index = df.index + 1  # shifting index
+    df = df.sort_index()  # sorting by index
+    print("df.shape: ", df.shape)
+    return df
+## divide in laps
+## find indeces of the beginning of lap
+"""lap_beginnings_loop = list([0])
+for idx in range(1, car_df.shape[0]):
+    if car_df.iloc[idx-1]['curLapTime'] > 1 and car_df.iloc[idx]['curLapTime'] < 1:
+        lap_beginnings_loop.append(idx)
+print("lap_beginnings_loop: ", lap_beginnings_loop)"""
+print("car size: ", car_df.shape)
+
+lap_beginnings = ((car_df['curLapTime'] - add_row_at_top(car_df)['curLapTime'] < 0))
+lap_beginnings = [1] + car_df.index[lap_beginnings].tolist()
+print("Lap beginnings: ", car_df.loc[lap_beginnings])
+print("Lap beginnings: ", car_df.loc[lap_beginnings_loop])
+#print("HEAD: ", car_df.head())
+print("car_df.shape: ", car_df.shape)
+
 
 def distance(r,r1,p):   # distance line-point
     return np.linalg.norm((r1[1]-r[1])*p[0]-(r1[0]-r[0])*p[1]+r1[0]*r[1]-r1[1]*r[0])/np.linalg.norm(r1-r)
@@ -101,7 +124,7 @@ plt.show()"""
 
 # find nearest neighbour in reference trajectory
 def nn_ahead(p, last_ref = 0):
-    print('last_ref: ', last_ref)
+    #print('last_ref: ', last_ref)
     j = last_ref
     found = False
     while not found:
@@ -117,7 +140,7 @@ def nn_ahead(p, last_ref = 0):
             """plt.plot([r[0], r1[0], r2[0]],[r[1], r1[1], r2[1]], 'o')
             plt.plot([p[0]],[p[1]], '*')
             plt.show()"""
-            print('NN is at ', j)
+            #print('NN is at ', j)
             found = True
             last_ref = j
         j += 1

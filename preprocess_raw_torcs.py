@@ -25,3 +25,11 @@ raw_df = raw_df.drop(columns = 'trk_width')
 
 ## Now data are raw no more. Save to csv
 raw_df.to_csv(path_or_buf = "car_trajectory.csv", index = False)
+
+"""no_2ms = list()
+for idx in range(1, raw_df.shape[0]):
+    if (raw_df.iloc[idx]['curLapTime'] - raw_df.iloc[idx-1]['curLapTime']) > 0.021:
+        print(raw_df.iloc[idx]['curLapTime'] - raw_df.iloc[idx-1]['curLapTime'])
+        no_2ms.append(idx)
+
+print("quandi?: ", len(no_2ms))"""
