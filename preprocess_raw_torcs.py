@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-raw_df = pd.read_csv('raw_torcs_data/forza_ow1.csv')
+raw_df = pd.read_csv('raw_torcs_data/forza_ow1_steering_w.csv')
 ## Rename columns
 raw_df.columns = ['curLapTime', 'Dist', 'Acceleration_x', 'Acceleration_y', 'Gear', 'rpm', 'speed_x', 'speed_y',
        'speed_z', 'dist_to_middle', 'trk_width', 'x', 'y', 'z', 'roll',
@@ -24,12 +24,4 @@ raw_df['dist_to_middle'] = 2*raw_df['dist_to_middle']/raw_df['trk_width'] #float
 raw_df = raw_df.drop(columns = 'trk_width')
 
 ## Now data are raw no more. Save to csv
-raw_df.to_csv(path_or_buf = "car_trajectory.csv", index = False)
-
-"""no_2ms = list()
-for idx in range(1, raw_df.shape[0]):
-    if (raw_df.iloc[idx]['curLapTime'] - raw_df.iloc[idx-1]['curLapTime']) > 0.021:
-        print(raw_df.iloc[idx]['curLapTime'] - raw_df.iloc[idx-1]['curLapTime'])
-        no_2ms.append(idx)
-
-print("quandi?: ", len(no_2ms))"""
+raw_df.to_csv(path_or_buf = "trajectory/forza_ow1_steering_w.csv", index = False)

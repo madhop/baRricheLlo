@@ -3,30 +3,36 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-ref_df = pd.read_csv('ref_trajectory_monza.csv') # reference trajectory
-car_df = pd.read_csv('car_trajectory.csv') # car trajectory         car_trajectory_monza
+ref_df = pd.read_csv('trajectory/ref_trajectory_monza.csv') # reference trajectory
+car_df = pd.read_csv('trajectory/car_trajectory.csv') # car trajectory         car_trajectory_monza
 
+## divide in laps
+## find indeces of the beginning of lap
 def add_row_at_top(df):
+    """ Add row of zeros at the beginning of the dataframe """
     df.loc[-1] = np.zeros(df.shape[1])  # adding a row
     df.index = df.index + 1  # shifting index
     df = df.sort_index()  # sorting by index
-    print("df.shape: ", df.shape)
     return df
-## divide in laps
-## find indeces of the beginning of lap
-"""lap_beginnings_loop = list([0])
-for idx in range(1, car_df.shape[0]):
-    if car_df.iloc[idx-1]['curLapTime'] > 1 and car_df.iloc[idx]['curLapTime'] < 1:
-        lap_beginnings_loop.append(idx)
-print("lap_beginnings_loop: ", lap_beginnings_loop)"""
-print("car size: ", car_df.shape)
 
 lap_beginnings = ((car_df['curLapTime'] - add_row_at_top(car_df)['curLapTime'] < 0))
 lap_beginnings = [1] + car_df.index[lap_beginnings].tolist()
-print("Lap beginnings: ", car_df.loc[lap_beginnings])
-print("Lap beginnings: ", car_df.loc[lap_beginnings_loop])
-#print("HEAD: ", car_df.head())
-print("car_df.shape: ", car_df.shape)
+car_df.drop(car_df.tail(1).index,inplace=True)
+print("lap_beginnings: ", lap_beginnings)
+
+laps = {}
+for i in range(len(lap_beginnings)-1):
+    laps[i] = car_df.loc[lap_beginnings[i]:lap_beginnings[i+1]-1]
+laps[i+1] = car_df.loc[lap_beginnings[i]:]
+
+## find best lap (reference lap)
+bestTime = np.inf
+for k in laps:
+    if laps[k].iloc[-1]['curLapTime'] < bestTime:
+        bestTime = laps[k].iloc[-1]['curLapTime']
+        print(k, " - bestTime: ", bestTime)
+        ref_df = laps[k]
+
 
 
 def distance(r,r1,p):   # distance line-point
