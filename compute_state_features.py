@@ -6,37 +6,6 @@ import matplotlib.pyplot as plt
 #ref_df = pd.read_csv('trajectory/ref_trajectory_monza.csv') # reference trajectory
 car_df = pd.read_csv('trajectory/forza_ow1_steering_w.csv') # car trajectory         car_trajectory_monza
 
-## divide laps
-## find indeces of the beginning of lap
-def add_row_at_top(df):
-    """ Add row of zeros at the beginning of the dataframe """
-    df.loc[-1] = np.zeros(df.shape[1])  # adding a row
-    df.index = df.index + 1  # shifting index
-    df = df.sort_index()  # sorting by index
-    return df
-
-lap_beginnings = ((car_df['curLapTime'] - add_row_at_top(car_df)['curLapTime'] < 0))
-lap_beginnings = [1] + car_df.index[lap_beginnings].tolist()
-car_df.drop(car_df.tail(1).index,inplace=True)
-print("lap_beginnings: ", lap_beginnings)
-
-laps = {}
-for i in range(len(lap_beginnings)-1):
-    laps[i] = car_df.loc[lap_beginnings[i]:lap_beginnings[i+1]-1]
-laps[i+1] = car_df.loc[lap_beginnings[i+1]:]
-
-## find best lap (reference lap)
-bestTime = np.inf
-for k in laps:
-    print(k, " - lap time: ", laps[k].iloc[-1]['curLapTime'])
-    print("laps.shape: ", laps[k].shape)
-    if laps[k].iloc[-1]['curLapTime'] < bestTime:
-        bestTime = laps[k].iloc[-1]['curLapTime']
-        #print(k, " - bestTime: ", bestTime)
-        ref_df = laps[k]
-
-print(ref_df.shape)
-
 def distance(r,r1,p):   # distance line-point
     return np.linalg.norm((r1[1]-r[1])*p[0]-(r1[0]-r[0])*p[1]+r1[0]*r[1]-r1[1]*r[0])/np.linalg.norm(r1-r)
 
