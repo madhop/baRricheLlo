@@ -108,5 +108,25 @@ ref_df.to_csv(path_or_buf = "trajectory/test_ref_traj.csv", index = False)
 raw_df.index = np.arange(raw_df.shape[0])   # reset indexes
 to_drop = raw_df.index[ raw_df.index % 10 != 0].tolist()   # rows with headers
 raw_df.drop(to_drop, inplace=True)
-## Now data are raw no more. Save to csv
-#raw_df.to_csv(path_or_buf = "trajectory/forza_ow1_steering_w.csv", index = False)
+
+## Compute state's features
+raw_df.index = np.arange(raw_df.shape[0])   # reset indexes
+last_ref = 0
+for index, row in raw_df.iterrows():
+    p = row
+    p_1 = raw_df.iloc[index-1]
+    p_2 = raw_df.iloc[index-2]
+    nn = nn_ahead(np.array([p['x'], p['y']]), last_ref, ref_df)
+    last_ref = nn
+    r = ref_df.iloc[nn]
+    r1 = ref_df.iloc[nn+1]
+    r_1 = ref_df.iloc[nn-1]
+    v_actual_module, v_ref_module, v_diff_module, v_diff_of_modules, v_angle = velocity_acceleration(np.array([p['speed_x'], p['speed_y']]), np.array([r['speed_x'], r['speed_y']]))
+    tp = p['curLapTime'] - p_1['curLapTime'] # elapsed time between time t ant t-1
+    tr = r['curLapTime'] - r_1['curLapTime'] # elapsed time between time t ant t-1
+    ap = np.array([(p['speed_x'] - p_1['speed_x']) / tp, (p['speed_y'] - p_1['speed_y']) / tp])
+    ar = np.array([(r['speed_x'] - r1['speed_x']) / tr, (r['speed_y'] - r1['speed_y']) / tr])
+    a_actual_module, a_ref_module, a_diff_module, a_diff_of_modules, a_angle = velocity_acceleration(ap, ar)
+    """if index == raw_df.index[0] or index == raw_df.index[-1]:   ## first and last rows
+        pass
+    else:"""
