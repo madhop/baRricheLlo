@@ -25,7 +25,7 @@ def realtive_features(p, r):
         rotation_angle = -np.arccos(np.dot(np.array([1,0]),r)/(1 * np.linalg.norm(r)))
     else:
         rotation_angle = np.arccos(np.dot(np.array([1,0]),r)/(1 * np.linalg.norm(r)))
-    print("rotation_angle: ", rotation_angle)
+    #print("rotation_angle: ", rotation_angle)
     rotation_matrix = np.array([[np.cos(rotation_angle), -np.sin(rotation_angle)],[np.sin(rotation_angle), np.cos(rotation_angle)]])
     rel_p = np.dot(rotation_matrix,p)
     return rel_p
@@ -75,6 +75,8 @@ def nn_ahead(p, ref_df, last_ref = 0 ):
     j = last_ref
     found = False
     while not found:
+        if j >= ref_df.shape[0]-2:
+            return j
         r = ref_df.iloc[j-1]
         r = np.array([r['x'], r['y']])
         r1 = ref_df.iloc[j]
@@ -141,7 +143,7 @@ if __name__ == '__main__':
         p = car_df.iloc[i]
         p_1 = car_df.iloc[i-1]
         p_2 = car_df.iloc[i-2]
-        nn = nn_ahead(np.array([p['x'], p['y']]), last_ref, ref_df)
+        nn = nn_ahead(np.array([p['x'], p['y']]), ref_df, last_ref)
         last_ref = nn
         r = ref_df.iloc[nn]
         r1 = ref_df.iloc[nn+1]

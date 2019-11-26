@@ -11,6 +11,7 @@ import compute_state_features as sf
 """
 
 track_length = 5780
+compute_ref_tarj = 0
 
 ## look for all possible CSV files and append all in the same DataFrame
 raw_df = pd.DataFrame()
@@ -56,23 +57,24 @@ raw_df.drop(raw_df.tail(1).index,inplace=True)  ## drop last raw of zeros that i
 
 ## for each row assign lap number, if it is reference trajectory and if it is partial lap
 bestTime = np.inf
-for i in range(len(lap_beginnings)-1):
-    raw_df.loc[lap_beginnings[i]:lap_beginnings[i+1]-1, 'NLap'] = i+1
+for i, lap_beg in enumerate(lap_beginnings[:-1]):
+#for i in range(len(lap_beginnings)-1):
+    raw_df.loc[lap_beg:lap_beginnings[i+1]-1, 'NLap'] = i+1
     ## check if lap doesn't start from time zero
-    if raw_df.loc[lap_beginnings[i]:lap_beginnings[i+1]-1, 'curLapTime'].iloc[0] > 1:
-        t = raw_df.loc[lap_beginnings[i]:lap_beginnings[i+1]-1, 'Dist'].iloc[0]/raw_df.loc[lap_beginnings[i]:lap_beginnings[i+1]-1, 'speed_x'].iloc[0]
-        raw_df.loc[lap_beginnings[i]:lap_beginnings[i+1]-1, 'curLapTime'] = raw_df.loc[lap_beginnings[i]:lap_beginnings[i+1]-1, 'curLapTime'] - raw_df.loc[lap_beginnings[i]:lap_beginnings[i+1]-1, 'curLapTime'].iloc[0] + t
+    if raw_df.loc[lap_beg:lap_beginnings[i+1]-1, 'curLapTime'].iloc[0] > 1:
+        t = raw_df.loc[lap_beg:lap_beginnings[i+1]-1, 'Dist'].iloc[0]/raw_df.loc[lap_beg:lap_beginnings[i+1]-1, 'speed_x'].iloc[0]
+        raw_df.loc[lap_beg:lap_beginnings[i+1]-1, 'curLapTime'] = raw_df.loc[lap_beg:lap_beginnings[i+1]-1, 'curLapTime'] - raw_df.loc[lap_beg:lap_beginnings[i+1]-1, 'curLapTime'].iloc[0] + t
     ## check if partial lap
-    if raw_df.loc[lap_beginnings[i]:lap_beginnings[i+1]-1, 'Dist'].iloc[-1] < track_length:
-        raw_df.loc[lap_beginnings[i]:lap_beginnings[i+1]-1, 'is_partial'] = 1
+    if raw_df.loc[lap_beg:lap_beginnings[i+1]-1, 'Dist'].iloc[-1] < track_length:
+        raw_df.loc[lap_beg:lap_beginnings[i+1]-1, 'is_partial'] = 1
     ## check if best lap and set it as reference trajectory
-    #print(i, 'time: ', raw_df.loc[lap_beginnings[i]:lap_beginnings[i+1]-1, 'curLapTime'].iloc[-1])
-    if raw_df.loc[lap_beginnings[i]:lap_beginnings[i+1]-1, 'curLapTime'].iloc[-1] < bestTime and raw_df.loc[lap_beginnings[i]:lap_beginnings[i+1]-1, 'is_partial'].iloc[0] != 1:
-        bestTime = raw_df.loc[lap_beginnings[i]:lap_beginnings[i+1]-1, 'curLapTime'].iloc[-1]
+    print(i, 'time: ', raw_df.loc[lap_beg:lap_beginnings[i+1]-1, 'curLapTime'].iloc[-1])
+    if raw_df.loc[lap_beg:lap_beginnings[i+1]-1, 'curLapTime'].iloc[-1] < bestTime and raw_df.loc[lap_beg:lap_beginnings[i+1]-1, 'is_partial'].iloc[0] != 1:
+        bestTime = raw_df.loc[lap_beg:lap_beginnings[i+1]-1, 'curLapTime'].iloc[-1]
         raw_df['isReference'] = 0
-        raw_df.loc[lap_beginnings[i]:lap_beginnings[i+1]-1, 'isReference'] = 1
+        raw_df.loc[lap_beg:lap_beginnings[i+1]-1, 'isReference'] = 1
 
-#print("lap_beginnings: ", raw_df.loc[lap_beginnings])
+print("lap_beginnings: ", raw_df.loc[lap_beginnings])
 
 ## TORCS gives speed in m/s, we want it in km/h
 raw_df['speed_x'] *= 3.6
@@ -84,49 +86,36 @@ raw_df['dist_to_middle'] = 2*raw_df['dist_to_middle']/raw_df['trk_width']
 raw_df.drop(columns = 'trk_width', inplace=True)
 
 ## save reference trajectory in 100 Hz
-#ref_df = raw_df[raw_df['isReference'] == 1].copy()
-ref_df = pd.DataFrame()
-for index, row in raw_df[raw_df['isReference'] == 1].iterrows():
-    ref_df.loc[index, 'x'] = row['x']
-    ref_df.loc[index, 'y'] = row['y']
-    ## compute alpha step
-    if index == raw_df[raw_df['isReference'] == 1].index[0] or index == raw_df[raw_df['isReference'] == 1].index[-1]:   ## first and last rows
-        alpha_step = 0
-    else:
-        r = np.array([raw_df.loc[index-1, 'x'], raw_df.loc[index-1, 'y']])
-        r1 = np.array([row['x'], row['y']])
-        r2 = np.array([raw_df.loc[index+1, 'x'], raw_df.loc[index+1, 'y']])
-        r2 = r2 - r1
-        r1 = r1 - r
-        alpha_step = sf.compute_alpha(r, r1, r2)
-    ref_df.loc[index, 'alpha_step'] = alpha_step
+if compute_ref_tarj:
+    ref_df = pd.DataFrame()
+    for index, row in raw_df[raw_df['isReference'] == 1].iterrows():
+        ref_df.loc[index, 'curLapTime'] = row['curLapTime']
+        ref_df.loc[index, 'Acceleration_x'] = row['Acceleration_x']
+        ref_df.loc[index, 'Acceleration_y'] = row['Acceleration_y']
+        ref_df.loc[index, 'speed_x'] = row['speed_x']
+        ref_df.loc[index, 'speed_y'] = row['speed_y']
+        ref_df.loc[index, 'x'] = row['x']
+        ref_df.loc[index, 'y'] = row['y']
+        ## compute alpha step
+        if index == raw_df[raw_df['isReference'] == 1].index[0] or index == raw_df[raw_df['isReference'] == 1].index[-1]:   ## first and last rows
+            alpha_step = 0
+        else:
+            r = np.array([raw_df.loc[index-1, 'x'], raw_df.loc[index-1, 'y']])
+            r1 = np.array([row['x'], row['y']])
+            r2 = np.array([raw_df.loc[index+1, 'x'], raw_df.loc[index+1, 'y']])
+            r2 = r2 - r1
+            r1 = r1 - r
+            alpha_step = sf.compute_alpha(r, r1, r2)
+        ref_df.loc[index, 'alpha_step'] = alpha_step
 
-## Export reference trajectory as CSV file
-ref_df.to_csv(path_or_buf = "trajectory/test_ref_traj.csv", index = False)
+    ref_df.index = np.arange(ref_df.shape[0])   # reset indexes
+    ## Export reference trajectory as CSV file
+    ref_df.to_csv(path_or_buf = "trajectory/test_ref_traj.csv", index = False)
 
 ## Downsampling actual trajectory
 raw_df.index = np.arange(raw_df.shape[0])   # reset indexes
 to_drop = raw_df.index[ raw_df.index % 10 != 0].tolist()   # rows with headers
 raw_df.drop(to_drop, inplace=True)
 
+#raw_df.to_csv(path_or_buf = "./preprocessed_torcs.csv", index = False)
 ## Compute state's features
-raw_df.index = np.arange(raw_df.shape[0])   # reset indexes
-last_ref = 0
-for index, row in raw_df.iterrows():
-    p = row
-    p_1 = raw_df.iloc[index-1]
-    p_2 = raw_df.iloc[index-2]
-    nn = nn_ahead(np.array([p['x'], p['y']]), last_ref, ref_df)
-    last_ref = nn
-    r = ref_df.iloc[nn]
-    r1 = ref_df.iloc[nn+1]
-    r_1 = ref_df.iloc[nn-1]
-    v_actual_module, v_ref_module, v_diff_module, v_diff_of_modules, v_angle = velocity_acceleration(np.array([p['speed_x'], p['speed_y']]), np.array([r['speed_x'], r['speed_y']]))
-    tp = p['curLapTime'] - p_1['curLapTime'] # elapsed time between time t ant t-1
-    tr = r['curLapTime'] - r_1['curLapTime'] # elapsed time between time t ant t-1
-    ap = np.array([(p['speed_x'] - p_1['speed_x']) / tp, (p['speed_y'] - p_1['speed_y']) / tp])
-    ar = np.array([(r['speed_x'] - r1['speed_x']) / tr, (r['speed_y'] - r1['speed_y']) / tr])
-    a_actual_module, a_ref_module, a_diff_module, a_diff_of_modules, a_angle = velocity_acceleration(ap, ar)
-    """if index == raw_df.index[0] or index == raw_df.index[-1]:   ## first and last rows
-        pass
-    else:"""
