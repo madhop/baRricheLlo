@@ -66,8 +66,8 @@ for index, row in car_df.iterrows():
         actual_df.loc[index, 'positionReferenceY'] = r['y']
         actual_df.loc[index, 'positionRelativeX'] = rel_p[0]
         actual_df.loc[index, 'positionRelativeY'] = rel_p[1]
-        #actual_df.loc[index, 'referenceCurvature'] = ref_c
-        #actual_df.loc[index, 'actualCurvature'] = actual_c
+        actual_df.loc[index, 'referenceCurvature'] = ref_c
+        actual_df.loc[index, 'actualCurvature'] = actual_c
         actual_df.loc[index, 'actualSpeedModule'] = v_actual_module
         #actual_df.loc[index, 'referenceSpeedAngle'] = v_angle
         actual_df.loc[index, 'speedDifferenceVectorModule'] = v_diff_module
