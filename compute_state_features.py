@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import spatial
 
 def compute_alpha(r, r1, r2):   # r_t, r_t-1, t_t-2
     if r1[1] >= 0:
@@ -75,9 +76,6 @@ def velocity_acceleration(p, r):
     diff_of_modules = ref_module - actual_module
     rel_p = realtive_features(p, r)
     angle = np.arccos( np.dot(r,p) / (np.linalg.norm(p) * np.linalg.norm(r)))
-    """if np.isnan(angle):
-        print('rel_p:', rel_p)
-        print('angle:', angle)"""
     if rel_p[1] < 0:
         angle = -angle
     return actual_module, ref_module, diff_module, diff_of_modules, angle
@@ -106,23 +104,34 @@ def nn_ahead(p, ref_df, last_ref = 0 ):
         j += 1
     return j-1
 
+def nn_kdtree(p, ref_df):
+    tree = spatial.KDTree(list(zip(ref_df['x'], ref_df['y'])))
+    return tree.query([p['x'], p['y']])
+
 
 if __name__ == '__main__':
     ref_df = pd.read_csv('trajectory/ref_trajectory_monza.csv') # reference trajectory
     car_df = pd.read_csv('trajectory/car_trajectory_monza.csv') # car trajectory         car_trajectory_monza
+
+    # test kdtree
+    p = car_df.loc[1000]
+    nn_kdt = nn_kdtree(p, ref_df)
+    nn_ah = nn_ahead(np.array([p['x'], p['y']]), ref_df, 0)
+    print(nn_kdt)
+    print(nn_ah)
     """# test state features
     r = np.array([1,1])
     r1 = np.array([0,1])
     p = np.array([1,2])"""
 
-    r = np.array([ref_df.iloc[0]['x'], ref_df.iloc[0]['y']])
+    """r = np.array([ref_df.iloc[0]['x'], ref_df.iloc[0]['y']])
     r1 = np.array([ref_df.iloc[10]['x'], ref_df.iloc[10]['y']])
     p = np.array([car_df.iloc[0]['x'], car_df.iloc[0]['y']])
     rel_p, rho, theta = position(r, r1, p)
-    cur = curvature(r1, r, p)
+    cur = curvature(r1, r, p)"""
 
     """vp = np.array([car_df.iloc[0]['speed_x'], car_df.iloc[0]['speed_y']])
-    vr = np.array([ref_df.iloc[0]['speed_x'], ref_df.iloc[0]['speed_y']])"""
+    vr = np.array([ref_df.iloc[0]['speed_x'], ref_df.iloc[0]['speed_y']])
     vr = np.array([1,1])
     vp = np.array([0.5,0.5])
     r = ref_df.iloc[10]
@@ -134,7 +143,7 @@ if __name__ == '__main__':
     ap = np.array([(p['speed_x'] - p1['speed_x']) / tp, (p['speed_y'] - p1['speed_y']) / tp])
     ar = np.array([(r['speed_x'] - r1['speed_x']) / tr, (r['speed_y'] - r1['speed_y']) / tr])
     velocity_acceleration(vp, vr)
-    velocity_acceleration(ap, ar)
+    velocity_acceleration(ap, ar)"""
 
 
     #plt.arrow(0,0, vr[0], vr[1], head_width=0.01, head_length=0.1, fc='r', ec='r')
@@ -149,7 +158,7 @@ if __name__ == '__main__':
     plt.show()"""
 
 
-    last_ref = 0
+    """last_ref = 0
     for i in range(1,200,10):
         #for i in range(car_trajectory_df.shape[0]):
         p = car_df.iloc[i]
@@ -172,4 +181,4 @@ if __name__ == '__main__':
         p = np.array([p['x'], p['y']])
         rel_p, rho, theta = position(r, r1, p)
         actual_c = curvature(p, np.array([p_1['x'], p_1['y']]), np.array([p_2['x'], p_2['y']]))
-        ref_c = curvature(r1, r, r_1)
+        ref_c = curvature(r1, r, r_1)"""

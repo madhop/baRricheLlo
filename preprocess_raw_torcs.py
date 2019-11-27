@@ -11,7 +11,7 @@ import compute_state_features as sf
 """
 
 track_length = 5780
-compute_ref_tarj = 0
+compute_ref_tarj = 1
 
 ## look for all possible CSV files and append all in the same DataFrame
 raw_df = pd.DataFrame()
@@ -64,11 +64,8 @@ for i, lap_beg in enumerate(lap_beginnings[:-1]):
         raw_df.drop(np.arange(lap_beg, lap_beginnings[i+1]), inplace=True)
         slow_laps = slow_laps + [lap_beg]
 
-print('raw_df.shape:', raw_df.shape)
-print('len(lap_beginnings):', len(lap_beginnings))
 for i in slow_laps:
     lap_beginnings.remove(i)
-print('len(lap_beginnings):', len(lap_beginnings))
 
 ## for each row assign lap number, if it is reference trajectory and if it is partial lap
 bestTime = np.inf
@@ -124,8 +121,9 @@ if compute_ref_tarj:
         ref_df.loc[index, 'alpha_step'] = alpha_step
 
     ref_df.index = np.arange(ref_df.shape[0])   # reset indexes
+    print('reference time: ', ref_df.tail(1)['curLapTime'])
     ## Export reference trajectory as CSV file
-    ref_df.to_csv(path_or_buf = "trajectory/test_ref_traj.csv", index = False)
+    ref_df.to_csv(path_or_buf = "trajectory/ref_traj.csv", index = False)
 
 ## Downsampling actual trajectory
 raw_df.index = np.arange(raw_df.shape[0])   # reset indexes
