@@ -19,7 +19,7 @@ for d in range(1,32):
     for m in range(1,13):
         for y in range(2):
             try:
-                df = pd.read_csv('raw_torcs_data/forza_ow'+str(2019+y)+'_'+str(m)+'_'+str(d)+'.csv', dtype='str') #forza_ow1_steering_w
+                df = pd.read_csv('raw_torcs_data/forza_ow'+str(2019+y)+'_'+str(m)+'_'+str(d)+'.csv', dtype='str')
                 ## Rename columns
                 df.columns = ['curLapTime', 'Dist', 'Acceleration_x', 'Acceleration_y', 'Gear', 'rpm', 'speed_x', 'speed_y',
                        'speed_z', 'dist_to_middle', 'trk_width', 'x', 'y', 'z', 'roll',
@@ -55,6 +55,21 @@ lap_beginnings = [1] + raw_df.index[lap_beginnings].tolist() + [raw_df.shape[0]]
 raw_df.drop(raw_df.tail(1).index,inplace=True)  ## drop last raw of zeros that is now useless
 #print("lap_beginnings: ", lap_beginnings)
 
+## Drop really bad laps
+print('raw_df.shape:', raw_df.shape)
+slow_laps = list()
+for i, lap_beg in enumerate(lap_beginnings[:-1]):
+    if raw_df.loc[lap_beginnings[i+1]-1, 'curLapTime'] > 90:
+        print(i, lap_beg, 'troppo lento', raw_df.loc[lap_beginnings[i+1]-1, 'curLapTime'])
+        raw_df.drop(np.arange(lap_beg, lap_beginnings[i+1]), inplace=True)
+        slow_laps = slow_laps + [lap_beg]
+
+print('raw_df.shape:', raw_df.shape)
+print('len(lap_beginnings):', len(lap_beginnings))
+for i in slow_laps:
+    lap_beginnings.remove(i)
+print('len(lap_beginnings):', len(lap_beginnings))
+
 ## for each row assign lap number, if it is reference trajectory and if it is partial lap
 bestTime = np.inf
 for i, lap_beg in enumerate(lap_beginnings[:-1]):
@@ -74,7 +89,7 @@ for i, lap_beg in enumerate(lap_beginnings[:-1]):
         raw_df['isReference'] = 0
         raw_df.loc[lap_beg:lap_beginnings[i+1]-1, 'isReference'] = 1
 
-print("lap_beginnings: ", raw_df.loc[lap_beginnings])
+#print("lap_beginnings: ", raw_df.loc[lap_beginnings])
 
 ## TORCS gives speed in m/s, we want it in km/h
 raw_df['speed_x'] *= 3.6
@@ -94,8 +109,8 @@ if compute_ref_tarj:
         ref_df.loc[index, 'Acceleration_y'] = row['Acceleration_y']
         ref_df.loc[index, 'speed_x'] = row['speed_x']
         ref_df.loc[index, 'speed_y'] = row['speed_y']
-        ref_df.loc[index, 'x'] = row['x']
-        ref_df.loc[index, 'y'] = row['y']
+        ref_df.loc[index, 'xCarWorld'] = row['x']
+        ref_df.loc[index, 'yCarWorld'] = row['y']
         ## compute alpha step
         if index == raw_df[raw_df['isReference'] == 1].index[0] or index == raw_df[raw_df['isReference'] == 1].index[-1]:   ## first and last rows
             alpha_step = 0
@@ -114,8 +129,7 @@ if compute_ref_tarj:
 
 ## Downsampling actual trajectory
 raw_df.index = np.arange(raw_df.shape[0])   # reset indexes
-to_drop = raw_df.index[ raw_df.index % 10 != 0].tolist()   # rows with headers
+to_drop = raw_df.index[ raw_df.index % 10 != 0].tolist()
 raw_df.drop(to_drop, inplace=True)
 
-#raw_df.to_csv(path_or_buf = "./preprocessed_torcs.csv", index = False)
-## Compute state's features
+raw_df.to_csv(path_or_buf = "raw_torcs_data/preprocessed_torcs.csv", index = False)

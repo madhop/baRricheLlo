@@ -50,6 +50,7 @@ def position(r, r1, p): # inputs must be np.array
 def curvature(p, p1, p2):   # p_t, p_t-1 and p_t-2
     rel_p2 = realtive_features(p2-p1, p-p1)
     c = np.arccos(np.dot(p-p1,p2-p1)/(np.linalg.norm(p-p1) * np.linalg.norm(p2-p1)))
+    #print('curvature:', c)
     if rel_p2[1] < 0:
         c = -c
     return c
@@ -66,6 +67,7 @@ def velocity_acceleration(p, r):
     diff_of_modules = ref_module - actual_module
     rel_p = realtive_features(p, r)
     angle = np.arccos( np.dot(r,p) / (np.linalg.norm(p) * np.linalg.norm(r)))
+    #print('angle:', angle)
     if rel_p[1] < 0:
         angle = -angle
     return actual_module, ref_module, diff_module, diff_of_modules, angle
@@ -92,7 +94,7 @@ def nn_ahead(p, ref_df, last_ref = 0 ):
             found = True
             last_ref = j
         j += 1
-    return j
+    return j-1
 
 
 if __name__ == '__main__':
