@@ -104,9 +104,9 @@ def nn_ahead(p, ref_df, last_ref = 0 ):
         j += 1
     return j-1
 
-def nn_kdtree(p, ref_df):
-    tree = spatial.KDTree(list(zip(ref_df['x'], ref_df['y'])))
-    return tree.query([p['x'], p['y']])
+def nn_kdtree(p, ref_tree):
+    _, nn = ref_tree.query([p[0], p[1]])
+    return nn
 
 
 if __name__ == '__main__':
@@ -115,7 +115,8 @@ if __name__ == '__main__':
 
     # test kdtree
     p = car_df.loc[1000]
-    nn_kdt = nn_kdtree(p, ref_df)
+    tree = spatial.KDTree(list(zip(ref_df['x'], ref_df['y'])))
+    nn_kdt = nn_kdtree(p, tree)
     nn_ah = nn_ahead(np.array([p['x'], p['y']]), ref_df, 0)
     print(nn_kdt)
     print(nn_ah)

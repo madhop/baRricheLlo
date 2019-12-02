@@ -11,7 +11,7 @@ import compute_state_features as sf
 """
 
 track_length = 5780
-compute_ref_tarj = 1
+compute_ref_traj = 1
 
 ## look for all possible CSV files and append all in the same DataFrame
 raw_df = pd.DataFrame()
@@ -98,7 +98,7 @@ raw_df['dist_to_middle'] = 2*raw_df['dist_to_middle']/raw_df['trk_width']
 raw_df.drop(columns = 'trk_width', inplace=True)
 
 ## save reference trajectory in 100 Hz
-if compute_ref_tarj:
+if compute_ref_traj:
     ref_df = pd.DataFrame()
     for index, row in raw_df[raw_df['isReference'] == 1].iterrows():
         ref_df.loc[index, 'curLapTime'] = row['curLapTime']
