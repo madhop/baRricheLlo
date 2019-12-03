@@ -16,8 +16,8 @@ def playGame():
 
     # Generate a Torcs environment
     env = TorcsEnv(vision=vision, throttle=True, gear_change=False, brake=True)
-    #agent = AgentFQI(ref_df)
-    agent = AgentMEAN()
+    agent = AgentFQI(ref_df)
+    #agent = AgentMEAN()
 
     print("TORCS Experiment Start.")
     for i in range(episode_count):
@@ -33,14 +33,14 @@ def playGame():
 
         total_reward = 0.
         for j in range(max_steps):
-            if j < 900:
-                action = [0,j*0.01,0, 0] # just throttle
+            if j < 5:   # at the beginning just throttle
+                action = [0,0.5,0, 0]
                 ob_2 = ob_1
                 ob_1 = ob
                 ob, _, done, _ = env.step(action)
             else:
-                #action = agent.act(ob, ob_1, ob_2, reward, done)   #AgentFQI
-                action = agent.act(ob)    #AgentMEAN
+                action = agent.act(ob, ob_1, ob_2, reward, done)   #AgentFQI
+                #action = agent.act(ob)    #AgentMEAN
                 ob_2 = ob_1
                 ob_1 = ob
 
