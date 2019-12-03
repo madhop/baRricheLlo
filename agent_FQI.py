@@ -7,10 +7,16 @@ class AgentFQI(object):
     def __init__(self, ref_df):
         self.ref_df = ref_df
         self.tree = spatial.KDTree(list(zip(ref_df['x'], ref_df['y'])))
+        self.end_of_lap = False
 
-    def make_observaton(self, ob, p_1, p_2):
+
+    def make_observaton(self, ob, p_1, p_2, prev_action):
         p = ob
         nn = csf.nn_kdtree(np.array([p['x'], p['y']]), self.tree)
+        if nn >= self.ref_df.shape[0]-1:
+            print('sei alla fine del giro')
+            nn = self.ref_df.shape[0]-2
+            self.end_of_lap = True
         r = self.ref_df.iloc[nn]
         r1 = self.ref_df.iloc[nn+1]
         r_1 = self.ref_df.iloc[nn-1]
@@ -25,16 +31,16 @@ class AgentFQI(object):
 
         observation = dict()
         observation['time'] = p['curLapTime']
-        #observation['isReference'] = p['isReference']
-        #observation['is_partial'] = p['is_partial']
+        observation['isReference'] = 0 #p['isReference']
+        observation['is_partial'] = 0 #p['is_partial']
         observation['xCarWorld'] = p['x']
         observation['yCarWorld'] = p['y']
         observation['nYawBody'] = p['yaw']
         observation['nEngine'] = p['rpm']
         observation['NGear'] = p['Gear']
-        """observation['prevaSteerWheel'] = p_1['Steer']
-        observation['prevpBrakeF'] = p_1['Brake']
-        observation['prevrThrottlePedal'] = p_1['Throttle']"""
+        observation['prevaSteerWheel'] = prev_action[0]  #p_1['Steer']
+        observation['prevpBrakeF'] = prev_action[2]  #p_1['Brake']
+        observation['prevrThrottlePedal'] = prev_action[1]   #p_1['Throttle']
         observation['positionRho'] = rho
         observation['positionTheta'] = theta
         observation['positionReferenceX'] = r['x']
@@ -52,18 +58,18 @@ class AgentFQI(object):
         observation['referenceAccelerationY'] = r['Acceleration_y']
         observation['accelerationDiffX'] = r['Acceleration_x'] - p['Acceleration_x']
         observation['accelerationDiffY'] = r['Acceleration_y'] - p['Acceleration_y']
-        return observation
+        return observation, self.end_of_lap
 
 
-    def act(self, ob, p_1, p_2, reward, done):
+    def act(self, ob, p_1, p_2, prev_action, reward):
         # Get an Observation from the environment.
         # Each observation vectors are numpy array.
         # focus, opponents, track sensors are scaled into [0, 1]. When the agent
         # is out of the road, sensor variables return -1/200.
         # rpm, wheelSpinVel are raw values and then needed to be preprocessed.
-        observation = self.make_observaton(ob, p_1, p_2)
-        action = [0,0.5,0,0]
-        return action
+        observation, nn = self.make_observaton(ob, p_1, p_2, prev_action)
+        action = #[0,1,0,0]
+        return action, self.end_of_lap
 
 
 class AgentMEAN(object):

@@ -15,7 +15,7 @@ def playGame():
     ref_df.columns = ['curLapTime', 'Acceleration_x', 'Acceleration_y', 'speed_x', 'speed_y', 'x', 'y', 'alpha_step']
 
     # Generate a Torcs environment
-    env = TorcsEnv(vision=vision, throttle=True, gear_change=False, brake=True)
+    env = TorcsEnv(vision=vision, throttle=True, gear_change=False, brake=True) #gear_change = False -> automatic gear change
     agent = AgentFQI(ref_df)
     #agent = AgentMEAN()
 
@@ -33,22 +33,28 @@ def playGame():
 
         total_reward = 0.
         for j in range(max_steps):
-            if j < 5:   # at the beginning just throttle
-                action = [0,0.5,0, 0]
+            if j < 150:   # at the beginning just throttle a bit
+                action = [0.08,1,0, 0]
                 ob_2 = ob_1
                 ob_1 = ob
-                ob, _, done, _ = env.step(action)
+                ob, _, done, _ = env.step(action, False)
+            elif j < 200:
+                action = [-0.07,1,0, 0]
+                ob_2 = ob_1
+                ob_1 = ob
+                ob, _, done, _ = env.step(action, False)
             else:
-                action = agent.act(ob, ob_1, ob_2, reward, done)   #AgentFQI
+                action, end_of_lap = agent.act(ob, ob_1, ob_2, action, reward)   #AgentFQI
                 #action = agent.act(ob)    #AgentMEAN
                 ob_2 = ob_1
                 ob_1 = ob
 
-                ob, reward, done, _ = env.step(action)
+                ob, reward, done, _ = env.step(action, end_of_lap)
                 #print(ob)
                 total_reward += reward
 
                 step += 1
+                done = False # TODO togli
                 if done:
                     break
 

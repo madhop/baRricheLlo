@@ -40,7 +40,7 @@ class TorcsEnv:
         obs = client.S.d  # Get the current full-observation from torcs
         """
 
-    def step(self, u):
+    def step(self, u, end_of_lap):
         #print("Step")
         # convert thisAction to the actual torcs actionstr
         client = self.client
@@ -126,17 +126,16 @@ class TorcsEnv:
 
         # Termination judgement #########################
         episode_terminate = False
-        """if track.min() < 0:  # Episode is terminated if the car is out of track
-            reward = - 1
-            episode_terminate = True
-            #client.R.d['meta'] = True"""
-
         if self.terminal_judge_start < self.time_step: # Episode terminates if the progress of agent is small
             if progress < self.termination_limit_progress:
                 episode_terminate = True
                 #client.R.d['meta'] = True
 
         if np.cos(obs['angle']) < 0: # Episode is terminated if the agent runs backward
+            episode_terminate = True
+            #client.R.d['meta'] = True
+
+        if end_of_lap:
             episode_terminate = True
             #client.R.d['meta'] = True
 
@@ -147,7 +146,8 @@ class TorcsEnv:
 
         self.time_step += 1
 
-        return self.get_obs(), reward, client.R.d['meta'], {}
+        #return self.get_obs(), reward, client.R.d['meta'], {}
+        return self.get_obs(), reward, episode_terminate, {}
 
     def reset(self, relaunch=False):
         #print("Reset")

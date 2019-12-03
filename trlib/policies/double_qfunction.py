@@ -8,70 +8,70 @@ class DoubleQFunction:
     """
 
     def __init__(self, regressor_type, state_dim, action_dim, **regressor_params):
-        
+
         self._regressor = [regressor_type(**regressor_params), regressor_type(**regressor_params)]
         self._state_dim = state_dim
         self._action_dim = action_dim
 
     def __call__(self, state, action):
-        
+
         return self.values(np.concatenate((state,action),0)[np.newaxis,:])
-        
+
     def values(self, sa, q_id=None):
         """
         Computes the values of all state-action vectors in sa. In double fqi the value is
         the mean of the values of the two Q functions.
-        
+
         Parameters
         ----------
         sa: an Nx(S+A) matrix
         q_id: id of the regressor to use, if specified then it returns the Q of the ith regressor
               otherwise it computes the Q of both and then return the mean
-        
+
         Returns
         -------
         An N-dimensional vector with the value of each state-action row vector in sa
         """
         if not np.shape(sa)[1] == self._state_dim + self._action_dim:
             raise AttributeError("An Nx(S+A) matrix must be provided")
-        
+
         if q_id is None:
-            
-            Q = (self._regressor[0].predict(sa) + self._regressor[0].predict(sa)) / 2
-            
+
+            Q = (self._regressor[0].predict(sa) + self._regressor[1].predict(sa)) / 2
+
             return Q
         else:
             return self._regressor[q_id].predict(sa)
-    
+
     def max(self, states, actions=None, absorbing=None, q_id=None):
         """
         Computes the action among actions achieving the maximum value for each state in states.
         Where the value is the mean of the values of the two Q functions.
-        
+
         Parameters:
         -----------
         states: an NxS matrix
         actions: a list of A-dimensional vectors
         absorbing: an N-dimensional vector specifying whether each state is absorbing
         q_id: id of the regressor
-        
+
         Returns:
         --------
         An NxA matrix with the maximizing actions and an N-dimensional vector with their values
         """
         raise NotImplementedError
-    
+
     def fit(self, sa, q, q_id=None, **fit_params):
         """
         Fit the regressors.
-        
+
         Parameters:
         -----------
         sa: an Nx(S+A) matrix
         q: an Nx1 vector
         q_id: id of the regressor to fit
         fit_params: parameters of the fit
-        
+
         """
         if q_id is None:
             for i in range(len(self._regressor)):
@@ -95,7 +95,7 @@ class DoubleFittedQ(DoubleQFunction):
         that with the method get_actions(s) returns the list of actions
         to use for the state s.
         """
-        
+
         if not np.shape(states)[1] == self._state_dim:
             raise AttributeError("Wrong dimensions of the input matrices")
         if actions is None:
@@ -105,7 +105,7 @@ class DoubleFittedQ(DoubleQFunction):
         n_actions_per_state = list(map(lambda x: len(x), map(lambda s: actions[tuple(s)], states)))
         tot_n_actions = sum(n_actions_per_state)
         n_states = np.shape(states)[0]
-        
+
         sa = np.empty((tot_n_actions, self._state_dim + self._action_dim))
 
         absorbing_ids = []
@@ -164,7 +164,7 @@ class DoubleFittedQ(DoubleQFunction):
 
         max_vals = np.empty(n_states)
         max_actions = np.empty((n_states, self._action_dim))
-        
+
         end = 0
         for i in range(n_states):
             # set state interval variables
@@ -173,7 +173,7 @@ class DoubleFittedQ(DoubleQFunction):
 
             # get state actions
             state_actions = sa[start:end, self._state_dim:]
-            
+
             if absorbing is not None:
                 # if the state is absorbing return Q = 0
                 if absorbing[i]:
@@ -185,11 +185,11 @@ class DoubleFittedQ(DoubleQFunction):
                     max_vals[i] = val[a]
 
                     max_actions[i, :] = state_actions[a, :]
-            else:                
+            else:
                 val = vals[start:end]
                 a = np.argmax(val)
                 max_vals[i] = val[a]
 
                 max_actions[i, :] = state_actions[a, :]
-                
+
         return max_vals, max_actions
