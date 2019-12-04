@@ -18,7 +18,7 @@ def compute_alpha(r, r1, r2):   # r_t, r_t-1, t_t-2
 def distance(r,r1,p):   # distance line-point
     return np.linalg.norm((r1[1]-r[1])*p[0]-(r1[0]-r[0])*p[1]+r1[0]*r[1]-r1[1]*r[0])/np.linalg.norm(r1-r)
 
-def realtive_features(p, r):
+def relative_features(p, r):
     """
         realtive position (x, y) with new reference system are needed
     """
@@ -38,7 +38,7 @@ def position(r, r1, p): # inputs must be np.array
         r: nn reference position vector
         r1: next reference position vector
     """
-    rel_p = realtive_features(p-r, r1-r)
+    rel_p = relative_features(p-r, r1-r)
     rho = np.linalg.norm(p-r)
     if np.array_equal(p-r, np.array([0,0])):
         theta = 0
@@ -49,7 +49,7 @@ def position(r, r1, p): # inputs must be np.array
     return rel_p, rho, theta
 
 def curvature(p, p1, p2):   # p_t, p_t-1 and p_t-2
-    rel_p2 = realtive_features(p2-p1, p-p1)
+    rel_p2 = relative_features(p2-p1, p-p1)
     c = np.arccos(np.dot(p-p1,p2-p1)/(np.linalg.norm(p-p1) * np.linalg.norm(p2-p1)))
     if np.isnan(c):
         """print(p)
@@ -74,7 +74,7 @@ def velocity_acceleration(p, r):
     ref_module = np.linalg.norm(r)
     diff_module = np.linalg.norm(p - r)
     diff_of_modules = ref_module - actual_module
-    rel_p = realtive_features(p, r)
+    rel_p = relative_features(p, r)
     angle = np.arccos( np.dot(r,p) / (np.linalg.norm(p) * np.linalg.norm(r)))
     if rel_p[1] < 0:
         angle = -angle
@@ -93,8 +93,8 @@ def nn_ahead(p, ref_df, last_ref = 0 ):
         r1 = np.array([r1['x'], r1['y']])
         r2 = ref_df.iloc[j+1]
         r2 = np.array([r2['x'], r2['y']])
-        rel = realtive_features(p-r, r1-r)
-        rel1 = realtive_features(p-r1, r2-r1)
+        rel = relative_features(p-r, r1-r)
+        rel1 = relative_features(p-r1, r2-r1)
         if rel[0] > 0 and rel1[0] < 0:
             """plt.plot([r[0], r1[0], r2[0]],[r[1], r1[1], r2[1]], 'o')
             plt.plot([p[0]],[p[1]], '*')
