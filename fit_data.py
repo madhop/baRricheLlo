@@ -104,5 +104,5 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
     print('Saved Action Dispatcher')
 
 
-run_experiment('dataset', 'ref_traj', './trajectory/', 100, './model_file/', 3,3,3, 10, 'pippo', 'progress', 2, False, 'rkdt', False,
+run_experiment('dataset', 'ref_traj', './trajectory/', 100, './model_file/', 3,3,3, 10, 'first_model', 'progress', 2, False, 'rkdt', False,
                False, 10, False, True, False)
