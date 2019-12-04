@@ -1,1 +1,3 @@
-reward = 10
+def compute_reward():
+    
+    return reward
