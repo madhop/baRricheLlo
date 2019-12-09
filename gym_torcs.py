@@ -92,6 +92,8 @@ class TorcsEnv:
                 action_torcs['gear'] = 5
             if client.S.d['speedX'] > 170:
                 action_torcs['gear'] = 6
+            if client.S.d['speedX'] > 250:
+                action_torcs['gear'] = 7
 
         # braking
         if self.brake is True:

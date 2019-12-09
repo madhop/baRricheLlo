@@ -14,14 +14,14 @@ from numpy import matlib
 class FQIDriver(Algorithm):
     """
     Fitted Q-Iteration
-    
+
     References
     ----------
       - Ernst, Damien, Pierre Geurts, and Louis Wehenkel
         Tree-based batch mode reinforcement learning
         Journal of Machine Learning Research 6.Apr (2005): 503-556
     """
-    
+
     def __init__(self, mdp, policy, actions, max_iterations, regressor_type, data, action_dispatcher, state_mask,
                  data_mask, s_norm, filter_a_outliers, ad_n_jobs, ad_param, verbose=False, precompute_sprime_a=True,
                  **regressor_params):
@@ -42,7 +42,7 @@ class FQIDriver(Algorithm):
         :param precompute_sprime_a: True to precompute the matrix state_prime-action used in maxQ
         :param regressor_params: parameters of the regressor
         """
-        
+
         super().__init__("FQI Driver", mdp, policy, verbose)
 
         self._data = data
@@ -50,16 +50,16 @@ class FQIDriver(Algorithm):
         self.sprime_a = []
         self.n_actions_per_state_prime = []
         self.precompute_sprime_a = precompute_sprime_a
-        
+
         self._actions = {}
         self.action_dim = mdp.action_dim
-        
+
         self._action_dispatcher = self.create_action_dispatcher(action_dispatcher, actions, state_mask, data_mask,
                                                                 s_norm, filter_a_outliers, ad_n_jobs, ad_param)
 
         self._max_iterations = max_iterations
         self._regressor_type = regressor_type
-        
+
         self._policy.Q = FittedQ(regressor_type, mdp.state_dim, mdp.action_dim, **regressor_params)
 
         self.reset()
@@ -104,18 +104,18 @@ class FQIDriver(Algorithm):
     def _iter(self, sa, r, s_prime, absorbing, **fit_params):
 
         self.display("Iteration {0}".format(self._iteration))
-        
+
         if self._iteration == 0:
             y = r
             maxq_time = 0
         else:
             tm = time.time()
-            
+
             if len(self.sprime_a) > 0:
                 maxq, _ = self._policy.Q.max_sa(self.sprime_a, self.n_actions_per_state_prime, absorbing)
             else:
                 maxq, _ = self._policy.Q.max(s_prime, self._actions, absorbing)
-                
+
             y = r.ravel() + self._mdp.gamma * maxq
             maxq_time = time.time() - tm
             print('maxQ {}'.format(maxq_time))
@@ -126,29 +126,29 @@ class FQIDriver(Algorithm):
         print('fitQ {}'.format(fit_time))
         self._iteration += 1
         return maxq_time, fit_time
-        
+
     def _step_core(self, **kwargs):
-                
+
         self._iteration = 0
-        
+
         _,_,_,r,s_prime,absorbing,sa = split_data(self._data, self._mdp.state_dim, self._mdp.action_dim)
-        
+
         # compute the action set for each state prime
         self.compute_action_set(s_prime)
-        
+
         if self.precompute_sprime_a:
             ts = time.time()
             # compute the matrix state-action for each state prime and for each action in its action set
             self.compute_s_prime_a(s_prime)
             print('Time for sprime a mat {}'.format(time.time() - ts))
-            
+
         time_list = []
         maxq_time_list = []
         fit_time_list = []
         for i in range(self._max_iterations):
-            
+
             maxq_time, fit_time = self._iter(sa, r, s_prime, absorbing, **kwargs)
-            
+
             maxq_time_list = maxq_time_list + [maxq_time]
             fit_time_list = fit_time_list + [fit_time]
             time_list = time_list + [maxq_time + fit_time]
@@ -157,7 +157,7 @@ class FQIDriver(Algorithm):
         print('Total elapsed time: {}'.format(np.sum(time_list)))
         print('Mean elapsed time: {}'.format(np.mean(time_list)))
         print('Std elapsed time: {}'.format(np.std(time_list)))
-        
+
         # reset sprime_a to save memory
         self.sprime_a = []
         self.n_actions_per_state_prime = []
@@ -169,63 +169,63 @@ class FQIDriver(Algorithm):
         # Compute for the given dataset the list of actions to use for the maxQ for each state prime
         print('Finding nearest actions for each state prime')
         self._actions = {}
-        
+
         t1 = time.time()
         action_list = self._action_dispatcher.get_actions(s)
         print('Time for action list {}'.format(time.time() - t1))
-        
+
         ts = time.time()
-        for i in range(len(s)):            
+        for i in range(len(s)):
             self._actions[tuple(s[i, :])] = action_list[i]
         print('Time for action set {}'.format(time.time() - ts))
-    
+
     def compute_s_prime_a(self, s_primes):
         """Given the list of next states s_prime, it returns the matrix state actions that
         for each state prime the contains all the pairs s'a where a is in the action set
         of s'.
         """
-        
+
         # Get the number of actions for each state
         n_actions_per_state = list(map(lambda x: len(x), map(lambda s: self._actions[tuple(s)], s_primes)))
         tot_n_actions = sum(n_actions_per_state)
         n_states = s_primes.shape[0]
         sa = np.empty((tot_n_actions, self.state_dim + self.action_dim))
-        
+
         end = 0
         for i in range(n_states):
             # set interval variables
             start = end
             end = end + n_actions_per_state[i]
-            
+
             # set state prime
             i_s_prime = s_primes[i, :]
             n_actions = n_actions_per_state[i]
-            
+
             # populate the matrix with the ith state prime
             sa[start:end, 0:self.state_dim] = matlib.repmat(i_s_prime, n_actions, 1)
-            
+
             # populate the matrix with the actions of the action set of ith state prime
             sa[start:end, self.state_dim:] =\
                 np.array(self._actions[tuple(i_s_prime)]).reshape((n_actions, self.action_dim))
-        
+
         # reset self._actions to save memory
         self._actions = []
-        
+
         self.sprime_a = sa
         self.n_actions_per_state_prime = n_actions_per_state
-        
+
     def reset(self):
-        
+
         super().reset()
 
         self._iteration = 0
         self.sprime_a = []
         self.n_actions_per_state_prime = []
-        
+
         self._result.add_fields(max_iterations=self._max_iterations,
                                 regressor_type=str(self._regressor_type.__name__),
                                 policy = str(self._policy.__class__.__name__))
-    
+
 
 class DoubleFQIDriver(Algorithm):
     """DoubleFQIDriver is the variation of the FQI which learns two different
@@ -352,7 +352,7 @@ class DoubleFQIDriver(Algorithm):
             ad_B = action_dispatcher(actions_B, state_mask, state_kdt_B, s_scaler_B, a_scaler_B, filter_a_outliers,
                                      ad_n_jobs, ad_param)
         return ad, ad_A, ad_B
-    
+
     def _iter(self, sa, r, s_prime, absorbing, **fit_params):
         """In double fqi we learn two Q functions. The procedure is the following:
         - split the dataset in two disjoint subsets
@@ -360,7 +360,7 @@ class DoubleFQIDriver(Algorithm):
         - fit the two models with half dataset
         """
         self.display("Iteration {0}".format(self._iteration))
-        
+
         # 1) split the dataset
         sa_A = sa[self._ids_A, :]
         sa_B = sa[self._ids_B, :]
@@ -370,13 +370,13 @@ class DoubleFQIDriver(Algorithm):
         s_prime_B = s_prime[self._ids_B, :]
         absorbing_A = absorbing[self._ids_A].astype(bool)
         absorbing_B = absorbing[self._ids_B].astype(bool)
-        
+
         # 2) compute the target
         if self._iteration == 0:
             y_A = r_A
             y_B = r_B
             maxq_time = 0
-            
+
         else:
 
             tm = time.time()
@@ -407,7 +407,7 @@ class DoubleFQIDriver(Algorithm):
                 # Set to 0 the values of the absorbing states
                 maxq_A[absorbing_A] = 0
                 maxq_B[absorbing_B] = 0
-            
+
             # Compute the target
             y_A = r_A.ravel() + self._mdp.gamma * maxq_A
             y_B = r_B.ravel() + self._mdp.gamma * maxq_B
@@ -415,10 +415,10 @@ class DoubleFQIDriver(Algorithm):
             print('maxQ {}'.format(maxq_time))
 
         tf = time.time()
-        
+
         self._policy.Q.fit(sa_A, y_A.ravel(), 0, **fit_params)
         self._policy.Q.fit(sa_B, y_B.ravel(), 1, **fit_params)
-        
+
         fit_time = time.time() - tf
         print('fitQ {}'.format(fit_time))
         self._iteration += 1
@@ -453,6 +453,11 @@ class DoubleFQIDriver(Algorithm):
         print('Total elapsed time: {}'.format(np.sum(time_list)))
         print('Mean elapsed time: {}'.format(np.mean(time_list)))
         print('Std elapsed time: {}'.format(np.std(time_list)))
+
+        self.sprime_a_A = []
+        self.sprime_a_B = []
+        self.n_actions_per_state_prime_A = []
+        self.n_actions_per_state_prime_B = []
 
         self._result.update_step(n_episodes=self.n_episodes, n_samples=self._data.shape[0])
         self._result.add_fields(elapsed_time=time_list, maxq_time=maxq_time_list, fit_time=fit_time_list)

@@ -13,19 +13,26 @@ from fqi.dataset_preprocessing import *
 """from fqi.fqi_evaluate import run_evaluation
 from fqi.et_tuning import run_tuning"""
 from fqi.utils import *
+from fqi.reward_function import *
+from fqi.sars_creator import *
 sys.setrecursionlimit(3000)
+
+ref_df = pd.read_csv('./trajectory/ref_traj.csv')
+data_df = pd.read_csv('./trajectory/dataset.csv')
 
 def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, output_path, n_throttle,
                n_brake, n_steer, n_jobs, output_name, reward_function, delta_t,
                filter_actions, ad_type, tuning, kdt_norm, kdt_param, filt_a_outliers, double_fqi, evaluation):
 
 
-    # Load dataset
-    dataset = prepare_dataset(os.path.join('./trajectory/dataset.csv'),
+    # build SARS
+    reward_function = Speed_projection(ref_df)
+    sars_data = to_SARS(data_df, reward_function)
+    """dataset = prepare_dataset(os.path.join('./trajectory/dataset.csv'),
                               os.path.join('./trajectory/ref_traj.csv'),
-                              reward_function=reward_function, delta_t=delta_t)
+                              reward_function=reward_function, delta_t=delta_t)"""
 
-    print('dataset prepared')
+    print('SARS prepared')
     nmin = 5
 
     # Create environment
@@ -44,15 +51,15 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
 
     if ad_type == 'fkdt':
         action_dispatcher = FixedKDTActionDispatcher
-        alg_actions = dataset[action_cols].values
+        alg_actions = sars_data[action_cols].values
 
     elif ad_type == 'rkdt':
         action_dispatcher = RadialKDTActionDispatcher
-        alg_actions = dataset[action_cols].values
+        alg_actions = sars_data[action_cols].values
 
     elif ad_type == 'discrete':
         action_dispatcher = ConstantActionDispatcher
-        actions, sub_actions = create_action_combinations(dataset, n_throttle, n_brake, n_steer, filter_actions)
+        actions, sub_actions = create_action_combinations(sars_data, n_throttle, n_brake, n_steer, filter_actions)
         alg_actions = sub_actions
     else:
         action_dispatcher = None
@@ -79,7 +86,7 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
                     actions=alg_actions,
                     max_iterations=max_iterations,
                     regressor_type=regressor,
-                    data=dataset[cols].values,
+                    data=sars_data[cols].values,
                     action_dispatcher=action_dispatcher,
                     state_mask=state_mask,
                     data_mask=data_mask,
@@ -104,5 +111,4 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
     print('Saved Action Dispatcher')
 
 
-run_experiment('dataset', 'ref_traj', './trajectory/', 100, './model_file/', 3,3,3, 10, 'first_model', 'progress', 2, False, 'rkdt', False,
-               False, 10, False, True, False)
+run_experiment('dataset', 'ref_traj', './trajectory/', 100, './model_file/', 3,3,3, 10, 'first_model', 'progress', 2, False, 'rkdt', False, False, 10, False, True, False)

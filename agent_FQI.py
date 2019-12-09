@@ -68,7 +68,7 @@ class AgentFQI(object):
         # is out of the road, sensor variables return -1/200.
         # rpm, wheelSpinVel are raw values and then needed to be preprocessed.
         observation, nn = self.make_observaton(ob, p_1, p_2, prev_action)
-        action = #[0,1,0,0]
+        action = [0,1,0,0]
         return action, self.end_of_lap
 
 

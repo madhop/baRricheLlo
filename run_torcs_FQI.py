@@ -33,13 +33,13 @@ def playGame():
 
         total_reward = 0.
         for j in range(max_steps):
-            if j < 150:   # at the beginning just throttle a bit
-                action = [0.08,1,0, 0]
+            if j < 250:   # at the beginning just throttle a bit
+                action = [0.023,1,0, 0]
                 ob_2 = ob_1
                 ob_1 = ob
                 ob, _, done, _ = env.step(action, False)
-            elif j < 200:
-                action = [-0.07,1,0, 0]
+            elif j < 350:
+                action = [-0.03,1,0, 0]
                 ob_2 = ob_1
                 ob_1 = ob
                 ob, _, done, _ = env.step(action, False)
