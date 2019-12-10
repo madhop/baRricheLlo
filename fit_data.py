@@ -10,8 +10,8 @@ from trlib.algorithms.reinforcement.fqi_driver import FQIDriver, DoubleFQIDriver
 from trlib.environments.trackEnv import TrackEnv
 from trlib.utilities.ActionDispatcher import *
 from fqi.dataset_preprocessing import *
-"""from fqi.fqi_evaluate import run_evaluation
-from fqi.et_tuning import run_tuning"""
+from fqi.fqi_evaluate import run_evaluation
+"""from fqi.et_tuning import run_tuning"""
 from fqi.utils import *
 from fqi.reward_function import *
 from fqi.sars_creator import *
@@ -109,6 +109,13 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
     with open(output_path + '/' + AD_name, 'wb') as output:
         pickle.dump(algorithm._action_dispatcher, output, pickle.HIGHEST_PROTOCOL)
     print('Saved Action Dispatcher')
+
+    if evaluation:
+
+        print('Evaluation')
+        run_evaluation(output_path+'/'+algorithm_name, track_file_name, data_path, n_jobs, output_path,
+                       'eval_'+output_name, filter_actions,
+                       output_path + '/' + AD_name)
 
 
 run_experiment('dataset', 'ref_traj', './trajectory/', 100, './model_file/', 3,3,3, 10, 'first_model', 'progress', 2, False, 'rkdt', False, False, 10, False, True, False)
