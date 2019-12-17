@@ -2,6 +2,7 @@ import gym
 from gym import spaces
 import snakeoil3_gym as snakeoil3
 import numpy as np
+import pandas as pd
 import copy
 import collections as col
 import os
@@ -16,12 +17,13 @@ class TorcsEnv:
     initial_reset = True
 
 
-    def __init__(self, vision=False, throttle=False, gear_change=False, brake=False):
+    def __init__(self, reward_function, vision=False, throttle=False, gear_change=False, brake=False):
        #print("Init")
         self.vision = vision
         self.throttle = throttle
         self.gear_change = gear_change
         self.brake = brake
+        self.reward_function = reward_function
 
         self.initial_run = True
 
@@ -121,6 +123,11 @@ class TorcsEnv:
         sp = np.array(obs['speedX'])
         progress = sp*np.cos(obs['angle'])
         reward = progress
+        """sp = np.array(obs['speedX'])
+        progress = sp*np.cos(obs['angle'])
+        d = {'xCarWorld': self.observation['x'], 'yCarWorld': self.observation['y']}
+        reward = self.reward_function(pd.DataFrame(d, index = [0]))
+        print('reward:', reward)"""
 
         # collision detection
         """if obs['damage'] - obs_pre['damage'] > 0:
@@ -202,10 +209,10 @@ class TorcsEnv:
         torcs_action = {'steer': u[0]}
 
         if self.throttle is True:  # throttle action is enabled
-            torcs_action.update({'accel': u[1]})
+            torcs_action.update({'accel': u[2]})
 
         if self.brake is True: # brake action is enabled
-            torcs_action.update({'brake': u[2]})
+            torcs_action.update({'brake': u[1]})
 
         if self.gear_change is True: # gear change action is enabled
             torcs_action.update({'gear': u[3]})
@@ -216,6 +223,7 @@ class TorcsEnv:
     def make_observaton(self, raw_obs):
         return {'angle' : np.array(raw_obs['angle'], dtype=np.float32),
                 'curLapTime' : np.array(raw_obs['curLapTime'], dtype=np.float32),
+                'damage' : np.array(raw_obs['damage'], dtype=np.float32),
                 'distFromStart' : np.array(raw_obs['distFromStart'], dtype=np.float32),
                 'Acceleration_x' : np.array(raw_obs['Acceleration_x'], dtype=np.float32),
                 'Acceleration_y' : np.array(raw_obs['Acceleration_y'], dtype=np.float32),
@@ -232,73 +240,3 @@ class TorcsEnv:
                 'yaw' : np.array(raw_obs['yaw'], dtype=np.float32),
                 'speedGlobalX' : np.array(raw_obs['speedGlobalX'], dtype=np.float32),
                 'speedGlobalY' : np.array(raw_obs['speedGlobalY'], dtype=np.float32)}
-        """names = ['angle',
-                'curLapTime',
-                'distFromStart',
-                'Acceleration_x',
-                'Acceleration_y',
-                'gear',
-                'rpm',
-                'speedX', 'speedY', 'speedZ',
-                'x', 'y', 'z',
-                'roll', 'pitch', 'yaw',
-                'speedGlobalX', 'speedGlobalY']
-        Observation = col.namedtuple('Observaion', names)
-        return Observation(angle=np.array(raw_obs['angle'], dtype=np.float32),
-                           curLapTime=np.array(raw_obs['curLapTime'], dtype=np.float32),
-                           distFromStart=np.array(raw_obs['distFromStart'], dtype=np.float32),
-                           Acceleration_x=np.array(raw_obs['Acceleration_x'], dtype=np.float32),
-                           Acceleration_y=np.array(raw_obs['Acceleration_y'], dtype=np.float32),
-                           gear=np.array(raw_obs['gear'], dtype=np.float32),
-                           rpm=np.array(raw_obs['rpm'], dtype=np.float32),
-                           speedX=np.array(raw_obs['speedX'], dtype=np.float32),
-                           speedY=np.array(raw_obs['speedY'], dtype=np.float32),
-                           speedZ=np.array(raw_obs['speedZ'], dtype=np.float32),
-                           x=np.array(raw_obs['x'], dtype=np.float32),
-                           y=np.array(raw_obs['y'], dtype=np.float32),
-                           z=np.array(raw_obs['z'], dtype=np.float32),
-                           roll=np.array(raw_obs['roll'], dtype=np.float32),
-                           pitch=np.array(raw_obs['pitch'], dtype=np.float32),
-                           yaw=np.array(raw_obs['yaw'], dtype=np.float32),
-                           speedGlobalX=np.array(raw_obs['speedGlobalX'], dtype=np.float32),
-                           speedGlobalY=np.array(raw_obs['speedGlobalY'], dtype=np.float32))"""
-
-        """names = ['angle',
-                'curLapTime',
-                'distFromStart',
-                'focus',
-                'gear',
-                'lastLapTime',
-                'rpm',
-                'speedX', 'speedY', 'speedZ',
-                'track',
-                'trackPos',
-                'wheelSpinVel',
-                'x', 'y', 'z',
-                'roll', 'pitch', 'yaw',
-                'speedGlobalX', 'speedGlobalY']
-        Observation = col.namedtuple('Observaion', names)
-        return Observation(angle=np.array(raw_obs['angle'], dtype=np.float32),
-                           curLapTime=np.array(raw_obs['curLapTime'], dtype=np.float32),
-                           distFromStart=np.array(raw_obs['distFromStart'], dtype=np.float32),
-                           focus=np.array(raw_obs['focus'], dtype=np.float32) / 200.,
-                           gear=np.array(raw_obs['gear'], dtype=np.float32),
-                           lastLapTime=np.array(raw_obs['lastLapTime'], dtype=np.float32),
-                           rpm=np.array(raw_obs['rpm'], dtype=np.float32),
-                           #speedX=np.array(raw_obs['speedX'], dtype=np.float32) / self.default_speed,
-                           #speedY=np.array(raw_obs['speedY'], dtype=np.float32) / self.default_speed,
-                           #speedZ=np.array(raw_obs['speedZ'], dtype=np.float32) / self.default_speed,
-                           speedX=np.array(raw_obs['speedX'], dtype=np.float32),
-                           speedY=np.array(raw_obs['speedY'], dtype=np.float32),
-                           speedZ=np.array(raw_obs['speedZ'], dtype=np.float32),
-                           track=np.array(raw_obs['track'], dtype=np.float32) / 200.,
-                           trackPos=np.array(raw_obs['trackPos'], dtype=np.float32),
-                           wheelSpinVel=np.array(raw_obs['wheelSpinVel'], dtype=np.float32),
-                           x=np.array(raw_obs['x'], dtype=np.float32),
-                           y=np.array(raw_obs['y'], dtype=np.float32),
-                           z=np.array(raw_obs['z'], dtype=np.float32),
-                           roll=np.array(raw_obs['roll'], dtype=np.float32),
-                           pitch=np.array(raw_obs['pitch'], dtype=np.float32),
-                           yaw=np.array(raw_obs['yaw'], dtype=np.float32),
-                           speedGlobalX=np.array(raw_obs['speedGlobalX'], dtype=np.float32) / self.default_speed,
-                           speedGlobalY=np.array(raw_obs['speedGlobalY'], dtype=np.float32) / self.default_speed)"""

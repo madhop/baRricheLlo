@@ -10,6 +10,8 @@ import compute_state_features as sf
     - car_dataset.csv (all state features) 10 Hz
 """
 
+output_name = "raw_torcs_data/preprocessed_torcs_"#.csv"
+output_name_ref = "trajectory/ref_traj_"#.csv"
 track_length = 5780
 compute_ref_traj = 1
 
@@ -86,6 +88,8 @@ for i, lap_beg in enumerate(lap_beginnings[:-1]):
         raw_df['isReference'] = 0
         raw_df.loc[lap_beg:lap_beginnings[i+1]-1, 'isReference'] = 1
 
+output_name = output_name + str(i+1) +"_laps.csv"
+output_name_ref = output_name_ref + str(i+1) +"_laps.csv"
 #print("lap_beginnings: ", raw_df.loc[lap_beginnings])
 
 ## TORCS gives speed in m/s, we want it in km/h
@@ -123,11 +127,11 @@ if compute_ref_traj:
     ref_df.index = np.arange(ref_df.shape[0])   # reset indexes
     print('reference time: ', ref_df.tail(1)['curLapTime'])
     ## Export reference trajectory as CSV file
-    ref_df.to_csv(path_or_buf = "trajectory/ref_traj.csv", index = False)
+    ref_df.to_csv(path_or_buf = output_name_ref, index = False)
 
 ## Downsampling actual trajectory
 raw_df.index = np.arange(raw_df.shape[0])   # reset indexes
 to_drop = raw_df.index[ raw_df.index % 10 != 0].tolist()
 raw_df.drop(to_drop, inplace=True)
 
-raw_df.to_csv(path_or_buf = "raw_torcs_data/preprocessed_torcs.csv", index = False)
+raw_df.to_csv(path_or_buf = output_name, index = False)

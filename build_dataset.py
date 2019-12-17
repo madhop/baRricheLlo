@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 
 plot_coords = 0
 
-ref_df = pd.read_csv('trajectory/ref_traj.csv') # reference trajectory
+ref_df = pd.read_csv('trajectory/ref_traj_70_laps.csv') # reference trajectory
 ref_df.columns = ['curLapTime', 'Acceleration_x', 'Acceleration_y', 'speed_x', 'speed_y', 'x', 'y', 'alpha_step']
-car_df = pd.read_csv('raw_torcs_data/preprocessed_torcs.csv') # car trajectory
+car_df = pd.read_csv('raw_torcs_data/preprocessed_torcs_70_laps.csv') # car trajectory
 actual_df = pd.DataFrame()
 
 ## Compute state's features

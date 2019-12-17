@@ -3,8 +3,18 @@ from agent_FQI import AgentFQI, AgentMEAN
 import pandas as pd
 import numpy as np
 import compute_state_features as csf
+from fqi.utils import *
+from fqi.reward_function import *
+import time
+import os
+
 
 def playGame():
+    start_line = False
+    track_length = 5783.85
+    algorithm_name = 'model_r_speed_50laps_pc.pkl'#'first_model.pkl'
+    policy_path = 'model_file/policy_' + algorithm_name
+    action_dispatcher_path = 'model_file/AD_' + algorithm_name
     vision = False
     episode_count = 10
     max_steps = 100000
@@ -12,12 +22,15 @@ def playGame():
     done = False
     step = 0
     ref_df = pd.read_csv('trajectory/ref_traj.csv') # reference trajectory
-    ref_df.columns = ['curLapTime', 'Acceleration_x', 'Acceleration_y', 'speed_x', 'speed_y', 'x', 'y', 'alpha_step']
+    ref_df.columns = ref_traj_cols
+
+    reward_function = reward_function = Speed_projection(ref_df)
+
+    agent = AgentFQI(ref_df, policy_path, action_dispatcher_path)
+    #agent = AgentMEAN()
 
     # Generate a Torcs environment
-    env = TorcsEnv(vision=vision, throttle=True, gear_change=False, brake=True) #gear_change = False -> automatic gear change
-    agent = AgentFQI(ref_df)
-    #agent = AgentMEAN()
+    env = TorcsEnv(reward_function, vision=vision, throttle=True, gear_change=False, brake=True) #gear_change = False -> automatic gear change
 
     print("TORCS Experiment Start.")
     for i in range(episode_count):
@@ -31,31 +44,59 @@ def playGame():
             ob = env.reset()
             ob_2 = ob_1 = ob
 
+        # at the moment we need to slow time, because the agent is too slow
+        os.system('sh slow_time_down.sh')
+        time.sleep(0.5)
+
         total_reward = 0.
         for j in range(max_steps):
-            if j < 250:   # at the beginning just throttle a bit
-                action = [0.023,1,0, 0]
+            if ob['distFromStart'] < 100 and not start_line:
+                print('---',j)
+                start_line = True
+                action = [0,0,1, 0]
                 ob_2 = ob_1
                 ob_1 = ob
                 ob, _, done, _ = env.step(action, False)
-            elif j < 350:
-                action = [-0.03,1,0, 0]
+            elif ob['distFromStart'] < 5615.26 and not start_line:   # at the beginning just throttle a bit
+                print('-', j)
+                action = [0.02,0,1, 0]
+                ob_2 = ob_1
+                ob_1 = ob
+                ob, _, done, _ = env.step(action, False)
+            elif ob['distFromStart'] < 5703.24 and not start_line:
+                print('--', j)
+                action = [-0.028,0,1, 0]
+                ob_2 = ob_1
+                ob_1 = ob
+                ob, _, done, _ = env.step(action, False)
+            elif ob['distFromStart'] < track_length and not start_line:
+                print('--', j)
+                action = [0,0,1, 0]
                 ob_2 = ob_1
                 ob_1 = ob
                 ob, _, done, _ = env.step(action, False)
             else:
-                action, end_of_lap = agent.act(ob, ob_1, ob_2, action, reward)   #AgentFQI
+                action, end_of_lap, done = agent.act(ob, ob_1, ob_2, action, reward)   #AgentFQI
+                print('Action:', action)
+                if ob['damage'] > ob_1['damage']:
+                    done = True
+                if done:
+                    print('No actions')
+                    start_line = False
+                    break
                 #action = agent.act(ob)    #AgentMEAN
                 ob_2 = ob_1
                 ob_1 = ob
 
-                ob, reward, done, _ = env.step(action, end_of_lap)
-                #print(ob)
+                #ob, reward, done, _ = env.step(action, end_of_lap)
+                ob, reward, done, _ = env.step(action, False)
+                # check if hit the walls
                 total_reward += reward
 
                 step += 1
                 done = False # TODO togli
                 if done:
+                    start_line = False
                     break
 
         print("TOTAL REWARD @ " + str(i) +" -th Episode  :  " + str(total_reward))

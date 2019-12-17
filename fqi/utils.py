@@ -1,6 +1,13 @@
 action_cols = ['aSteerWheel', 'pBrakeF', 'rThrottlePedal']
 prev_action_cols = ['prev'+a for a in action_cols]
 
+"""state_cols = ['xCarWorld', 'yCarWorld',
+       'nYawBody', 'nEngine', 'positionRho', 'positionTheta',
+       'referenceCurvature', 'actualCurvature',
+       'actualSpeedModule', 'speedDifferenceVectorModule', 'actualAccelerationX',
+       'actualAccelerationY', 'referenceAccelerationX',
+       'referenceAccelerationY', 'accelerationDiffX', 'accelerationDiffY'] + prev_action_cols"""
+
 state_cols = ['xCarWorld', 'yCarWorld',
        'nYawBody', 'nEngine', 'NGear', 'positionRho', 'positionTheta',
        'positionReferenceX', 'positionReferenceY', 'positionRelativeX',
@@ -11,10 +18,9 @@ state_cols = ['xCarWorld', 'yCarWorld',
        'referenceAccelerationY', 'accelerationDiffX', 'accelerationDiffY'] + prev_action_cols
 
 
+
 knn_state_cols = ['xCarWorld', 'yCarWorld']
 
-state_prime_cols = ['prime_'+c for c in state_cols]
+ref_traj_cols = ['curLapTime', 'Acceleration_x', 'Acceleration_y', 'speed_x', 'speed_y', 'xCarWorld', 'yCarWorld', 'alpha_step']
 
-def compute_reward():
-    reward = 0
-    return reward
+state_prime_cols = ['prime_'+c for c in state_cols]
