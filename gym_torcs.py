@@ -82,20 +82,7 @@ class TorcsEnv:
             action_torcs['gear'] = this_action['gear']
         else:
             #  Automatic Gear Change by Snakeoil is possible
-            action_torcs['gear'] = 1
-
-            if client.S.d['speedX'] > 50:
-                action_torcs['gear'] = 2
-            if client.S.d['speedX'] > 80:
-                action_torcs['gear'] = 3
-            if client.S.d['speedX'] > 110:
-                action_torcs['gear'] = 4
-            if client.S.d['speedX'] > 140:
-                action_torcs['gear'] = 5
-            if client.S.d['speedX'] > 170:
-                action_torcs['gear'] = 6
-            if client.S.d['speedX'] > 250:
-                action_torcs['gear'] = 7
+            action_torcs['gear'] = self.auto_gear_snakeoil(client.S.d['speedX'])
 
         # braking
         if self.brake is True:
@@ -240,3 +227,20 @@ class TorcsEnv:
                 'yaw' : np.array(raw_obs['yaw'], dtype=np.float32),
                 'speedGlobalX' : np.array(raw_obs['speedGlobalX'], dtype=np.float32),
                 'speedGlobalY' : np.array(raw_obs['speedGlobalY'], dtype=np.float32)}
+
+    def auto_gear_snakeoil(self, speedX):
+        #  Automatic Gear Change by Snakeoil is possible
+        gear = 1
+        if speedX > 50:
+            gear = 2
+        if speedX > 80:
+            gear = 3
+        if speedX > 110:
+            gear = 4
+        if speedX > 140:
+            gear = 5
+        if speedX > 170:
+            gear = 6
+        if speedX > 250:
+            gear = 7
+        return gear
