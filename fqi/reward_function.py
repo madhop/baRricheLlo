@@ -65,13 +65,10 @@ class Projection_reward(Reward_function):
     # compute the distance over the reference of two consecutive state projections
     def _compute_ref_distance(self, projection):
         ref_id, delta = projection
-        if ref_id.shape < 2:
-            pass
-        else:
-            partial_len_next = delta[1:] * self.seg_len[ref_id[1:]]
-            partial_len_curr = delta[:-1] * self.seg_len[ref_id[:-1]]
-            d = self.cumul_len[ref_id[1:]] + partial_len_next - (self.cumul_len[ref_id[:-1]] + partial_len_curr)
-            d[d < -self.full_len / 2] += self.full_len
+        partial_len_next = delta[1:] * self.seg_len[ref_id[1:]]
+        partial_len_curr = delta[:-1] * self.seg_len[ref_id[:-1]]
+        d = self.cumul_len[ref_id[1:]] + partial_len_next - (self.cumul_len[ref_id[:-1]] + partial_len_curr)
+        d[d < -self.full_len / 2] += self.full_len
         return d
 
     '''
@@ -82,11 +79,7 @@ class Projection_reward(Reward_function):
         _, ref_id = self.kdtree.query(state)
         ref_id = ref_id.squeeze()  # index of the next segment
         prev_ref_id = ref_id - 1  # index of the previous segment
-        if np.isscalar(prev_ref_id):
-            if prev_ref_id == -1:
-                prev_ref_id = self.ref_p.shape[0] - 1
-        else:
-            prev_ref_id[prev_ref_id == -1] = self.ref_p.shape[0] - 1  # if we got before the ref point 0
+        prev_ref_id[prev_ref_id == -1] = self.ref_p.shape[0] - 1  # if we got before the ref point 0
         ref_state = state - self.ref_p[ref_id]  # vector from the ref point to the state
         prev_ref_state = state - self.ref_p[prev_ref_id]
         delta = np.sum(self.seg[ref_id] * ref_state, axis=1) / np.square(self.seg_len[ref_id])  # <s-r,seg>/|seg|^2
@@ -99,10 +92,7 @@ class Projection_reward(Reward_function):
                                    axis=1)
         closest = np.argmin(np.column_stack((dist, dist_prev)), axis=1)  # index of the one with minimum distance
         delta = np.column_stack((delta, delta_prev))[np.arange(delta.shape[0]), closest]  # select the one with minimum distance
-        if ref_id.ndim == 0:
-            ref_id = np.column_stack((ref_id, prev_ref_id))[0,closest]
-        else:
-            ref_id = np.column_stack((ref_id, prev_ref_id))[np.arange(ref_id.shape[0]), closest]
+        ref_id = np.column_stack((ref_id, prev_ref_id))[np.arange(ref_id.shape[0]), closest]
         return ref_id, delta
 
 
@@ -153,11 +143,8 @@ class Speed_projection(Projection_reward):
     def _compute_reward(self, data):
         state_p = data[['xCarWorld', 'yCarWorld']].values
         projection = self._compute_projection(state_p)
-        #print('projection:', projection)
         d = self._compute_ref_distance(projection)
-        #print('ref_dist:', d)
         speed = (100 / self.sample_dt) * d  # in m/s
-        #print('speed:', speed)
         if self.relative:
             t = self._compute_ref_time(projection) * self.ref_dt / 100
             ref_id = projection[0][:-1]

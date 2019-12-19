@@ -47,7 +47,7 @@ class KDTActionDispatcher(ActionDispatcher):
         self.a_normalizer = action_normalizer
         self.filter_outliers = filter_outliers
         self.n_jobs = n_jobs
-        
+
     def get_actions(self, s):
         """Given a state s, it returns its actions set. First get the ids
         of the nearest states and then retrieves the actions used on them.
@@ -66,7 +66,7 @@ class KDTActionDispatcher(ActionDispatcher):
             a = list(map(lambda x: list(map(lambda i: self.actions[i], x)), ids))
         else:
             a = [self.actions[i] for i in ids[0]]
-            
+
         # Filter the outlier actions
         if self.filter_outliers:
             if s.shape[0] > 1:
@@ -74,9 +74,9 @@ class KDTActionDispatcher(ActionDispatcher):
                 a = list(pool.map(self.remove_outliers, a))
             else:
                 a = self.remove_outliers(a)
-        
+
         return a
-    
+
     def remove_outliers(self, action_set):
         """Given a list of actions it performs DBSCAN clustering
         and returns the actions of the biggest cluster.
@@ -87,17 +87,17 @@ class KDTActionDispatcher(ActionDispatcher):
 
         mdl = DBSCAN(eps=0.05, min_samples=5, metric='minkowski', p=2)
         mdl.fit(norm_actions)
-        
+
         labels = mdl.labels_
         n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
         clusters = [x for x in np.unique(labels) if x != -1]
-        
+
         n_elems = [list(labels).count(i) for i in clusters]
-        
+
         if len(n_elems) > 0:
             # if there are clusters
             biggest_cluster = np.argmax(n_elems)
-            return [a for i, a in enumerate(action_set) if labels[i] == biggest_cluster] 
+            return [a for i, a in enumerate(action_set) if labels[i] == biggest_cluster]
         else:
             # if all the actions are considered noise points then return all of them
             return action_set
@@ -132,7 +132,7 @@ class RadialKDTActionDispatcher(KDTActionDispatcher):
     """
     def __init__(self, actions, state_mask, kdtree, state_normalizer=None, action_normalizer=None,
                  filter_outliers=False, n_jobs=1, radius=10):
-        super(RadialKDTActionDispatcher, self).__init__(actions, state_mask, kdtree, state_normalizer, 
+        super(RadialKDTActionDispatcher, self).__init__(actions, state_mask, kdtree, state_normalizer,
                                                         action_normalizer, filter_outliers, n_jobs)
         self.radius = radius
 
@@ -150,7 +150,7 @@ class ThresholdActionDispatcher(ActionDispatcher):
         self.thresholds = thresholds
         self.n_jobs = n_jobs
         self.max_actions = max_actions
-        
+
     def get_actions(self, s):
         """Given a states it computes for each state dimension the distances and returns the actions of the states that
         for each dimension have the distances below the thresholds
@@ -158,13 +158,13 @@ class ThresholdActionDispatcher(ActionDispatcher):
         :param s: list of states to retrieve the actions
         :return: list of actions for each state
         """
-        
+
         # 1- compute the distances for each state dimension
         # 2- Filter out all the states that have distances greater than at least a threshold
         # 3- Return the actions of the remained states
         with parallel_backend('threading', n_jobs=self.n_jobs):
             a = Parallel()(delayed(self._get_actions)(x) for x in s[:, self.state_mask])
-        
+
         return a
         """
         # compute the distances for each state dimension
@@ -177,15 +177,15 @@ class ThresholdActionDispatcher(ActionDispatcher):
 
         return list(map(lambda x: np.array(self.actions)[x].tolist(), valid_states))
         """
-        
+
     def _get_actions(self, x):
-        
+
         vs = ~(np.array((abs(x - self.states) > self.thresholds[self.state_mask]).any(axis=1)))
-        
+
         actions = np.array(self.actions)[vs]
         a_ids = range(len(actions))
-        
+
         if np.count_nonzero(vs) > self.max_actions:
             actions = actions[np.random.choice(a_ids, self.max_actions, False)]
-        
+
         return actions.tolist()

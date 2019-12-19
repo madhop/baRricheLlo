@@ -89,7 +89,7 @@ class TorcsEnv:
             action_torcs['brake'] = this_action['brake']
 
         #print(action_torcs)
-        # Save the privious full-obs from torcs for the reward calculation
+        # Save the privious full-obs from torcs to check if hit wall
         obs_pre = copy.deepcopy(client.S.d)
 
         # One-Step Dynamics Update #################################
@@ -116,13 +116,17 @@ class TorcsEnv:
         reward = self.reward_function(pd.DataFrame(d, index = [0]))
         print('reward:', reward)"""
 
-        # collision detection
-        """if obs['damage'] - obs_pre['damage'] > 0:
-            reward = -1"""
-
         # Termination judgement #########################
         episode_terminate = False
-        if self.terminal_judge_start < self.time_step: # Episode terminates if the progress of agent is small
+
+        # collision detection
+        print('damage:', obs['damage'],'- prev damage:' , obs_pre['damage'])
+        if obs['damage'] - obs_pre['damage'] > 0:
+            print('Hit wall')
+            episode_terminate = True
+            reward = 0
+
+        """if self.terminal_judge_start < self.time_step: # Episode terminates if the progress of agent is small
             if progress < self.termination_limit_progress:
                 episode_terminate = True
                 #client.R.d['meta'] = True
@@ -133,7 +137,7 @@ class TorcsEnv:
 
         if end_of_lap:
             episode_terminate = True
-            #client.R.d['meta'] = True
+            #client.R.d['meta'] = True"""
 
 
         if client.R.d['meta'] is True: # Send a reset signal

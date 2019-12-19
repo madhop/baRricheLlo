@@ -8,6 +8,9 @@ from fqi.reward_function import *
 import time
 import os
 
+def fname(arg):
+    pass
+
 
 def playGame():
     start_line = False
@@ -76,11 +79,9 @@ def playGame():
                 ob_1 = ob
                 ob, _, done, _ = env.step(action, False)
             else:
-                action, end_of_lap, done = agent.act(ob, ob_1, ob_2, action, reward)   #AgentFQI
+                action, end_of_lap = agent.act(ob, ob_1, ob_2, action, reward)   #AgentFQI
                 action = np.append(action, [0]) # add fake gear
                 print('Action:', action)
-                if ob['damage'] > ob_1['damage']:
-                    done = True
                 if done:
                     print('No actions')
                     start_line = False
@@ -95,7 +96,6 @@ def playGame():
                 total_reward += reward
 
                 step += 1
-                done = False # TODO togli
                 if done:
                     start_line = False
                     break

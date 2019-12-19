@@ -21,6 +21,9 @@ class AgentFQI(object):
 
 
     def make_observaton(self, ob, p_1, p_2, prev_action):
+        """
+            from raw torcs observation to state features
+        """
         p = ob
         nn = csf.nn_kdtree(np.array([p['x'], p['y']]), self.tree)
         # check if you are at the end of the lap
@@ -95,27 +98,21 @@ class AgentFQI(object):
         observation['referenceAccelerationY'] = r['Acceleration_y']
         observation['accelerationDiffX'] = r['Acceleration_x'] - p['Acceleration_x']
         observation['accelerationDiffY'] = r['Acceleration_y'] - p['Acceleration_y']"""
-        return observation.values, self.end_of_lap
+        return observation.values
 
 
     def act(self, ob, p_1, p_2, prev_action, reward):
-        # Get an Observation from the environment.
-        # Each observation vectors are numpy array.
-        # focus, opponents, track sensors are scaled into [0, 1]. When the agent
-        # is out of the road, sensor variables return -1/200.
-        # rpm, wheelSpinVel are raw values and then needed to be preprocessed.
-        observation, nn = self.make_observaton(ob, p_1, p_2, prev_action)
-        #print('observation:', observation)
+        observation = self.make_observaton(ob, p_1, p_2, prev_action)
         self.policy._actions = np.array(self.action_dispatcher.get_actions(observation))
         self.policy._n_actions = len(self.policy._actions)
         if self.policy._n_actions == 0:
-            self.end_of_lap = 1
-            return prev_action, self.end_of_lap, True
+            self.end_of_lap = True
+            return prev_action, self.end_of_lap
         self.policy.epsilon = 0.2
         observation = observation.reshape(1,-1)
         action = self.policy.sample_action(observation)
-        #action = [[0,0,1,1]]
-        return action[0], self.end_of_lap, False
+        #action = [[0,0,1,0]]   # fake action, staight, full gass
+        return action[0], self.end_of_lap
 
 
 
