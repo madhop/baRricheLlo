@@ -7,6 +7,7 @@ import copy
 import collections as col
 import os
 import time
+from utils_torcs import *
 
 
 class TorcsEnv:
@@ -59,7 +60,7 @@ class TorcsEnv:
         #  Simple Autnmatic Throttle Control by Snakeoil
         if self.throttle is False:
             target_speed = self.default_speed
-            if client.S.d['speedX'] < target_speed - (client.R.d['steer']*50):
+            if client.S.d['speed_x'] < target_speed - (client.R.d['steer']*50):
                 client.R.d['accel'] += .01
             else:
                 client.R.d['accel'] -= .01
@@ -67,8 +68,8 @@ class TorcsEnv:
             if client.R.d['accel'] > 0.2:
                 client.R.d['accel'] = 0.2
 
-            if client.S.d['speedX'] < 10:
-                client.R.d['accel'] += 1/(client.S.d['speedX']+.1)
+            if client.S.d['speed_x'] < 10:
+                client.R.d['accel'] += 1/(client.S.d['speed_x']+.1)
 
             # Traction Control System
             if ((client.S.d['wheelSpinVel'][2]+client.S.d['wheelSpinVel'][3]) -
@@ -82,7 +83,7 @@ class TorcsEnv:
             action_torcs['gear'] = this_action['gear']
         else:
             #  Automatic Gear Change by Snakeoil is possible
-            action_torcs['gear'] = self.auto_gear_snakeoil(client.S.d['speedX'])
+            action_torcs['gear'] = self.auto_gear_snakeoil(client.S.d['speed_x'])
 
         # braking
         if self.brake is True:
@@ -107,10 +108,10 @@ class TorcsEnv:
         # Reward setting Here TODO #######################################
         # direction-dependent positive reward
         #track = np.array(obs['track'])
-        sp = np.array(obs['speedX'])
+        sp = np.array(obs['speed_x'])
         progress = sp*np.cos(obs['angle'])
         reward = progress
-        """sp = np.array(obs['speedX'])
+        """sp = np.array(obs['speed_x'])
         progress = sp*np.cos(obs['angle'])
         d = {'xCarWorld': self.observation['x'], 'yCarWorld': self.observation['y']}
         reward = self.reward_function(pd.DataFrame(d, index = [0]))
@@ -209,13 +210,15 @@ class TorcsEnv:
         return torcs_action
 
     def make_observaton(self, raw_obs):
-        return {'angle' : np.array(raw_obs['angle'], dtype=np.float32),
+        return { k: np.array(raw_obs[k], dtype=np.float32) for k in torcs_features}
+        """return {'angle' : np.array(raw_obs['angle'], dtype=np.float32),
                 'curLapTime' : np.array(raw_obs['curLapTime'], dtype=np.float32),
                 'damage' : np.array(raw_obs['damage'], dtype=np.float32),
                 'distFromStart' : np.array(raw_obs['distFromStart'], dtype=np.float32),
                 'Acceleration_x' : np.array(raw_obs['Acceleration_x'], dtype=np.float32),
                 'Acceleration_y' : np.array(raw_obs['Acceleration_y'], dtype=np.float32),
                 'Gear' : np.array(raw_obs['gear'], dtype=np.float32),
+                'lastLapTime' : np.array(raw_obs['lastLapTime'], dtype=np.float32),
                 'rpm' : np.array(raw_obs['rpm'], dtype=np.float32),
                 'speed_x' : np.array(raw_obs['speedX'], dtype=np.float32),
                 'speed_y' : np.array(raw_obs['speedY'], dtype=np.float32),
@@ -227,21 +230,21 @@ class TorcsEnv:
                 'pitch' : np.array(raw_obs['pitch'], dtype=np.float32),
                 'yaw' : np.array(raw_obs['yaw'], dtype=np.float32),
                 'speedGlobalX' : np.array(raw_obs['speedGlobalX'], dtype=np.float32),
-                'speedGlobalY' : np.array(raw_obs['speedGlobalY'], dtype=np.float32)}
+                'speedGlobalY' : np.array(raw_obs['speedGlobalY'], dtype=np.float32)}"""
 
-    def auto_gear_snakeoil(self, speedX):
+    def auto_gear_snakeoil(self, speed_x):
         #  Automatic Gear Change by Snakeoil is possible
         gear = 1
-        if speedX > 50:
+        if speed_x > 50:
             gear = 2
-        if speedX > 80:
+        if speed_x > 80:
             gear = 3
-        if speedX > 110:
+        if speed_x > 110:
             gear = 4
-        if speedX > 140:
+        if speed_x > 140:
             gear = 5
-        if speedX > 170:
+        if speed_x > 170:
             gear = 6
-        if speedX > 250:
+        if speed_x > 250:
             gear = 7
         return gear

@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-plot_coords = 0
+plot_coords = False
 
 ref_df = pd.read_csv('trajectory/ref_traj_70_laps.csv') # reference trajectory
 ref_df.columns = ['curLapTime', 'Acceleration_x', 'Acceleration_y', 'speed_x', 'speed_y', 'x', 'y', 'alpha_step']
@@ -87,4 +87,4 @@ for index, row in car_df.iterrows():
         actual_df.loc[index, 'pBrakeF'] =  p['Brake']
         actual_df.loc[index, 'rThrottlePedal'] =  p['Throttle']
 
-actual_df.to_csv(path_or_buf = "trajectory/dataset.csv", index = False)
+actual_df.to_csv(path_or_buf = "trajectory/dataset_70_laps.csv", index = False)

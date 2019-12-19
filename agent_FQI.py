@@ -41,62 +41,20 @@ class AgentFQI(object):
         actual_c = csf.curvature(np.array([p['x'], p['y']]), np.array([p_1['x'], p_1['y']]), np.array([p_2['x'], p_2['y']]))
         ref_c = csf.curvature(np.array([r1['xCarWorld'], r1['yCarWorld']]), np.array([r['xCarWorld'], r['yCarWorld']]), np.array([r_1['xCarWorld'], r_1['yCarWorld']]))
 
-        observation = pd.DataFrame()
-        observation.loc[0, 'xCarWorld'] = p['x']
-        observation.loc[0, 'yCarWorld'] = p['y']
-        observation.loc[0, 'nYawBody'] = p['yaw']
-        observation.loc[0, 'nEngine'] = p['rpm']
-        observation.loc[0, 'NGear'] = p['Gear']
-        observation.loc[0, 'positionRho'] = rho
-        observation.loc[0, 'positionTheta'] = theta
-        observation.loc[0, 'positionReferenceX'] = r['xCarWorld']
-        observation.loc[0, 'positionReferenceY'] = r['yCarWorld']
-        observation.loc[0, 'positionRelativeX'] = rel_p[0]
-        observation.loc[0, 'positionRelativeY'] = rel_p[1]
-        observation.loc[0, 'referenceCurvature'] = ref_c
-        observation.loc[0, 'actualCurvature'] = actual_c
-        observation.loc[0, 'actualSpeedModule'] = v_actual_module
-        observation.loc[0, 'speedDifferenceVectorModule'] = v_diff_module
-        observation.loc[0, 'speedDifferenceOfModules'] = v_diff_of_modules
-        observation.loc[0, 'actualAccelerationX'] = p['Acceleration_x']
-        observation.loc[0, 'actualAccelerationY'] = p['Acceleration_y']
-        observation.loc[0, 'referenceAccelerationX'] = r['Acceleration_x']
-        observation.loc[0, 'referenceAccelerationY'] = r['Acceleration_y']
-        observation.loc[0, 'accelerationDiffX'] = r['Acceleration_x'] - p['Acceleration_x']
-        observation.loc[0, 'accelerationDiffY'] = r['Acceleration_y'] - p['Acceleration_y']
-        observation.loc[0, 'prevaSteerWheel'] = prev_action[0]  #p_1['Steer']
-        observation.loc[0, 'prevpBrakeF'] = prev_action[2]  #p_1['Brake']
-        observation.loc[0, 'prevrThrottlePedal'] = prev_action[1]   #p_1['Throttle']
+        state_features = { 'xCarWorld' : p['x'], 'yCarWorld' : p['y'], 'nYawBody' : p['yaw'], 'nEngine' : p['rpm'], 'NGear' : p['Gear'],
+                            'positionRho' : rho, 'positionTheta' : theta, 'positionReferenceX' : r['xCarWorld'], 'positionReferenceY' : r['yCarWorld'],
+                            'positionRelativeX' : rel_p[0], 'positionRelativeY' : rel_p[1], 'referenceCurvature' : ref_c, 'actualCurvature' : actual_c,
+                            'actualSpeedModule' : v_actual_module, 'speedDifferenceVectorModule' : v_diff_module, 'speedDifferenceOfModules' : v_diff_of_modules,
+                            'actualAccelerationX' : p['Acceleration_x'], 'actualAccelerationY' : p['Acceleration_y'],
+                            'referenceAccelerationX' : r['Acceleration_x'], 'referenceAccelerationY' : r['Acceleration_y'],
+                            'accelerationDiffX' : r['Acceleration_x'] - p['Acceleration_x'], 'accelerationDiffY' : r['Acceleration_y'] - p['Acceleration_y'],
+                            'prevaSteerWheel' : prev_action[0], 'prevpBrakeF' : prev_action[2], 'prevrThrottlePedal' : prev_action[1] }
 
-        """observation = dict()
-        observation['time'] = p['curLapTime']
-        observation['isReference'] = 0 #p['isReference']
-        observation['is_partial'] = 0 #p['is_partial']
-        observation['xCarWorld'] = p['x']
-        observation['yCarWorld'] = p['y']
-        observation['nYawBody'] = p['yaw']
-        observation['nEngine'] = p['rpm']
-        observation['NGear'] = p['Gear']
-        observation['prevaSteerWheel'] = prev_action[0]  #p_1['Steer']
-        observation['prevpBrakeF'] = prev_action[2]  #p_1['Brake']
-        observation['prevrThrottlePedal'] = prev_action[1]   #p_1['Throttle']
-        observation['positionRho'] = rho
-        observation['positionTheta'] = theta
-        observation['positionReferenceX'] = r['xCarWorld']
-        observation['positionReferenceY'] = r['yCarWorld']
-        observation['positionRelativeX'] = rel_p[0]
-        observation['positionRelativeY'] = rel_p[1]
-        observation['referenceCurvature'] = ref_c
-        observation['actualCurvature'] = actual_c
-        observation['actualSpeedModule'] = v_actual_module
-        observation['speedDifferenceVectorModule'] = v_diff_module
-        observation['speedDifferenceOfModules'] = v_diff_of_modules
-        observation['actualAccelerationX'] = p['Acceleration_x']
-        observation['actualAccelerationY'] = p['Acceleration_y']
-        observation['referenceAccelerationX'] = r['Acceleration_x']
-        observation['referenceAccelerationY'] = r['Acceleration_y']
-        observation['accelerationDiffX'] = r['Acceleration_x'] - p['Acceleration_x']
-        observation['accelerationDiffY'] = r['Acceleration_y'] - p['Acceleration_y']"""
+        observation = pd.DataFrame()
+        for k in state_cols:
+            observation.loc[0, k] = state_features[k]
+
+
         return observation.values
 
 

@@ -1,6 +1,7 @@
 action_cols = ['aSteerWheel', 'pBrakeF', 'rThrottlePedal']
 prev_action_cols = ['prev'+a for a in action_cols]
 
+# reduced
 """state_cols = ['xCarWorld', 'yCarWorld',
        'nYawBody', 'nEngine', 'positionRho', 'positionTheta',
        'referenceCurvature', 'actualCurvature',
