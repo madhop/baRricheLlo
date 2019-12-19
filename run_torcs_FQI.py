@@ -59,31 +59,31 @@ def playGame():
                 action = [0,0,1, 7]
                 ob_2 = ob_1
                 ob_1 = ob
-                ob, _, done, _ = env.step(action, False)
+                ob, _, done, _ = env.step(action)
             elif ob['distFromStart'] < 5615.26 and not start_line:   # at the beginning just throttle a bit
                 print('-', j)
                 action = [0.02,0,1, 7]
                 ob_2 = ob_1
                 ob_1 = ob
-                ob, _, done, _ = env.step(action, False)
+                ob, _, done, _ = env.step(action)
             elif ob['distFromStart'] < 5703.24 and not start_line:
                 print('--', j)
                 action = [-0.028,0,1, 7]
                 ob_2 = ob_1
                 ob_1 = ob
-                ob, _, done, _ = env.step(action, False)
+                ob, _, done, _ = env.step(action)
             elif ob['distFromStart'] < track_length and not start_line:
                 print('--', j)
                 action = [0,0,1, 7]
                 ob_2 = ob_1
                 ob_1 = ob
-                ob, _, done, _ = env.step(action, False)
+                ob, _, done, _ = env.step(action)
             else:
-                action, end_of_lap = agent.act(ob, ob_1, ob_2, action, reward)   #AgentFQI
-                action = np.append(action, [0]) # add fake gear
+                action = agent.act(ob, ob_1, ob_2, action, reward)   #AgentFQI
                 print('Action:', action)
-                if done:
-                    print('No actions')
+                # if no action was returned
+                if len(action) == 0:
+                    print('no actions')
                     start_line = False
                     break
                 #action = agent.act(ob)    #AgentMEAN
@@ -91,7 +91,7 @@ def playGame():
                 ob_1 = ob
 
                 #ob, reward, done, _ = env.step(action, end_of_lap)
-                ob, reward, done, _ = env.step(action, False)
+                ob, reward, done, _ = env.step(action)
                 # check if hit the walls
                 total_reward += reward
 

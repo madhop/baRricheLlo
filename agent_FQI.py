@@ -29,7 +29,6 @@ class AgentFQI(object):
         # check if you are at the end of the lap
         if nn >= self.ref_df.shape[0]-1:
             nn = self.ref_df.shape[0]-2
-            self.end_of_lap = True
         r = self.ref_df.iloc[nn]
         r1 = self.ref_df.iloc[nn+1]
         r_1 = self.ref_df.iloc[nn-1]
@@ -106,13 +105,14 @@ class AgentFQI(object):
         self.policy._actions = np.array(self.action_dispatcher.get_actions(observation))
         self.policy._n_actions = len(self.policy._actions)
         if self.policy._n_actions == 0:
-            self.end_of_lap = True
-            return prev_action, self.end_of_lap
+            return []
         self.policy.epsilon = 0.2
         observation = observation.reshape(1,-1)
         action = self.policy.sample_action(observation)
+        gear = 0    # fake gear, automatic gear shift
+        action = np.append(action, [gear])
         #action = [[0,0,1,0]]   # fake action, staight, full gass
-        return action[0], self.end_of_lap
+        return action
 
 
 

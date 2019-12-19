@@ -42,7 +42,7 @@ class TorcsEnv:
         obs = client.S.d  # Get the current full-observation from torcs
         """
 
-    def step(self, u, end_of_lap):
+    def step(self, u):
         #print("Step")
         # convert thisAction to the actual torcs actionstr
         client = self.client
@@ -120,7 +120,6 @@ class TorcsEnv:
         episode_terminate = False
 
         # collision detection
-        print('damage:', obs['damage'],'- prev damage:' , obs_pre['damage'])
         if obs['damage'] - obs_pre['damage'] > 0:
             print('Hit wall')
             episode_terminate = True
@@ -135,9 +134,7 @@ class TorcsEnv:
             episode_terminate = True
             #client.R.d['meta'] = True
 
-        if end_of_lap:
-            episode_terminate = True
-            #client.R.d['meta'] = True"""
+        """
 
 
         if client.R.d['meta'] is True: # Send a reset signal
