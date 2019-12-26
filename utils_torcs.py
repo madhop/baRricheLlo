@@ -11,6 +11,7 @@ torcs_features = [
 "speed_x",
 "speed_y",
 "speed_z",
+"trackPos",
 "z",
 "x",
 "y",

@@ -5,10 +5,14 @@ import matplotlib.pyplot as plt
 
 plot_coords = False
 
-ref_df = pd.read_csv('trajectory/ref_traj_70_laps.csv') # reference trajectory
+file_name = 'algo'
+ref_file_name = 'trajectory/ref_traj.csv'
+
+ref_df = pd.read_csv(ref_file_name) # reference trajectory
 ref_df.columns = ['curLapTime', 'Acceleration_x', 'Acceleration_y', 'speed_x', 'speed_y', 'x', 'y', 'alpha_step']
-car_df = pd.read_csv('raw_torcs_data/preprocessed_torcs_70_laps.csv') # car trajectory
+car_df = pd.read_csv('raw_torcs_data/preprocessed_torcs_' + file_name + '.csv') # car trajectory
 actual_df = pd.DataFrame()
+
 
 ## Compute state's features
 last_ref = 0
@@ -70,7 +74,6 @@ for index, row in car_df.iterrows():
         actual_df.loc[index, 'referenceCurvature'] = ref_c
         actual_df.loc[index, 'actualCurvature'] = actual_c
         actual_df.loc[index, 'actualSpeedModule'] = v_actual_module
-        #actual_df.loc[index, 'referenceSpeedAngle'] = v_angle
         actual_df.loc[index, 'speedDifferenceVectorModule'] = v_diff_module
         actual_df.loc[index, 'speedDifferenceOfModules'] = v_diff_of_modules
         actual_df.loc[index, 'actualAccelerationX'] = p['Acceleration_x']
@@ -79,12 +82,9 @@ for index, row in car_df.iterrows():
         actual_df.loc[index, 'referenceAccelerationY'] = r['Acceleration_y']
         actual_df.loc[index, 'accelerationDiffX'] = r['Acceleration_x'] - p['Acceleration_x']
         actual_df.loc[index, 'accelerationDiffY'] = r['Acceleration_y'] - p['Acceleration_y']
-        """actual_df.loc[index, 'actualAccelerationModule'] = a_actual_module
-        actual_df.loc[index, 'referenceAccelerationAngle'] = a_angle
-        actual_df.loc[index, 'accelerationDifferenceVectorModule'] = a_diff_module
-        actual_df.loc[index, 'accelerationDifferenceOfModules'] = a_diff_of_modules"""
         actual_df.loc[index, 'aSteerWheel'] =  p['Steer']
         actual_df.loc[index, 'pBrakeF'] =  p['Brake']
         actual_df.loc[index, 'rThrottlePedal'] =  p['Throttle']
 
-actual_df.to_csv(path_or_buf = "trajectory/dataset_70_laps.csv", index = False)
+#actual_df.to_csv(path_or_buf = "trajectory/dataset_70_laps.csv", index = False)
+actual_df.to_csv(path_or_buf = "trajectory/dataset.csv", mode = 'a', index = False, header = False)

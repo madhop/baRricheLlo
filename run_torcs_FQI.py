@@ -8,8 +8,7 @@ from fqi.reward_function import *
 import time
 import os
 from utils_torcs import *
-from datetime import date
-#date.today().year
+#from datetime import date
 
 def appendObs(store_obs, ob, action):
     for k in torcs_features:
@@ -17,14 +16,22 @@ def appendObs(store_obs, ob, action):
     for a_idx, a in enumerate(torcs_actions):
         store_obs[a] = np.append(store_obs[a], action[a_idx])
 
+def emptyStoreObs():
+    store_obs = { k : [] for k in torcs_features}
+    for a in torcs_actions:
+        store_obs[a] = []
+    return store_obs
+
 def playGame():
     start_line = False
     track_length = 5783.85
-    raw_output_name = 'raw_torcs_data/raw_data_algo_' + str(date.today().year) + '_' +  str(date.today().month) + '_' + str(date.today().day) + '.csv'
+    #raw_output_name = 'raw_torcs_data/raw_data_algo_' + str(date.today().year) + '_' +  str(date.today().month) + '_' + str(date.today().day) + '.csv'
+    raw_output_path = 'raw_torcs_data/'
+    raw_output_name = 'raw_data_algo.csv'
     algorithm_name = 'model_r_speed_50laps_pc.pkl'#'first_model.pkl'
     policy_path = 'model_file/policy_' + algorithm_name
     action_dispatcher_path = 'model_file/AD_' + algorithm_name
-    episode_count = 1
+    episode_count = 2
     max_steps = 100000
     reward = 0
     done = False
@@ -109,19 +116,16 @@ def playGame():
                     start_line = False
                     break
 
-        # save to CSV
-        print("Saving raw data")
-        df = pd.DataFrame(store_obs)
-        if i == 0:
-            df.to_csv(index = False, path_or_buf = raw_output_name, mode = 'w', header = True)
-        else:
-            df.to_csv(index = False, path_or_buf = raw_output_name, mode = 'a', header = True)
         print("TOTAL REWARD @ " + str(i) +" -th Episode  :  " + str(total_reward))
         print("Total Step: " + str(step))
         print("")
 
+    print("Saving raw data to CSV")
+    df = pd.DataFrame(store_obs)
+    df.to_csv(index = False, path_or_buf = raw_output_path + raw_output_name, mode = 'w', header = True)
+    df.to_csv(index = False, path_or_buf = raw_output_path + 'all_' + raw_output_name, mode = 'a', header = True)
     env.end()  # This is for shutting down TORCS
-    print('raw data output:', raw_output_name)
+    print('raw data output:', raw_output_path + raw_output_name)
     print("Finish.")
 
 
