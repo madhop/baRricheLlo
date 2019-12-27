@@ -60,7 +60,9 @@ class AgentFQI(object):
 
     def act(self, ob, p_1, p_2, prev_action, reward):
         observation = self.make_observaton(ob, p_1, p_2, prev_action)
-        self.policy._actions = np.array(self.action_dispatcher.get_actions(observation))
+        a = np.array(self.action_dispatcher.get_actions(observation))
+        self.policy._actions = np.unique(a, axis = 0)
+        #self.policy._actions = np.array(self.action_dispatcher.get_actions(observation))
         self.policy._n_actions = len(self.policy._actions)
         if self.policy._n_actions == 0:
             return []

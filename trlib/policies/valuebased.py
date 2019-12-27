@@ -127,7 +127,6 @@ class Boltzmann(ValueBased):
 
         super().__init__(actions, Q)
         self.temp = temp
-        self._S = # sum(exp(Q(s, a_i)/temp))
 
     @property
     def temp(self):
