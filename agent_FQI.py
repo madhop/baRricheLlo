@@ -61,12 +61,13 @@ class AgentFQI(object):
     def act(self, ob, p_1, p_2, prev_action, reward):
         observation = self.make_observaton(ob, p_1, p_2, prev_action)
         a = np.array(self.action_dispatcher.get_actions(observation))
+        if len(a) == 0:
+            print('No actions from Action Dispatcher')
+            return []
         self.policy._actions = np.unique(a, axis = 0)
         #self.policy._actions = np.array(self.action_dispatcher.get_actions(observation))
         self.policy._n_actions = len(self.policy._actions)
-        if self.policy._n_actions == 0:
-            return []
-        self.policy.epsilon = 0.2
+        #self.policy.tau = 0.1
         observation = observation.reshape(1,-1)
         action = self.policy.sample_action(observation)
         gear = 0    # fake gear, automatic gear shift

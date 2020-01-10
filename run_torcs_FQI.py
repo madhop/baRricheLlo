@@ -8,7 +8,8 @@ from fqi.reward_function import *
 import time
 import os
 from utils_torcs import *
-#from datetime import date
+from preprocess_raw_torcs_algo import *
+from build_dataset import *
 
 def appendObs(store_obs, ob, action):
     for k in torcs_features:
@@ -22,16 +23,15 @@ def emptyStoreObs():
         store_obs[a] = []
     return store_obs
 
-def playGame():
+def playGame(algorithm_name):
+    print('Using model:', algorithm_name)
     start_line = False
     track_length = 5783.85
-    #raw_output_name = 'raw_torcs_data/raw_data_algo_' + str(date.today().year) + '_' +  str(date.today().month) + '_' + str(date.today().day) + '.csv'
     raw_output_path = 'raw_torcs_data/'
     raw_output_name = 'raw_data_algo.csv'
-    algorithm_name = 'model_r_speed_50laps_pc.pkl'#'first_model.pkl'
     policy_path = 'model_file/policy_' + algorithm_name
     action_dispatcher_path = 'model_file/AD_' + algorithm_name
-    episode_count = 2
+    episode_count = 7
     max_steps = 100000
     reward = 0
     done = False
@@ -67,28 +67,32 @@ def playGame():
         time.sleep(0.5)
 
         total_reward = 0.
+        noise1 = (np.random.rand()-0.5)*0.002
+        noise2 = (np.random.rand()-0.5)*0.002
+        print('noise:', noise1)
+        print('noise:', noise2)
         for j in range(max_steps):
             if ob['distFromStart'] < 100 and not start_line:    # just passed start line
-                print('----',j)
+                print('Start Line')
                 start_line = True
                 action = [0,0,1, 7]
                 ob_2 = ob_1
                 ob_1 = ob
                 ob, _, done, _ = env.step(action)
             elif ob['distFromStart'] < 5615.26 and not start_line:   # exit from pit stop
-                print('-', j)
-                action = [0.02,0,1, 7]
+                #print('-', j)
+                action = [0.02+noise1,0,1, 7]
                 ob_2 = ob_1
                 ob_1 = ob
                 ob, _, done, _ = env.step(action)
             elif ob['distFromStart'] < 5703.24 and not start_line:
-                print('--', j)
-                action = [-0.028,0,1, 7]
+                #print('--', j)
+                action = [-0.028+noise2,0,1, 7]
                 ob_2 = ob_1
                 ob_1 = ob
                 ob, _, done, _ = env.step(action)
             elif ob['distFromStart'] < track_length and not start_line:
-                print('---', j)
+                #print('---', j)
                 action = [0,0,1, 7]
                 ob_2 = ob_1
                 ob_1 = ob
@@ -120,14 +124,21 @@ def playGame():
         print("Total Step: " + str(step))
         print("")
 
+
+    env.end()  # This is for shutting down TORCS
+    print("Finish.")
+
     print("Saving raw data to CSV")
     df = pd.DataFrame(store_obs)
     df.to_csv(index = False, path_or_buf = raw_output_path + raw_output_name, mode = 'w', header = True)
     df.to_csv(index = False, path_or_buf = raw_output_path + 'all_' + raw_output_name, mode = 'a', header = True)
-    env.end()  # This is for shutting down TORCS
     print('raw data output:', raw_output_path + raw_output_name)
-    print("Finish.")
 
 
 if __name__ == "__main__":
-    playGame()
+    for r in ['speed', 'spatial', 'temporal']:
+        algorithm_name = r + '_reward_model.pkl'#  'model_r_speed_50laps_pc.pkl'#'first_model.pkl'
+        playGame(algorithm_name)
+        file_name = "preprocessed_torcs_algo"
+        preprocess_raw_torcs(file_name)
+        buildDataset(file_name)
