@@ -9,10 +9,10 @@ file_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(file_path, '..'))
 sys.setrecursionlimit(3000)
 
-from py_utils.et_tuning import run_tuning
+from et_tuning import run_tuning
 from data_processing.sars.reward_function import *
 from data_processing.sars.sars_creator import to_SARS
-from py_utils.utils import *
+from utils import *
 
 from trlib.policies.valuebased import EpsilonGreedy
 from trlib.policies.qfunction import ZeroQ
@@ -25,16 +25,16 @@ from fqi_scripts.fqi_evaluate import run_evaluation
 def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, output_path, n_jobs,
                    output_name, reward_function, r_penalty, rp_kernel, rp_band, ad_type, tuning,
                    tuning_file_name, kdt_norm, kdt_param, filt_a_outliers, double_fqi, evaluation):
-    
+
     # Load dataset and refernce trajectory
     print('Loading data')
     simulations = pd.read_csv(os.path.join(data_path, track_file_name + '.csv'),
                               dtype={'isReference': bool, 'is_partial':bool})
     ref_tr = pd.read_csv(os.path.join(data_path, rt_file_name + '.csv'))
-    
+
     if r_penalty:
         print('Computing penalty')
-        
+
         # Take as training laps the set of laps with lap time lower than the 1.5% of the reference trajectory
         # lap time
         all_laps = np.unique(simulations.NLap)
@@ -42,16 +42,16 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
         ref_time = ref_tr['time'].values[-1]
         perc_deltas = list(map(lambda t: (abs(t - ref_time) / ref_time * 100) <= 1.5, lap_times))
         right_laps = all_laps[perc_deltas]
-        
+
         p_params = {}
         if rp_band is not None:
             p_params['bandwidth'] = rp_band
         if rp_kernel is not None:
             p_params['kernel'] = rp_kernel
-            
+
         penalty = LikelihoodPenalty(**p_params)
         penalty.fit(simulations[simulations.NLap.isin(right_laps)][state_cols].values)
-    
+
         if reward_function == 'temporal':
             rf = Temporal_projection(ref_tr, penalty=penalty, clip_range=(-np.inf, np.inf))
         elif reward_function == 'discrete':
@@ -73,9 +73,9 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
             rf = Speed_projection(ref_tr)
         elif reward_function == 'curv':
             rf = Curv_temporal(ref_tr)
-    
+
     dataset = to_SARS(simulations, rf)
-    
+
     nmin_list = [1, 2, 5, 10, 15, 20]
     if tuning_file_name:
         print('Tuning file: {}'.format(os.path.join(output_path, tuning_file_name + '.pkl')))
@@ -84,22 +84,22 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
     else:
         print("Performing Tuning")
         gcv = run_tuning(dataset, nmin_list, double_fqi, n_jobs, output_path, reward_function + '_tuning')
-        
+
     if double_fqi:
         mse = -(gcv[0].cv_results_['mean_test_score'] + gcv[1].cv_results_['mean_test_score']) / 2
         nmin = nmin_list[np.argmin(mse)]
     else:
         nmin = gcv.best_params_['min_samples_leaf']
-        
+
     # Create environment
     state_dim = len(state_cols)
     action_dim = len(action_cols)
     mdp = TrackEnv(state_dim, action_dim, 0.99999, 'continuous')
-    
+
     # Create policy instance
     epsilon = 0
     pi = EpsilonGreedy([], ZeroQ(), epsilon)
-    
+
     # Parameters of ET regressor
     regressor_params = {'n_estimators': 100,
                         'criterion': 'mse',
@@ -108,13 +108,13 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
                         'n_jobs': n_jobs,
                         'random_state': 42}
     regressor = ExtraTreesRegressor
-    
+
     # Define the order of the columns to pass to the algorithm
     cols = ['t'] + state_cols + action_cols + ['r'] + state_prime_cols + ['absorbing']
     # Define the masks used by the action dispatcher
     state_mask = [i for i, s in enumerate(state_cols) if s in knn_state_cols]
     data_mask = [i for i, c in enumerate(cols) if c in knn_state_cols]
-    
+
     if ad_type == 'fkdt':
         action_dispatcher = FixedKDTActionDispatcher
         alg_actions = dataset[action_cols].values
@@ -126,12 +126,12 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
     else:
         action_dispatcher = None
         alg_actions = None
-            
+
     if double_fqi:
         fqi = DoubleFQIDriver
     else:
         fqi = FQIDriver
-        
+
     algorithm = fqi(mdp=mdp,
                     policy=pi,
                     actions=alg_actions,
@@ -147,15 +147,15 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
                     ad_param=kdt_param,
                     verbose=True,
                     **regressor_params)
-    
+
     print('Starting execution')
     algorithm.step()
-    
+
     # save algorithm object
     algorithm_name = output_name + '.pkl'
     with open(output_path + '/' + algorithm_name, 'wb') as output:
         pickle.dump(algorithm, output, pickle.HIGHEST_PROTOCOL)
-    
+
     # save action dispatcher object
     AD_name = 'AD_' + algorithm_name
     with open(output_path + '/' + AD_name, 'wb') as output:
@@ -169,9 +169,9 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
                        'eval_'+output_name, False,
                        output_path + '/' + AD_name)
 
-        
-        
-        
+
+
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
