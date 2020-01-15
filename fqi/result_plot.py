@@ -41,81 +41,86 @@ def plot_track(track_in, track_out, x=[], y=[]):
     return f, ax
 
 def plot_trajectories(simulation, lap, f, ax, ref=[], save_fig=False, path='./'):
-    
+
     lap_mask = simulation['NLap'] == lap
     if len(ref) == 0:
         p_ref = ax.plot(simulation['xCarWorld'][simulation['isReference']],
                 simulation['yCarWorld'][simulation['isReference']], 'r')
     else:
         p_ref = ax.plot(ref['xCarWorld'], ref['yCarWorld'], 'r')
-        
+
     p_lap = ax.plot(simulation['xCarWorld'][lap_mask], simulation['yCarWorld'][lap_mask])
-    
+
     lap_time = simulation['time'][lap_mask].values[-1]
-    
+
     if len(ref) == 0:
         ref_time = simulation['time'][simulation['isReference']].values[-1]
     else:
         ref_time = ref['time'].values[-1]
-    
+
     ax.set_title('Lap {} - {} s / {} s'.format(lap, lap_time, ref_time))
-    
+
     ax.legend((p_ref[0], p_lap[0]), ('Reference', 'Lap'))
-    
+
     if save_fig:
         f.savefig(path + '{}_trajectory.svg'.format(lap), format='svg')
-    
+
 def plot_q_delta(lap, simulation, evaluation, f, ax, save_fig=False, path='./'):
-    
+
     lap_mask = simulation['NLap'] == lap
-    
+
     policyQ = evaluation[lap][1]
     pilotQ = evaluation[lap][0]
-        
+
     value = policyQ - pilotQ
     bound = max((abs(min(value)), abs(max(value))))
     s = ax.scatter(simulation['xCarWorld'][lap_mask], simulation['yCarWorld'][lap_mask],
                    s=2, c=value, vmin=0, vmax=bound)
     f.colorbar(s, ax=ax)
     ax.set_title('Lap ' + str(lap) + ' Policy Q - Pilot Q')
-    
+
     if save_fig:
         f.savefig(path + '{}_q_delta.svg'.format(lap), format='svg')
-    
+
 def plot_q(lap, simulation, evaluation, f, ax, q_name, save_fig=False, path='./'):
-    
+
     lap_mask = simulation['NLap'] == lap
-    
+
     if q_name == 'policy':
         value = evaluation[lap][1]
     else:
         value = evaluation[lap][0]
-    
+
     s = ax.scatter(simulation['xCarWorld'][lap_mask], simulation['yCarWorld'][lap_mask],
                    s=2, c=value)
     f.colorbar(s, ax=ax)
     ax.set_title('Lap ' + str(lap) + ' Pilot Q')
-    
+
     if save_fig:
         f.savefig(path + '{}_{}_q.svg'.format(lap, q_name), format='svg')
-    
+
 
 def plot_action_delta(lap, action_pos, simulation, evaluation, f, ax, save_fig=False, path='./'):
-    
+
     lap_mask = simulation['NLap'] == lap
-    
+
     policyA = evaluation[lap][2][:, action_pos]
     pilotA = np.array(simulation[lap_mask][action_cols[action_pos]])
-    
+
     value = policyA - pilotA
-    
+
     minv = min(value)
     maxv = max(value)
     bound = max((abs(minv), abs(maxv)))
-    
-    s = ax.scatter(simulation['xCarWorld'][lap_mask], simulation['yCarWorld'][lap_mask],
+
+    """s = ax.scatter(simulation['xCarWorld'][lap_mask], simulation['yCarWorld'][lap_mask],
                    s=5, c=value, cmap='seismic', vmin=-bound, vmax=bound)
-    
+    'Diverging', [
+            'PiYG', 'PRGn', 'BrBG', 'PuOr', 'RdGy', 'RdBu',
+            'RdYlBu', 'RdYlGn', 'Spectral', 'coolwarm', 'bwr', 'seismic'])"""
+    s = ax.scatter(simulation['xCarWorld'][lap_mask], simulation['yCarWorld'][lap_mask],
+                   s=5, c=value, cmap='autumn', vmin=-bound, vmax=bound)
+
     if action_cols[action_pos] == 'aSteerWheel':
         divider = make_axes_locatable(ax)
         cax = divider.append_axes('bottom', size='5%', pad=0.5)
@@ -123,11 +128,11 @@ def plot_action_delta(lap, action_pos, simulation, evaluation, f, ax, save_fig=F
         cbar.ax.invert_xaxis()
     else:
         f.colorbar(s, ax=ax)
-        
+
     ax.set_title('Lap ' + str(lap) + ' ' + action_cols[action_pos] + ' Policy - Pilot')
     if save_fig:
         f.savefig(path + '{}_trajectory_{}.svg'.format(lap, action_cols[action_pos]), format='svg')
-    
+
     f = plt.figure()
     ax = f.add_axes([0.1,0.1,0.8,0.8])
     if action_cols[action_pos] == 'aSteerWheel':
@@ -139,7 +144,7 @@ def plot_action_delta(lap, action_pos, simulation, evaluation, f, ax, save_fig=F
     ax.set_title('Lap ' + str(lap) + ' ' + action_cols[action_pos] + ' Policy - Pilot')
     if save_fig:
         f.savefig(path + '{}_diff_{}.svg'.format(lap, action_cols[action_pos]), format='svg')
-        
+
     f = plt.figure()
     ax = f.add_axes([0.1,0.1,0.8,0.8])
     if action_cols[action_pos] == 'aSteerWheel':
@@ -151,49 +156,49 @@ def plot_action_delta(lap, action_pos, simulation, evaluation, f, ax, save_fig=F
     else:
         ax.plot(np.array(simulation[action_cols[action_pos]][lap_mask]))
         ax.plot(evaluation[lap][2][:, action_pos])
-        
+
     ax.legend(('pilot', 'policy'))
     ax.set_title('Lap ' + str(lap) + ' ' + action_cols[action_pos] + ' Action values')
     if save_fig:
         f.savefig(path + '{}_{}.svg'.format(lap, action_cols[action_pos]), format='svg')
-        
+
 def plot_computation_times(maxq_time, fit_time, save_fig=False, path='./'):
-    
+
     f = plt.figure()
     ax = f.add_axes([0.1, 0.1, 0.8, 0.8])
     max_bp = ax.boxplot(maxq_time, patch_artist=True)
     ax.set_ylabel('Max Q time', color='green')
     [patch.set(facecolor='lightgreen') for patch in max_bp['boxes']]
-    
+
     ax2 = ax.twinx()
     fit_bp = ax2.boxplot(fit_time, patch_artist=True)
     ax2.set_ylabel('Fit time', color='blue')
     [patch.set(facecolor='lightblue', alpha=0.7) for patch in fit_bp['boxes']]
-    
+
     if save_fig:
         f.savefig(path + 'computation_times.svg', format='svg')
-    
+
 def plot_feature_importance(variables, importance, save_fig=False, path='./'):
-    
+
     f = plt.figure(figsize=[20,20])
     ax = f.add_axes([0.45, 0.1, 0.55, 0.8])
-    
+
     imp_idx = np.argsort(importance)
-    
+
     n_variables = len(importance)
-    
+
     sorted_variables = [variables[i] for i in imp_idx]
-    
+
     ax.barh(range(n_variables), importance[imp_idx])
     c = ['red' if i in action_cols else 'black' for i in sorted_variables]
     ticks = plt.yticks(range(n_variables), sorted_variables)
     ax.set_title('Feature importance of Extratrees of Q', size=20)
     [ax.get_yticklabels()[i].set_color(c[i]) for i in range(n_variables)]
     ax.tick_params(labelsize=20)
-    
+
     if save_fig:
         f.savefig(path + 'feature_importance.svg', format='svg')
-        
+
 def heatmap(data, row_labels, col_labels, ax=None,
             cbar_kw={}, cbarlabel="", **kwargs):
     """
