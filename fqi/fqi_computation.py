@@ -9,10 +9,10 @@ file_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(file_path, '..'))
 sys.setrecursionlimit(3000)
 
-from et_tuning import run_tuning
+from fqi.et_tuning import run_tuning
 from data_processing.sars.reward_function import *
 from data_processing.sars.sars_creator import to_SARS
-from utils import *
+from fqi.utils import *
 
 from trlib.policies.valuebased import EpsilonGreedy
 from trlib.policies.qfunction import ZeroQ
@@ -20,7 +20,7 @@ from trlib.algorithms.reinforcement.fqi_driver import FQIDriver, DoubleFQIDriver
 from trlib.environments.trackEnv import TrackEnv
 from trlib.utilities.ActionDispatcher import *
 
-from fqi_scripts.fqi_evaluate import run_evaluation
+from fqi.fqi_evaluate import run_evaluation
 
 def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, output_path, n_jobs,
                    output_name, reward_function, r_penalty, rp_kernel, rp_band, ad_type, tuning,
