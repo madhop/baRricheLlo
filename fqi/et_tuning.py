@@ -2,7 +2,7 @@ import argparse
 import pickle
 from sklearn.ensemble.forest import ExtraTreesRegressor
 from sklearn.model_selection import GridSearchCV
-from utils import state_cols, action_cols
+from fqi.utils import state_cols, action_cols
 import numpy as np
 import math
 import os
