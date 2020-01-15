@@ -1,29 +1,32 @@
 import numpy as np
 from sklearn.neighbors import KDTree
+from sklearn.model_selection import GridSearchCV
+from sklearn.neighbors import KernelDensity
 
-#from fqi.utils import vectorized_rotate_and_translate
-
+from utils import vectorized_rotate_and_translate, state_cols
 
 # abstract
 class Reward_function:
-    def __init__(self, reference_trajectory, clip_range, reference_dt, sample_dt):  # dts in centiseconds
+    def __init__(self, reference_trajectory, clip_range, reference_dt, sample_dt, penalty=None):  # dts in centiseconds
         self.ref_p = reference_trajectory[['xCarWorld', 'yCarWorld']].values
         self.ref_len = self.ref_p.shape[0]
         self.clipping = bool(clip_range)
         self.clip_range = clip_range
         self.ref_dt = reference_dt
         self.sample_dt = sample_dt
+        self.penalty = penalty
 
     def _compute_reward(self, data):
         raise NotImplementedError
 
     def __call__(self, data):
-        return self._compute_reward(data)
+        # the penalty term is computed considering the next state thus we pass the states from 1 to end
+        return self._compute_reward(data) + (self.penalty(data[state_cols].values[1:]) if self.penalty else 0)
 
 
 class Discrete_temporal_reward(Reward_function):
-    def __init__(self, ref_t, clip_range=(-20, 5), ref_dt=1, sample_dt=10):
-        super().__init__(ref_t, clip_range, ref_dt, sample_dt)
+    def __init__(self, ref_t, clip_range=(-20, 5), ref_dt=1, sample_dt=10, penalty=None):
+        super().__init__(ref_t, clip_range, ref_dt, sample_dt, penalty)
         self.alpha_step = ref_t['alpha_step'].values
         self.kdtree = KDTree(self.ref_p)
 
@@ -35,7 +38,7 @@ class Discrete_temporal_reward(Reward_function):
         ref_id[rot_p[:, 0] > 0] += 1
         ref_id[ref_id == self.ref_len] = 0
         ref_time = ref_id[1:] - ref_id[:-1]
-        ref_time[ref_time < -self.ref_len / 2] += self.ref_p.shape[0]
+        ref_time[ref_time < -self.ref_len / 2] += self.ref_len
         reward = ref_time * self.ref_dt - self.sample_dt
         return reward
 
@@ -47,8 +50,8 @@ the fraction of the segment starting at that point between the ref point and the
 '''
 # abstract
 class Projection_reward(Reward_function):
-    def __init__(self, ref_t, clip_range, ref_dt, sample_dt):
-        super().__init__(ref_t, clip_range, ref_dt, sample_dt)
+    def __init__(self, ref_t, clip_range, ref_dt, sample_dt, penalty=None):
+        super().__init__(ref_t, clip_range, ref_dt, sample_dt, penalty)
         self.kdtree = KDTree(self.ref_p)
         self.seg = np.roll(self.ref_p, -1, axis=0) - self.ref_p  # The vector of the segment starting at each ref point
         self.seg_len = np.linalg.norm(self.seg, axis=1)  # The length of the segments
@@ -59,7 +62,7 @@ class Projection_reward(Reward_function):
     def _compute_ref_time(self, projection):
         ref_id, delta = projection
         t = ref_id[1:] + delta[1:] - (ref_id[:-1] + delta[:-1])
-        t[t < -self.ref_len / 2] += self.ref_p.shape[0]  # if the next step is over the last reference point
+        t[t < -self.ref_len / 2] += self.ref_len  # if the next step is behind the current point
         return t
 
     # compute the distance over the reference of two consecutive state projections
@@ -79,7 +82,7 @@ class Projection_reward(Reward_function):
         _, ref_id = self.kdtree.query(state)
         ref_id = ref_id.squeeze()  # index of the next segment
         prev_ref_id = ref_id - 1  # index of the previous segment
-        prev_ref_id[prev_ref_id == -1] = self.ref_p.shape[0] - 1  # if we got before the ref point 0
+        prev_ref_id[prev_ref_id == -1] = self.ref_len - 1  # if we got before the ref point 0
         ref_state = state - self.ref_p[ref_id]  # vector from the ref point to the state
         prev_ref_state = state - self.ref_p[prev_ref_id]
         delta = np.sum(self.seg[ref_id] * ref_state, axis=1) / np.square(self.seg_len[ref_id])  # <s-r,seg>/|seg|^2
@@ -98,8 +101,8 @@ class Projection_reward(Reward_function):
 
 # returns how many centisecond of advantage the state projections gain relative to the reference
 class Temporal_projection(Projection_reward):
-    def __init__(self, ref_t, clip_range=None, ref_dt=1, sample_dt=10):
-        super().__init__(ref_t, clip_range, ref_dt, sample_dt)
+    def __init__(self, ref_t, clip_range=None, ref_dt=1, sample_dt=10, penalty=None):
+        super().__init__(ref_t, clip_range, ref_dt, sample_dt, penalty)
 
     def _compute_reward(self, data):
         state_p = data[['xCarWorld', 'yCarWorld']].values
@@ -108,11 +111,10 @@ class Temporal_projection(Projection_reward):
         reward = ref_time * self.ref_dt - self.sample_dt  # in centiseconds
         return reward
 
-
 # returns the distance (meters) over the reference between two consecutive states projections
 class Spatial_projection(Projection_reward):
-    def __init__(self, ref_t, relative=True, clip_range=None, ref_dt=1, sample_dt=10):
-        super().__init__(ref_t, clip_range, ref_dt, sample_dt)
+    def __init__(self, ref_t, relative=True, clip_range=None, ref_dt=1, sample_dt=10, penalty=None):
+        super().__init__(ref_t, clip_range, ref_dt, sample_dt, penalty)
         self.relative = relative
 
     def _compute_reward(self, data):
@@ -136,8 +138,8 @@ class Spatial_projection(Projection_reward):
 
 # returns the average speed (m/s) difference over two consecutive states projections between the sample and the reference
 class Speed_projection(Projection_reward):
-    def __init__(self, ref_t, relative=True, clip_range=None, ref_dt=1, sample_dt=10):
-        super().__init__(ref_t, clip_range, ref_dt, sample_dt)
+    def __init__(self, ref_t, relative=True, clip_range=None, ref_dt=1, sample_dt=10, penalty=None):
+        super().__init__(ref_t, clip_range, ref_dt, sample_dt, penalty)
         self.relative = relative
 
     def _compute_reward(self, data):
@@ -155,3 +157,126 @@ class Speed_projection(Projection_reward):
             ref_speed[zeros] = (100 / self.ref_dt) * self.seg_len[ref_id[zeros]]  # if t=0, the average speed on that segment
             return speed - ref_speed
         return speed
+
+
+class Curv_temporal(Projection_reward):
+    def __init__(self, ref_t, clip_range=None, ref_dt=1, sample_dt=10, penalty=None):  # dts in centiseconds
+        self.ref_len = ref_t.shape[0]
+        self.clipping = bool(clip_range)
+        self.clip_range = clip_range
+        self.ref_dt = ref_dt
+        self.sample_dt = sample_dt
+
+    def _compute_reward(self, data):
+        state_p = data['ref_s'].values
+        projection = state_p.astype(int), state_p - state_p.astype(int)
+        ref_time = self._compute_ref_time(projection)
+        reward = ref_time * self.ref_dt - self.sample_dt  # in centiseconds
+        return reward
+
+
+##### PENALIZATION TERM FOR REWARD #####
+class RewardPenalty(object):
+    """Class RewardPenalty is used to add a penalty term to the reward function."""
+    def __init__(self):
+        super(RewardPenalty, self).__init__()
+
+    def compute_penalty(data):
+        raise NotImplementedError
+
+    def __call__(self, data):
+        return self.compute_penalty(data)
+
+
+class LikelihoodPenalty(RewardPenalty):
+    """Class LikelihoodPenalty adds a penalty based to the likelihood of the state"""
+
+    valid_kernels = ['gaussian', 'tophat', 'epanechnikov', 'exponential', 'linear', 'cosine']
+    kernel_values = ['gaussian', 'epanechnikov', 'exponential']
+    bandwidth_values = np.logspace(-1, 1, 20)
+
+    def __init__(self, alpha=None, scale_f=0, kernel=None, bandwidth=None):
+        super(LikelihoodPenalty, self).__init__()
+        self.alpha = alpha
+        self.kernel = kernel
+        self.bandwidth = bandwidth
+        self.scale_f = scale_f
+
+    @property
+    def alpha(self):
+        return self._alpha
+
+    @alpha.setter
+    def alpha(self, a):
+        self._alpha = a
+
+    @property
+    def kernel(self):
+        return self._kernel
+
+    @kernel.setter
+    def kernel(self, k):
+        if k is None:
+            self._kernel = k
+        elif k not in LikelihoodPenalty.valid_kernels:
+            raise Exception("Not valid kernel.")
+
+        self._kernel = k
+
+    @property
+    def bandwidth(self):
+        return self._bandwidth
+
+    @bandwidth.setter
+    def bandwidth(self, b):
+        self._bandwidth = b
+
+
+    def tuning(self, X, params, random_state=1, n_jobs=1):
+        np.random.seed(random_state)
+
+        ids = np.arange(X.shape[0])
+        np.random.shuffle(ids)
+        X_shfl = X[ids, :]
+
+        fixed_params = {}
+        if self.bandwidth is not None:
+            fixed_params['bandwidth'] = self.bandwidth
+        if self.kernel is not None:
+            fixed_params['kernel'] = self.kernel
+
+        if fixed_params:
+            search = GridSearchCV(KernelDensity(**fixed_params), param_grid=params, cv=10, n_jobs=n_jobs)
+        else:
+            search = GridSearchCV(KernelDensity(), param_grid=params, cv=10, n_jobs=n_jobs)
+
+        search.fit(X_shfl)
+
+        if 'bandwidth' in search.best_params_.keys():
+            self.bandwidth = search.best_params_['bandwidth']
+
+        if 'kernel' in search.best_params_.keys():
+            self.kernel = search.best_params_['kernel']
+
+
+    def fit(self, X, n_jobs=1):
+
+        params = {}
+        if self.bandwidth is None:
+            params['bandwidth'] = LikelihoodPenalty.bandwidth_values
+        if self.kernel is None:
+            params['kernel'] = LikelihoodPenalty.kernel_values
+
+        if (self.bandwidth is None) or (self.kernel is None):
+            self.tuning(X, params, n_jobs)
+
+        self.kde = KernelDensity(kernel=self.kernel, bandwidth=self.bandwidth).fit(X)
+
+        if self.alpha is None:
+            train_log = self.kde.score_samples(X)
+            self.alpha = abs(1 / np.mean(train_log))
+            self.scale_f = 1
+
+    def compute_penalty(self, X):
+        logp = self.kde.score_samples(X)
+        return self.alpha * logp + self.scale_f
