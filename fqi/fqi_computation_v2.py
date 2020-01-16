@@ -24,7 +24,7 @@ from fqi.fqi_evaluate import run_evaluation
 
 def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, output_path, n_jobs,
                    output_name, reward_function, r_penalty, rp_kernel, rp_band, ad_type, tuning,
-                   tuning_file_name, kdt_norm, kdt_param, filt_a_outliers, double_fqi, evaluation, first_step):
+                   tuning_file_name, kdt_norm, kdt_param, filt_a_outliers, double_fqi, evaluation):
 
     # Load dataset and refernce trajectory
     print('Loading data')
@@ -96,6 +96,10 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
     action_dim = len(action_cols)
     mdp = TrackEnv(state_dim, action_dim, 0.99999, 'continuous')
 
+    # Create policy instance
+    epsilon = 0
+    pi = EpsilonGreedy([], ZeroQ(), epsilon)
+
     # Parameters of ET regressor
     regressor_params = {'n_estimators': 100,
                         'criterion': 'mse',
@@ -104,24 +108,6 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
                         'n_jobs': n_jobs,
                         'random_state': 42}
     regressor = ExtraTreesRegressor
-
-
-    if first_step:
-        # Create new policy instance
-        if policy_type == 'greedy':
-            epsilon = 0
-            pi = EpsilonGreedy([], ZeroQ(), epsilon)
-        elif policy_type == 'boltzmann':
-            temperature = 0.5  # no exploration
-            pi = Softmax([], ZeroQ(), temperature)
-    else:
-        # import policy
-        algorithm_name = output_name + '.pkl'
-        policy_name = 'policy_' + algorithm_name
-        with open(output_path + '/' + policy_name, 'rb') as pol:
-            print('loading policy')
-            pi = pickle.load(pol)
-            print('pi:', pi)
 
     # Define the order of the columns to pass to the algorithm
     cols = ['t'] + state_cols + action_cols + ['r'] + state_prime_cols + ['absorbing']
@@ -169,12 +155,6 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
     algorithm_name = output_name + '.pkl'
     with open(output_path + '/' + algorithm_name, 'wb') as output:
         pickle.dump(algorithm, output, pickle.HIGHEST_PROTOCOL)
-
-    # save policy object
-    policy_name = 'policy_' + algorithm_name
-    with open(output_path + '/' + policy_name, 'wb') as output:
-        pickle.dump(algorithm._policy, output, pickle.HIGHEST_PROTOCOL)
-    print('Saved policy object')
 
     # save action dispatcher object
     AD_name = 'AD_' + algorithm_name
