@@ -81,6 +81,7 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
         elif reward_function == 'curv':
             rf = Curv_temporal(ref_tr)
 
+    print('Building SARS')
     dataset = to_SARS(simulations, rf)
 
     nmin = 1
