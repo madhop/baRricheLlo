@@ -10,8 +10,8 @@ sys.path.append(os.path.join(file_path, '..'))
 sys.setrecursionlimit(3000)
 
 from fqi.et_tuning import run_tuning
-from data_processing.sars.reward_function import *
-from data_processing.sars.sars_creator import to_SARS
+from fqi.reward_function import *
+from fqi.sars_creator import to_SARS
 from fqi.utils import *
 
 from trlib.policies.valuebased import EpsilonGreedy
