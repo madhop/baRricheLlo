@@ -21,7 +21,7 @@ class Reward_function:
 
     def __call__(self, data):
         # the penalty term is computed considering the next state thus we pass the states from 1 to end
-        return self._compute_reward(data) + (self.penalty(data[state_cols].values[1:], data['trackPos'].values[1:]) if self.penalty else 0)
+        return self._compute_reward(data) + (self.penalty.compute_offroad_penalty(data[state_cols].values[1:], data['trackPos'].values[1:]) if self.penalty else 0)
 
 
 class Discrete_temporal_reward(Reward_function):
@@ -180,7 +180,7 @@ class RewardPenalty(object):
     """Class RewardPenalty is used to add a penalty term to the reward function."""
     def __init__(self):
         super(RewardPenalty, self).__init__()
-
+        
     def compute_penalty(data):
         raise NotImplementedError
 
@@ -205,7 +205,7 @@ class LikelihoodPenalty(RewardPenalty):
     @property
     def alpha(self):
         return self._alpha
-
+    
     @alpha.setter
     def alpha(self, a):
         self._alpha = a
@@ -238,18 +238,18 @@ class LikelihoodPenalty(RewardPenalty):
         ids = np.arange(X.shape[0])
         np.random.shuffle(ids)
         X_shfl = X[ids, :]
-
+        
         fixed_params = {}
         if self.bandwidth is not None:
             fixed_params['bandwidth'] = self.bandwidth
         if self.kernel is not None:
             fixed_params['kernel'] = self.kernel
-
+            
         if fixed_params:
             search = GridSearchCV(KernelDensity(**fixed_params), param_grid=params, cv=10, n_jobs=n_jobs)
         else:
             search = GridSearchCV(KernelDensity(), param_grid=params, cv=10, n_jobs=n_jobs)
-
+        
         search.fit(X_shfl)
 
         if 'bandwidth' in search.best_params_.keys():
@@ -257,18 +257,18 @@ class LikelihoodPenalty(RewardPenalty):
 
         if 'kernel' in search.best_params_.keys():
             self.kernel = search.best_params_['kernel']
-
+            
 
     def fit(self, X, n_jobs=1):
-
+        
         params = {}
         if self.bandwidth is None:
             params['bandwidth'] = LikelihoodPenalty.bandwidth_values
         if self.kernel is None:
             params['kernel'] = LikelihoodPenalty.kernel_values
-
+            
         if (self.bandwidth is None) or (self.kernel is None):
-            self.tuning(X, params, n_jobs=n_jobs)
+            self.tuning(X, params, n_jobs)
 
         self.kde = KernelDensity(kernel=self.kernel, bandwidth=self.bandwidth).fit(X)
 
@@ -280,19 +280,10 @@ class LikelihoodPenalty(RewardPenalty):
     def compute_penalty(self, X):
         logp = self.kde.score_samples(X)
         return self.alpha * logp + self.scale_f
-
-
-class LikelihoodPenaltyOffroad(LikelihoodPenalty):
-    """docstring for LikelihoodPenaltyOffroad adds penalty base to the likelihood of the state and
-        if the car is out of track."""
-
-    def __init__(self, alpha=None, scale_f=0, kernel=None, bandwidth=None):
-        super().__init__(alpha, scale_f, kernel, bandwidth)
-
-    def compute_penalty(self, X, trackPos):
-        logp = penalty.kde.score_samples(X)
-        #penalty.alpha * logp + penalty.scale_f
+    
+    def compute_offroad_penalty(self, X, trackPos):
+        logp = self.kde.score_samples(X)
         mask = np.absolute(trackPos) > 1
         trackPos[~mask] = 0
-        trackPos[mask] = -50 #np.absolute(trackPos[mask])**5
-        return penalty.alpha * logp + penalty.scale_f + trackPos
+        trackPos[mask] = -50
+        return self.alpha * logp + self.scale_f + trackPos
