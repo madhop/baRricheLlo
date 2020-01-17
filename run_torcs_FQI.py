@@ -9,7 +9,7 @@ import time
 import os
 from utils_torcs import *
 from preprocess_raw_torcs_algo import *
-from build_dataset import *
+from build_dataset_offroad import *
 
 def appendObs(store_obs, ob, action):
     for k in torcs_features:
@@ -67,10 +67,8 @@ def playGame(algorithm_name):
         time.sleep(0.5)
 
         total_reward = 0.
-        noise1 = (np.random.rand()-0.5)*0.002
-        noise2 = (np.random.rand()-0.5)*0.002
-        print('noise:', noise1)
-        print('noise:', noise2)
+        noise1 = 0#(np.random.rand()-0.5)*0.002
+        noise2 = 0#(np.random.rand()-0.5)*0.002
         for j in range(max_steps):
             if ob['distFromStart'] < 100 and not start_line:    # just passed start line
                 print('Start Line')
@@ -81,13 +79,13 @@ def playGame(algorithm_name):
                 ob, _, done, _ = env.step(action)
             elif ob['distFromStart'] < 5615.26 and not start_line:   # exit from pit stop
                 #print('-', j)
-                action = [0.02+noise1,0,1, 7]
+                action = [0.018+noise1,0,1, 7]
                 ob_2 = ob_1
                 ob_1 = ob
                 ob, _, done, _ = env.step(action)
             elif ob['distFromStart'] < 5703.24 and not start_line:
                 #print('--', j)
-                action = [-0.028+noise2,0,1, 7]
+                action = [-0.027+noise2,0,1, 7]
                 ob_2 = ob_1
                 ob_1 = ob
                 ob, _, done, _ = env.step(action)
@@ -141,5 +139,6 @@ if __name__ == "__main__":
         algorithm_name = r + '_reward_model.pkl'#  'model_r_speed_50laps_pc.pkl'#'first_model.pkl'
         playGame(algorithm_name)
         file_name = "preprocessed_torcs_algo"
-        preprocess_raw_torcs(file_name)
-        buildDataset(file_name)
+        output_file = "trajectory/dataset_offroad.csv"
+        preprocess_raw_torcs(file_name, output_file)
+        buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)
