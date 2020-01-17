@@ -7,13 +7,13 @@ import matplotlib.pyplot as plt
     From torcs data, compute state features and append to Dataset.csv
 """
 
-def buildDataset(file_name = 'preprocessed_torcs_algo'):
+def buildDataset(raw_input_file_name = 'preprocessed_torcs_algo', output_file = "trajectory/dataset.csv", header = False):
     plot_coords = False
     ref_file_name = 'trajectory/ref_traj.csv'
 
     ref_df = pd.read_csv(ref_file_name) # reference trajectory
     ref_df.columns = ['curLapTime', 'Acceleration_x', 'Acceleration_y', 'speed_x', 'speed_y', 'x', 'y', 'alpha_step']
-    car_df = pd.read_csv('raw_torcs_data/' + file_name + '.csv') # car trajectory
+    car_df = pd.read_csv('raw_torcs_data/' + raw_input_file_name + '.csv') # car trajectory
     actual_df = pd.DataFrame()
 
 
@@ -91,8 +91,10 @@ def buildDataset(file_name = 'preprocessed_torcs_algo'):
             actual_df.loc[index, 'rThrottlePedal'] =  p['Throttle']
 
     #actual_df.to_csv(path_or_buf = "trajectory/dataset.csv", mode = 'a', index = False, header = False)
-    actual_df.to_csv(path_or_buf = "trajectory/dataset_offroad.csv", mode = 'a', index = False, header = False)
+    actual_df.to_csv(path_or_buf = output_file, mode = 'a', index = False, header = header)
+
 
 
 if __name__ == "__main__":
-    buildDataset('preprocessed_torcs_trackPos_70_laps')
+    buildDataset(raw_input_file_name = 'preprocessed_torcs_trackPos_70_laps',
+                output_file = "trajectory/dataset_offroad.csv", header = True)
