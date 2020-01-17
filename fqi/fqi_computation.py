@@ -76,20 +76,7 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
 
     dataset = to_SARS(simulations, rf)
 
-    nmin_list = [1, 2, 5, 10, 15, 20]
-    if tuning_file_name:
-        print('Tuning file: {}'.format(os.path.join(output_path, tuning_file_name + '.pkl')))
-        with open(os.path.join(output_path, tuning_file_name + '.pkl'), 'rb') as tuning:
-            gcv = pickle.load(tuning)
-    else:
-        print("Performing Tuning")
-        gcv = run_tuning(dataset, nmin_list, double_fqi, n_jobs, output_path, reward_function + '_tuning')
-
-    if double_fqi:
-        mse = -(gcv[0].cv_results_['mean_test_score'] + gcv[1].cv_results_['mean_test_score']) / 2
-        nmin = nmin_list[np.argmin(mse)]
-    else:
-        nmin = gcv.best_params_['min_samples_leaf']
+    nmin = 1
 
     # Create environment
     state_dim = len(state_cols)

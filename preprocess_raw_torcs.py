@@ -10,7 +10,7 @@ import compute_state_features as sf
     - car_dataset.csv (all state features) 10 Hz
 """
 
-output_name = "raw_torcs_data/preprocessed_torcs_"#.csv"
+output_name = "raw_torcs_data/preprocessed_torcs_trackPos_"#.csv"
 output_name_ref = "trajectory/ref_traj_"#.csv"
 track_length = 5780
 compute_ref_traj = 1
@@ -98,7 +98,7 @@ raw_df['speed_y'] *= 3.6
 raw_df['speed_z'] *= 3.6
 raw_df['rpm'] *= 10
 ## compute distance to middle of track
-raw_df['dist_to_middle'] = 2*raw_df['dist_to_middle']/raw_df['trk_width']
+raw_df['trackPos'] = 2*raw_df['dist_to_middle']/raw_df['trk_width']
 raw_df.drop(columns = 'trk_width', inplace=True)
 
 ## save reference trajectory in 100 Hz

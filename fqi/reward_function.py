@@ -268,7 +268,7 @@ class LikelihoodPenalty(RewardPenalty):
             params['kernel'] = LikelihoodPenalty.kernel_values
 
         if (self.bandwidth is None) or (self.kernel is None):
-            self.tuning(X, params, n_jobs)
+            self.tuning(X, params, n_jobs=n_jobs)
 
         self.kde = KernelDensity(kernel=self.kernel, bandwidth=self.bandwidth).fit(X)
 
