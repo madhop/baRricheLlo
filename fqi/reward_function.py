@@ -290,6 +290,9 @@ class LikelihoodPenaltyOffroad(LikelihoodPenalty):
         super().__init__(alpha, scale_f, kernel, bandwidth)
 
     def compute_penalty(self, X, trackPos):
-        """logp = self.kde.score_samples(X)
-        return self.alpha * logp + self.scale_f"""
-        return trackPos
+        logp = penalty.kde.score_samples(X)
+        #penalty.alpha * logp + penalty.scale_f
+        mask = np.absolute(trackPos) > 1
+        trackPos[~mask] = 0
+        trackPos[mask] = -50 #np.absolute(trackPos[mask])**5
+        return penalty.alpha * logp + penalty.scale_f + trackPos
