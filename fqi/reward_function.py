@@ -280,3 +280,16 @@ class LikelihoodPenalty(RewardPenalty):
     def compute_penalty(self, X):
         logp = self.kde.score_samples(X)
         return self.alpha * logp + self.scale_f
+
+
+class LikelihoodPenaltyOffroad(LikelihoodPenalty):
+    """docstring for LikelihoodPenaltyOffroad adds penalty base to the likelihood of the state and
+        if the car is out of track."""
+
+    def __init__(self, alpha=None, scale_f=0, kernel=None, bandwidth=None):
+        super().__init__(alpha, scale_f, kernel, bandwidth)
+
+    def compute_penalty(self, X, trackPos):
+        """logp = self.kde.score_samples(X)
+        return self.alpha * logp + self.scale_f"""
+        return trackPos
