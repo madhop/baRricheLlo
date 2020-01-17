@@ -49,12 +49,14 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
         if rp_kernel is not None:
             p_params['kernel'] = rp_kernel
 
-        if r_offroad_penalty:
+        """if r_offroad_penalty:
             penalty = LikelihoodPenaltyOffroad(**p_params)
             penalty.fit(simulations[simulations.NLap.isin(right_laps)][state_cols].values)
         else:
             penalty = LikelihoodPenalty(**p_params)
-            penalty.fit(simulations[simulations.NLap.isin(right_laps)][state_cols].values)
+            penalty.fit(simulations[simulations.NLap.isin(right_laps)][state_cols].values)"""
+        penalty = LikelihoodPenalty(**p_params)
+        penalty.fit(simulations[simulations.NLap.isin(right_laps)][state_cols].values)
 
         if reward_function == 'temporal':
             rf = Temporal_projection(ref_tr, penalty=penalty, clip_range=(-np.inf, np.inf))
@@ -67,6 +69,7 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
         elif reward_function == 'curv':
             rf = Curv_temporal(ref_tr, penalty=penalty, clip_range=(-np.inf, np.inf))
     else:
+        print('reward function with no penalty')
         if reward_function == 'temporal':
             rf = Temporal_projection(ref_tr)
         elif reward_function == 'discrete':
@@ -98,6 +101,7 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
 
 
     if first_step:
+        print('first step: initialize new policy instance')
         # Create new policy instance
         if policy_type == 'greedy':
             epsilon = 0
@@ -106,6 +110,7 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
             temperature = 0.5  # no exploration
             pi = Softmax([], ZeroQ(), temperature)
     else:
+        print('load existing policy')
         # import policy
         algorithm_name = output_name + '.pkl'
         policy_name = 'policy_' + algorithm_name
