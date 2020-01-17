@@ -14,7 +14,7 @@ from fqi.reward_function import *
 from fqi.sars_creator import to_SARS
 from fqi.utils import *
 
-from trlib.policies.valuebased import EpsilonGreedy
+from trlib.policies.valuebased import EpsilonGreedy, Softmax
 from trlib.policies.qfunction import ZeroQ
 from trlib.algorithms.reinforcement.fqi_driver import FQIDriver, DoubleFQIDriver
 from trlib.environments.trackEnv import TrackEnv
