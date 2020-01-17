@@ -24,7 +24,7 @@ from fqi.fqi_evaluate import run_evaluation
 
 def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, output_path, n_jobs,
                    output_name, reward_function, r_penalty, r_offroad_penalty, rp_kernel, rp_band, ad_type, tuning,
-                   tuning_file_name, kdt_norm, kdt_param, filt_a_outliers, double_fqi, evaluation, first_step):
+                   tuning_file_name, kdt_norm, kdt_param, filt_a_outliers, double_fqi, policy_type, evaluation, first_step):
 
     # Load dataset and refernce trajectory
     print('Loading data')
