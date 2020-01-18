@@ -285,6 +285,6 @@ class LikelihoodPenalty(RewardPenalty):
         logp = self.kde.score_samples(X)
         mask = np.absolute(trackPos) > 1
         trackPos[~mask] = 0
-        trackPos[mask] = -trackPos[mask]*20#-50
+        trackPos[mask] = -np.absolute(trackPos[mask])*20#-50
         trackPos = np.clip(trackPos, a_min=-50, a_max = None)
         return self.alpha * logp + self.scale_f + trackPos
