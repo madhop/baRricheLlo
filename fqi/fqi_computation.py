@@ -102,7 +102,7 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
 
 
     if first_step:
-        print('first step: initialize new policy instance')
+        print('First step: initialize new policy instance')
         # Create new policy instance
         if policy_type == 'greedy':
             epsilon = 0
@@ -111,14 +111,12 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
             temperature = 0.5  # no exploration
             pi = Softmax([], ZeroQ(), temperature)
     else:
-        print('load existing policy')
+        print('Load existing policy')
         # import policy
         algorithm_name = output_name + '.pkl'
         policy_name = 'policy_' + algorithm_name
         with open(output_path + '/' + policy_name, 'rb') as pol:
-            print('loading policy')
             pi = pickle.load(pol)
-            print('pi:', pi)
 
     # Define the order of the columns to pass to the algorithm
     cols = ['t'] + state_cols + action_cols + ['r'] + state_prime_cols + ['absorbing']
