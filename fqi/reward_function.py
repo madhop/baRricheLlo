@@ -283,6 +283,20 @@ class LikelihoodPenalty(RewardPenalty):
 
     def compute_offroad_penalty(self, X, trackPos):
         logp = self.kde.score_samples(X)
+        mask = np.absolute(trackPos) > 0.9
+        trackPos[~mask] = 0
+        trackPos[mask] = -np.absolute(trackPos[mask])*20#-50
+        trackPos = np.clip(trackPos, a_min=-50, a_max = None)
+        return self.alpha * logp + self.scale_f + trackPos
+
+
+class LikelihoodPenaltyOffroad(LikelihoodPenalty):
+
+    def __call__(self, data, trackPos):
+        return self.compute_penalty(data, trackPos)
+
+    def compute_penalty(self, X, trackPos):
+        logp = self.kde.score_samples(X)
         mask = np.absolute(trackPos) > 1
         trackPos[~mask] = 0
         trackPos[mask] = -np.absolute(trackPos[mask])*20#-50

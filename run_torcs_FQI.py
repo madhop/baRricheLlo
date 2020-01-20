@@ -110,6 +110,7 @@ def playGame(algorithm_name):
                 appendObs(store_obs, ob, action)
 
                 ob, reward, done, _ = env.step(action)
+                print('trackPos:', ob['trackPos'])
                 total_reward += reward
 
                 step += 1
