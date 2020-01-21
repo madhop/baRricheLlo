@@ -136,7 +136,7 @@ def playGame(algorithm_name):
 
 if __name__ == "__main__":
     #for r in ['speed', 'spatial', 'temporal']:
-    for r in ['temporal_penalty']:
+    for r in ['temporal09_penalty']:
         algorithm_name = r + '_reward_model.pkl'#  'model_r_speed_50laps_pc.pkl'#'first_model.pkl'
         playGame(algorithm_name)
         file_name = "preprocessed_torcs_algo"

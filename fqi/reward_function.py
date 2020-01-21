@@ -283,7 +283,7 @@ class LikelihoodPenalty(RewardPenalty):
 
     def compute_offroad_penalty(self, X, trackPos):
         logp = self.kde.score_samples(X)
-        mask = np.absolute(trackPos) > 0.9
+        mask = np.absolute(trackPos) > 0.5
         trackPos[~mask] = 0
         trackPos[mask] = -np.absolute(trackPos[mask])*20#-50
         trackPos = np.clip(trackPos, a_min=-50, a_max = None)

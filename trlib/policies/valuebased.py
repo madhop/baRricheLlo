@@ -108,7 +108,9 @@ class Softmax(ValueBased):
 
     def __call__(self, state):
 
-        exps = np.exp(self._q_values(state) / self._tau)
+        num = self._q_values(state)
+        exps = np.exp(num / self._tau)
+        print('exps:', exps)
         return exps / np.sum(exps)
 
     def sample_action(self, state):
