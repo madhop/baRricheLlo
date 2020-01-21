@@ -110,7 +110,6 @@ def playGame(algorithm_name):
                 appendObs(store_obs, ob, action)
 
                 ob, reward, done, _ = env.step(action)
-                print('trackPos:', ob['trackPos'])
                 total_reward += reward
 
                 step += 1
@@ -136,7 +135,7 @@ def playGame(algorithm_name):
 
 if __name__ == "__main__":
     #for r in ['speed', 'spatial', 'temporal']:
-    for r in ['temporal09_penalty']:
+    for r in ['temporal_penalty']:
         algorithm_name = r + '_reward_model.pkl'#  'model_r_speed_50laps_pc.pkl'#'first_model.pkl'
         playGame(algorithm_name)
         file_name = "preprocessed_torcs_algo"
