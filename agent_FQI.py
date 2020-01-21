@@ -67,9 +67,9 @@ class AgentFQI(object):
         self.policy._actions = np.unique(a, axis = 0)
         #self.policy._actions = np.array(self.action_dispatcher.get_actions(observation))
         self.policy._n_actions = len(self.policy._actions)
-        #self.policy.tau = 0.1
+        self.policy.tau = 1
         observation = observation.reshape(1,-1)
-        print('observation:', observation)
+        #print('observation:', observation)
         action = self.policy.sample_action(observation)
         gear = 0    # fake gear, automatic gear shift
         action = np.append(action, [gear])

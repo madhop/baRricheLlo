@@ -21,7 +21,7 @@ class Reward_function:
 
     def __call__(self, data):
         # the penalty term is computed considering the next state thus we pass the states from 1 to end
-        return self._compute_reward(data) + (self.penalty.compute_offroad_penalty(data['xCarWorld', 'yCarWorld'].values[1:], data['trackPos'].values[1:]) if self.penalty else 0)
+        return self._compute_reward(data) + (self.penalty.compute_offroad_penalty(data[['xCarWorld', 'yCarWorld']].values[1:], data['trackPos'].values[1:]) if self.penalty else 0)
         #return self._compute_reward(data) + (self.penalty.compute_offroad_penalty(data[state_cols].values[1:], data['trackPos'].values[1:]) if self.penalty else 0)
 
 

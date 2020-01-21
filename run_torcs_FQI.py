@@ -143,7 +143,7 @@ if __name__ == "__main__":
         preprocess_raw_torcs(file_name, output_file)
         buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)"""
 
-    algorithm_name = 'temporal_penalty_reward_greddy_model.pkl'
+    algorithm_name = 'temporal_penalty_reward_model.pkl'#'temporal_penalty_reward_greddy_model.pkl'
     playGame(algorithm_name)
     file_name = "preprocessed_torcs_algo"
     output_file = "trajectory/dataset_offroad.csv"
