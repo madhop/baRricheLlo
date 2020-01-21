@@ -24,6 +24,9 @@ state_cols = ['xCarWorld', 'yCarWorld',
        'actualAccelerationY', 'referenceAccelerationX',
        'referenceAccelerationY', 'accelerationDiffX', 'accelerationDiffY'] + prev_action_cols"""
 
+penalty_cols = ['xCarWorld', 'yCarWorld']
+#penalty_cols = state_cols
+
 
 
 knn_state_cols = ['xCarWorld', 'yCarWorld']
