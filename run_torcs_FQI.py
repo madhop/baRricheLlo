@@ -135,10 +135,17 @@ def playGame(algorithm_name):
 
 if __name__ == "__main__":
     #for r in ['speed', 'spatial', 'temporal']:
-    for r in ['temporal09_penalty']:
+    """for r in ['temporal_penalty']:    #temporal09_penalty, temporal_penalty
         algorithm_name = r + '_reward_model.pkl'#  'model_r_speed_50laps_pc.pkl'#'first_model.pkl'
         playGame(algorithm_name)
         file_name = "preprocessed_torcs_algo"
         output_file = "trajectory/dataset_offroad.csv"
         preprocess_raw_torcs(file_name, output_file)
-        buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)
+        buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)"""
+
+    algorithm_name = 'temporal_penalty_reward_greddy_model.pkl'
+    playGame(algorithm_name)
+    file_name = "preprocessed_torcs_algo"
+    output_file = "trajectory/dataset_offroad.csv"
+    preprocess_raw_torcs(file_name, output_file)
+    buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)

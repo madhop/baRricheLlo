@@ -69,7 +69,7 @@ class AgentFQI(object):
         self.policy._n_actions = len(self.policy._actions)
         #self.policy.tau = 0.1
         observation = observation.reshape(1,-1)
-        print('observation:', type(observation))
+        print('observation:', observation)
         action = self.policy.sample_action(observation)
         gear = 0    # fake gear, automatic gear shift
         action = np.append(action, [gear])
