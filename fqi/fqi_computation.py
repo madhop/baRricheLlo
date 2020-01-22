@@ -56,7 +56,8 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
             penalty = LikelihoodPenalty(**p_params)
             penalty.fit(simulations[simulations.NLap.isin(right_laps)][state_cols].values)"""
         penalty = LikelihoodPenalty(**p_params)
-        penalty.fit(simulations[simulations.NLap.isin(right_laps)][state_cols].values)
+        penalty.fit(simulations[simulations.NLap.isin(right_laps)][penalty_cols].values)
+        #penalty.fit(simulations[simulations.NLap.isin(right_laps)][state_cols].values)
 
         if reward_function == 'temporal':
             rf = Temporal_projection(ref_tr, penalty=penalty, clip_range=(-np.inf, np.inf))
