@@ -1,5 +1,5 @@
 from gym_torcs import TorcsEnv
-from agent_FQI import AgentFQI, AgentMEAN
+from agent_FQI import AgentFQI, AgentMEAN, AgentRegressor
 import pandas as pd
 import numpy as np
 import compute_state_features as csf
@@ -23,7 +23,7 @@ def emptyStoreObs():
         store_obs[a] = []
     return store_obs
 
-def playGame(algorithm_name):
+def playGame(algorithm_name, policy_type):
     print('Using model:', algorithm_name)
     start_line = False
     track_length = 5783.85
@@ -42,9 +42,10 @@ def playGame(algorithm_name):
     for a in torcs_actions:
         store_obs[a] = []
 
-    reward_function = reward_function = Speed_projection(ref_df)
-
-    agent = AgentFQI(ref_df, policy_path, action_dispatcher_path)
+    reward_function = Speed_projection(ref_df)
+    
+    agent = AgentRegressor(ref_df, policy_path, action_dispatcher_path, 'model_file/regressors/ETRegressor.pkl')
+    #agent = AgentFQI(ref_df, policy_type, policy_path, action_dispatcher_path)
     #agent = AgentMEAN()
 
     # Generate a Torcs environment
@@ -143,8 +144,10 @@ if __name__ == "__main__":
         preprocess_raw_torcs(file_name, output_file)
         buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)"""
 
-    algorithm_name = 'temporal_penalty_reward_model.pkl'#'temporal_penalty_reward_greddy_model.pkl'
-    playGame(algorithm_name)
+
+    algorithm_name = 'temporal_penalty_xy_reward_boltzmann_model.pkl'#'temporal_penalty_reward_model.pkl'#'temporal_penalty_reward_greddy_model.pkl'
+    policy_type = 'greedy'#'boltzmann'
+    playGame(algorithm_name, policy_type)
     file_name = "preprocessed_torcs_algo"
     output_file = "trajectory/dataset_offroad.csv"
     preprocess_raw_torcs(file_name, output_file)

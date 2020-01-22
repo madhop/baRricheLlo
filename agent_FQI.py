@@ -3,17 +3,25 @@ import compute_state_features as csf
 import pandas as pd
 from scipy import spatial
 import pickle
+from trlib.policies.valuebased import EpsilonGreedy, Softmax
 from fqi.utils import *
 
 class AgentFQI(object):
-    def __init__(self, ref_df, policy_path, action_dispatcher_path):
+    def __init__(self, ref_df, policy_type, policy_path, action_dispatcher_path):
         self.ref_df = ref_df
         self.tree = spatial.KDTree(list(zip(ref_df['xCarWorld'], ref_df['yCarWorld'])))
         self.end_of_lap = False
 
         # load policy object
         with open(policy_path, 'rb') as pol:
-            self.policy = pickle.load(pol)
+            pi = pickle.load(pol)
+
+        if policy_type == 'greedy':
+            epsilon = 0
+            self.policy = EpsilonGreedy(pi.actions, pi.Q, epsilon)
+        elif policy_type == 'boltzmann':
+            tau = 2
+            self.policy = Softmax(pi.actions, pi.Q, tau)
 
         # load action dispatcher object
         with open(action_dispatcher_path, 'rb') as ad:
@@ -65,15 +73,12 @@ class AgentFQI(object):
             print('No actions from Action Dispatcher')
             return []
         self.policy._actions = np.unique(a, axis = 0)
-        #self.policy._actions = np.array(self.action_dispatcher.get_actions(observation))
         self.policy._n_actions = len(self.policy._actions)
-        self.policy.tau = 1
         observation = observation.reshape(1,-1)
         #print('observation:', observation)
         action = self.policy.sample_action(observation)
         gear = 0    # fake gear, automatic gear shift
         action = np.append(action, [gear])
-        #action = [[0,0,1,0]]   # fake action, staight, full gass
         return action
 
 
@@ -95,4 +100,23 @@ class AgentMEAN(object):
         throttle = np.mean(self.car_df.loc[nns]['rThrottlePedal'])
         brake = np.mean(self.car_df.loc[nns]['pBrakeF'])
         action = [steer,throttle*0.5,brake,0]
+        return action
+
+
+
+class AgentRegressor(AgentFQI):
+    """docstring for AgentRegressor."""
+
+    def __init__(self, ref_df, policy_path, action_dispatcher_path, regressor_path):
+        super(AgentRegressor, self).__init__(ref_df, None, policy_path, action_dispatcher_path)
+        with open(regressor_path, 'rb') as reg:
+            self.regressor = pickle.load(reg)
+
+        print('REGRESOR:', self.regressor)
+
+    def act(self, ob, p_1, p_2, prev_action, reward):
+        observation = self.make_observaton(ob, p_1, p_2, prev_action)
+        action = self.regressor.predict(observation)
+        gear = 0    # fake gear, automatic gear shift
+        action = np.append(action, [gear])
         return action

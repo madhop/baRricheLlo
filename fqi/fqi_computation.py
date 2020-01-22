@@ -105,12 +105,14 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
     if first_step:
         print('First step: initialize new policy instance')
         # Create new policy instance
-        if policy_type == 'greedy':
+        """if policy_type == 'greedy':
             epsilon = 0     # no exploration
             pi = EpsilonGreedy([], ZeroQ(), epsilon)
         elif policy_type == 'boltzmann':
             temperature = 0.5
-            pi = Softmax([], ZeroQ(), temperature)
+            pi = Softmax([], ZeroQ(), temperature)"""
+
+        pi = ValueBased([], ZeroQ())
     else:
         print('Load existing policy')
         # import policy
