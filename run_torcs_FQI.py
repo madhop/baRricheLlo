@@ -43,9 +43,9 @@ def playGame(algorithm_name, policy_type):
         store_obs[a] = []
 
     reward_function = Speed_projection(ref_df)
-    
-    agent = AgentRegressor(ref_df, policy_path, action_dispatcher_path, 'model_file/regressors/ETRegressor.pkl')
-    #agent = AgentFQI(ref_df, policy_type, policy_path, action_dispatcher_path)
+
+    #agent = AgentRegressor(ref_df, policy_path, action_dispatcher_path, 'model_file/regressors/ETRegressor.pkl')
+    agent = AgentFQI(ref_df, policy_type, policy_path, action_dispatcher_path)
     #agent = AgentMEAN()
 
     # Generate a Torcs environment
@@ -78,15 +78,15 @@ def playGame(algorithm_name, policy_type):
                 ob_2 = ob_1
                 ob_1 = ob
                 ob, _, done, _ = env.step(action)
-            elif ob['distFromStart'] < 5615.26 and not start_line:   # exit from pit stop
+            elif ob['distFromStart'] < 5650.26 and not start_line:   # exit from pit stop
                 #print('-', j)
-                action = [0.018+noise1,0,1, 7]
+                action = [0.012+noise1,0,1, 7]
                 ob_2 = ob_1
                 ob_1 = ob
                 ob, _, done, _ = env.step(action)
             elif ob['distFromStart'] < 5703.24 and not start_line:
                 #print('--', j)
-                action = [-0.027+noise2,0,1, 7]
+                action = [-0.033+noise2,0,1, 7]
                 ob_2 = ob_1
                 ob_1 = ob
                 ob, _, done, _ = env.step(action)
@@ -145,8 +145,8 @@ if __name__ == "__main__":
         buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)"""
 
 
-    algorithm_name = 'temporal_penalty_xy_reward_boltzmann_model.pkl'#'temporal_penalty_reward_model.pkl'#'temporal_penalty_reward_greddy_model.pkl'
-    policy_type = 'greedy'#'boltzmann'
+    algorithm_name = 'temporal_penalty_xy_reward_model.pkl'#'temporal_penalty_xy_reward_boltzmann_model.pkl'#'temporal_penalty_reward_model.pkl'#'temporal_penalty_reward_greddy_model.pkl'
+    policy_type = 'boltzmann'#'greedy'
     playGame(algorithm_name, policy_type)
     file_name = "preprocessed_torcs_algo"
     output_file = "trajectory/dataset_offroad.csv"
