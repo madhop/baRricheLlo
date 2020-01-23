@@ -85,6 +85,26 @@ class EpsilonGreedy(ValueBased):
         else:
             return np.array([self._actions[np.argmax(self._q_values(state))]])
 
+class EpsilonGreedyNoise(object):
+    """docstring for EpsilonGreedyNoise."""
+
+    def __init__(self, actions, Q, epsilon, stdNoise):
+        super(EpsilonGreedyNoise, self).__init__(actions, Q, epsilon)
+        self.stdNoise = stdNoise
+
+    @property
+    def stdNoise(self):
+        return self._stdNoise
+
+    @stdNoise.setter
+    def stdNoise(self,value):
+        self._stdNoise = value
+
+    def sample_action(self, state):
+        a = np.array([self._actions[np.argmax(self._q_values(state))]]) + np.random.normal(0, self._stdNoise)
+        a = np.clip(a, a_min=-1, a_max = 1)
+        return a
+
 class Softmax(ValueBased):
     """
     The softmax (or Boltzmann) policy.
