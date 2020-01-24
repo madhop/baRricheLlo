@@ -145,8 +145,8 @@ if __name__ == "__main__":
         buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)"""
 
 
-    algorithm_name = 'temporal_penalty_xy_reward_model.pkl'#'temporal_penalty_xy_reward_boltzmann_model.pkl'#'temporal_penalty_reward_model.pkl'#'temporal_penalty_reward_greddy_model.pkl'
-    policy_type = 'greedy_noise'#'greedy'#'boltzmann'#
+    algorithm_name = 'temporal_penalty_xy_reward_reduced_model.pkl'#'temporal_penalty_xy_reward_model.pkl'#'temporal_penalty_xy_reward_boltzmann_model.pkl'#'temporal_penalty_reward_model.pkl'#'temporal_penalty_reward_greddy_model.pkl'
+    policy_type = 'greedy_noise'#'boltzmann'#'greedy'#
     playGame(algorithm_name, policy_type)
     file_name = "preprocessed_torcs_algo"
     output_file = "trajectory/dataset_offroad.csv"
