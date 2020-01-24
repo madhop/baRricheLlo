@@ -85,7 +85,7 @@ class EpsilonGreedy(ValueBased):
         else:
             return np.array([self._actions[np.argmax(self._q_values(state))]])
 
-class EpsilonGreedyNoise(object):
+class EpsilonGreedyNoise(EpsilonGreedy):
     """docstring for EpsilonGreedyNoise."""
 
     def __init__(self, actions, Q, epsilon, stdNoise):
@@ -101,7 +101,8 @@ class EpsilonGreedyNoise(object):
         self._stdNoise = value
 
     def sample_action(self, state):
-        a = np.array([self._actions[np.argmax(self._q_values(state))]]) + np.random.normal(0, self._stdNoise)
+        a = np.array([self._actions[np.argmax(self._q_values(state))]])
+        a[0][0] = a[0][0] + np.random.normal(0, self._stdNoise)
         a = np.clip(a, a_min=-1, a_max = 1)
         return a
 

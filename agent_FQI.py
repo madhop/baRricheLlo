@@ -3,7 +3,7 @@ import compute_state_features as csf
 import pandas as pd
 from scipy import spatial
 import pickle
-from trlib.policies.valuebased import EpsilonGreedy, Softmax
+from trlib.policies.valuebased import EpsilonGreedy, Softmax, EpsilonGreedyNoise
 from fqi.utils import *
 
 class AgentFQI(object):
@@ -22,6 +22,10 @@ class AgentFQI(object):
         elif policy_type == 'boltzmann':
             tau = 2
             self.policy = Softmax(pi.actions, pi.Q, tau)
+        elif policy_type == 'greedy_noise':
+            epsilon = 0
+            std = 0.01
+            self.policy = EpsilonGreedyNoise(pi.actions, pi.Q, epsilon, std)
 
         # load action dispatcher object
         with open(action_dispatcher_path, 'rb') as ad:

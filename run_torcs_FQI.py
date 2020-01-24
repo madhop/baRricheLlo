@@ -146,7 +146,7 @@ if __name__ == "__main__":
 
 
     algorithm_name = 'temporal_penalty_xy_reward_model.pkl'#'temporal_penalty_xy_reward_boltzmann_model.pkl'#'temporal_penalty_reward_model.pkl'#'temporal_penalty_reward_greddy_model.pkl'
-    policy_type = 'boltzmann'#'greedy'
+    policy_type = 'greedy_noise'#'greedy'#'boltzmann'#
     playGame(algorithm_name, policy_type)
     file_name = "preprocessed_torcs_algo"
     output_file = "trajectory/dataset_offroad.csv"
