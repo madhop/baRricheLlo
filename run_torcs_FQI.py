@@ -31,7 +31,7 @@ def playGame(algorithm_name, policy_type):
     raw_output_name = 'raw_data_algo.csv'
     policy_path = 'model_file/policy_' + algorithm_name
     action_dispatcher_path = 'model_file/AD_' + algorithm_name
-    episode_count = 7
+    episode_count = 5
     max_steps = 100000
     reward = 0
     done = False
@@ -145,10 +145,11 @@ if __name__ == "__main__":
         buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)"""
 
 
-    algorithm_name = 'temporal_penalty_xy_reward_reduced_model.pkl'#'temporal_penalty_xy_reward_model.pkl'#'temporal_penalty_xy_reward_boltzmann_model.pkl'#'temporal_penalty_reward_model.pkl'#'temporal_penalty_reward_greddy_model.pkl'
-    policy_type = 'greedy_noise'#'boltzmann'#'greedy'#
-    playGame(algorithm_name, policy_type)
-    file_name = "preprocessed_torcs_algo"
-    output_file = "trajectory/dataset_offroad.csv"
-    preprocess_raw_torcs(file_name, output_file)
-    buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)
+    algorithm_name = 'temporal_penalty_xy_reward_model.pkl'#'temporal_penalty_xy_reward_model.pkl'#'temporal_penalty_xy_reward_boltzmann_model.pkl'#'temporal_penalty_reward_model.pkl'#'temporal_penalty_reward_greddy_model.pkl'
+    #policy_type = 'boltzmann'#'greedy'#'greedy_noise'#
+    for policy_type in ['boltzmann', 'greedy_noise']:
+        playGame(algorithm_name, policy_type)
+        file_name = "preprocessed_torcs_algo"
+        output_file = "trajectory/dataset_offroad.csv"
+        preprocess_raw_torcs(file_name, output_file)
+        buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)

@@ -24,7 +24,7 @@ class AgentFQI(object):
             self.policy = Softmax(pi.actions, pi.Q, tau)
         elif policy_type == 'greedy_noise':
             epsilon = 0
-            std = 0.01
+            std = 0.005
             self.policy = EpsilonGreedyNoise(pi.actions, pi.Q, epsilon, std)
 
         # load action dispatcher object
