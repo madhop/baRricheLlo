@@ -1,6 +1,6 @@
 *.pyc
 *.csv
-
+.idea/
 compute_state_features_luca.py
 test_umbi.py
 
