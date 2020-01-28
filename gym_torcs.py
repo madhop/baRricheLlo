@@ -146,24 +146,28 @@ class TorcsEnv(gym.Env):
         # Get the current full-observation from torcs
         obs = client.S.d
 
+        # Compute reward only if the agent is driving
+        if raw:
+            reward = 0
+        else:
+            # Reward computation
+            # Compute the current state
+            current_state = self.observation_to_state(self.observation, self.p1_observation, self.p2_observation,
+                                                      self.prev_u)
+            # Compute the next state
+            next_state = self.observation_to_state(self.make_observation(obs), self.observation, self.p1_observation, u)
+
+            data = pd.DataFrame(data=[current_state + [0], next_state + [obs['trackPos']]], columns=self.state_cols + ['trackPos'])
+            reward = self.reward_function(data)
+
+        # Save u as previous action for the next step
+        self.prev_u = u
+
         # Save the old observations
         self.p2_observation = self.p1_observation
         self.p1_observation = self.observation
-
         # Make an observation from a raw observation vector from TORCS
         self.observation = self.make_observation(obs)
-
-        # Reward setting Here TODO #######################################
-        # direction-dependent positive reward
-        #track = np.array(obs['track'])
-        sp = np.array(obs['speed_x'])
-        progress = sp*np.cos(obs['angle'])
-        reward = progress
-        """sp = np.array(obs['speed_x'])
-        progress = sp*np.cos(obs['angle'])
-        d = {'xCarWorld': self.observation['x'], 'yCarWorld': self.observation['y']}
-        reward = self.reward_function(pd.DataFrame(d, index = [0]))
-        print('reward:', reward)"""
 
         # Termination judgement #########################
         if (obs['distFromStart'] < 50) and (not raw):
@@ -179,17 +183,6 @@ class TorcsEnv(gym.Env):
             reward = 0
         else:
             collision = False
-
-        """if self.terminal_judge_start < self.time_step: # Episode terminates if the progress of agent is small
-            if progress < self.termination_limit_progress:
-                episode_terminate = True
-                #client.R.d['meta'] = True
-
-        if np.cos(obs['angle']) < 0: # Episode is terminated if the agent runs backward
-            episode_terminate = True
-            #client.R.d['meta'] = True
-
-        """
 
         if client.R.d['meta'] is True: # Send a reset signal
             self.initial_run = False

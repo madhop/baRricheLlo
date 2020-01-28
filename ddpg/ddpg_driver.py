@@ -866,7 +866,6 @@ class DDPG(OffPolicyRLModel):
                     self._update_target_net()
 
                     print("Iteration: {}, norm_grad {}".format(t_train, a_grad))
-                    
                     # increment counter
                     t_train += 1
 
