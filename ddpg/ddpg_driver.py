@@ -807,7 +807,7 @@ class DDPG(OffPolicyRLModel):
                 self.param_noise_stddev: self.param_noise.current_stddev,
             })
 
-    def batch_pretraining(self, batch_samples, max_iterations=100, tol=1e5, tb_log_name="DDPG",
+    def batch_pretraining(self, batch_samples, max_iterations=1000, tol=1e-5, tb_log_name="DDPG",
                           reset_num_timesteps=True, replay_wrapper=None):
         """Perform training of the networks until either maximum iterations or gradient step tolerance are reached.
         The training is using the replay buffer that contains samples from expert demonstrations.
@@ -847,6 +847,7 @@ class DDPG(OffPolicyRLModel):
                 t_train = 0
                 a_grad = np.inf
                 while(t_train < max_iterations) and (a_grad > tol):
+                    
                     # Not enough samples in the replay buffer
                     if not self.replay_buffer.can_sample(self.batch_size):
                         break
@@ -864,8 +865,15 @@ class DDPG(OffPolicyRLModel):
                     epoch_actor_losses.append(actor_loss)
                     self._update_target_net()
 
+                    print("Iteration: {}, norm_grad {}".format(t_train, a_grad))
+                    
                     # increment counter
                     t_train += 1
+
+                if t_train == max_iterations:
+                    print('Max iterations reached')
+                else:
+                    print('Gradient tolerance reached')
 
     def learn(self, total_timesteps, callback=None, log_interval=100, tb_log_name="DDPG",
               reset_num_timesteps=True, replay_wrapper=None):

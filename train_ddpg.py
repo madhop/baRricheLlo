@@ -39,7 +39,7 @@ n_actions = 3
 param_noise = None
 action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.1) * np.ones(n_actions))
 
-model = DDPG(MlpPolicy, env, verbose=1, param_noise=param_noise, action_noise=action_noise)
+model = DDPG(MlpPolicy, env, verbose=1, param_noise=param_noise, action_noise=action_noise, batch_size=5000)
 
 batch_samples = list(zip(dataset[state_cols].values,
                          dataset[action_cols].values,
@@ -48,7 +48,7 @@ batch_samples = list(zip(dataset[state_cols].values,
                          dataset['absorbing'].values))
 
 print('Started batch pretraining')
-model.batch_pretraining(batch_samples, max_iterations=10, tol=1e-20)
+model.batch_pretraining(batch_samples, max_iterations=3000, tol=1e-10)
 print('Finished batch pretraining')
 model.save("model_file/ddpg_torcs")
 print('Model saved.')
