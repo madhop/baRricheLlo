@@ -4,30 +4,71 @@ import snakeoil3_gym as snakeoil3
 import numpy as np
 import pandas as pd
 import copy
-import collections as col
+import compute_state_features as csf
+from scipy import spatial
 import os
 import time
 from utils_torcs import *
 
 
-class TorcsEnv:
+class TorcsEnv(gym.Env):
     terminal_judge_start = 500  # Speed limit is applied after this step
     termination_limit_progress = 5  # [km/h], episode terminates if car is running slower than this limit
     default_speed = 300
 
     initial_reset = True
 
-
-    def __init__(self, reward_function, vision=False, throttle=False, gear_change=False, brake=False):
-       #print("Init")
+    def __init__(self, reward_function, state_cols, ref_df, vision=False, throttle=False, gear_change=False,
+                 brake=False, start_env=True, track_length=5783.85, damage_th=4):
+        # print("Init")
         self.vision = vision
         self.throttle = throttle
         self.gear_change = gear_change
         self.brake = brake
         self.reward_function = reward_function
 
-        self.initial_run = True
+        self.track_length = track_length
+        self.damage_th = damage_th
 
+        # save variables used for feature extraction
+        self.state_cols = state_cols
+        self.ref_df = ref_df
+        self.tree = spatial.KDTree(list(zip(ref_df['xCarWorld'], ref_df['yCarWorld'])))
+
+        # Create action space
+        if gear_change:
+            high = np.array([1., 1., 1., 7])
+            low = np.array([-1., 0., 0., 1])
+        else:
+            high = np.array([1., 1., 1.])
+            low = np.array([-1., 0., 0.])
+
+        self.action_space = spaces.Box(low=low, high=high, dtype=np.float32)
+
+        # Create observation space
+        state_dim = len(state_cols)
+
+        high = np.ones(state_dim) * np.inf
+        low = np.ones(state_dim) * (-np.inf)
+        self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
+
+        # Create observation variables that comes from make_observations method
+        # they are dictionaries containing raw torcs measurements
+        self.observation = None
+        self.p1_observation = None
+        self.p2_observation = None
+
+        # Create state variable
+        self.state = None
+
+        self.initial_run = True
+        if start_env:
+            self.start_env()
+        """
+        obs = client.S.d  # Get the current full-observation from torcs
+        """
+
+    def start_env(self):
         ##print("launch torcs")
         os.system('pkill torcs')
         time.sleep(0.5)
@@ -35,16 +76,12 @@ class TorcsEnv:
             os.system('torcs -nofuel -nodamage -nolaptime  -vision &')
         else:
             os.system('torcs  -nofuel -nodamage -nolaptime &')
-            #os.system('torcs -r &')
+            # os.system('torcs -r &')
         time.sleep(0.5)
-        os.system('sh autostart.sh')    # autostart Practice
+        os.system('sh autostart.sh')  # autostart Practice
         time.sleep(0.5)
 
-        """
-        obs = client.S.d  # Get the current full-observation from torcs
-        """
-
-    def step(self, u):
+    def step(self, u, raw=False):
         #print("Step")
         # convert thisAction to the actual torcs actionstr
         client = self.client
@@ -58,7 +95,7 @@ class TorcsEnv:
         # Steering
         action_torcs['steer'] = this_action['steer']  # in [-1, 1]
 
-        #  Simple Autnmatic Throttle Control by Snakeoil
+        # Simple Automatic Throttle Control by Snakeoil
         if self.throttle is False:
             target_speed = self.default_speed
             if client.S.d['speed_x'] < target_speed - (client.R.d['steer']*50):
@@ -84,7 +121,13 @@ class TorcsEnv:
             action_torcs['gear'] = this_action['gear']
         else:
             #  Automatic Gear Change by Snakeoil is possible
-            action_torcs['gear'] = self.auto_gear_snakeoil(client.S.d['speed_x'])
+            # self.auto_gear_snakeoil(client.S.d['speed_x'])
+            # return 0 to call automatic gear change
+            action_torcs['gear'] = 0
+
+        # In the case of autodriver to exit from the pitstop we set the gear to 7
+        if raw:
+            action_torcs['gear'] = 7
 
         # braking
         if self.brake is True:
@@ -103,8 +146,12 @@ class TorcsEnv:
         # Get the current full-observation from torcs
         obs = client.S.d
 
-        # Make an obsevation from a raw observation vector from TORCS
-        self.observation = self.make_observaton(obs)
+        # Save the old observations
+        self.p2_observation = self.p1_observation
+        self.p1_observation = self.observation
+
+        # Make an observation from a raw observation vector from TORCS
+        self.observation = self.make_observation(obs)
 
         # Reward setting Here TODO #######################################
         # direction-dependent positive reward
@@ -119,13 +166,19 @@ class TorcsEnv:
         print('reward:', reward)"""
 
         # Termination judgement #########################
-        episode_terminate = False
+        if (obs['distFromStart'] < 50) and (not raw):
+            # we passed the start line
+            episode_terminate = True
+        else:
+            episode_terminate = False
 
         # collision detection
-        if obs['damage'] - obs_pre['damage'] > 2:
+        if obs['damage'] - obs_pre['damage'] > self.damage_th:
             print('Hit wall')
-            episode_terminate = True
+            collision = True
             reward = 0
+        else:
+            collision = False
 
         """if self.terminal_judge_start < self.time_step: # Episode terminates if the progress of agent is small
             if progress < self.termination_limit_progress:
@@ -138,18 +191,30 @@ class TorcsEnv:
 
         """
 
-
         if client.R.d['meta'] is True: # Send a reset signal
             self.initial_run = False
             client.respond_to_server()
 
         self.time_step += 1
 
-        #return self.get_obs(), reward, client.R.d['meta'], {}
-        return self.get_obs(), reward, episode_terminate, {}
+        # return self.get_obs(), reward, client.R.d['meta'], {}
+
+        # The episode ends when the car reaches the start or when a collision has occurred
+        # however, the episode is considered a "success" only if the start is reached
+        info = {'collision': collision, 'is_success': episode_terminate}
+        done = episode_terminate or collision
+
+        if raw:
+            # If raw then return current observation otherwise return the state
+            return self.get_obs(), reward, done, info
+
+        else:
+            # Transform raw torcs data to state
+            self.state = self.observation_to_state(self.observation, self.p1_observation, self.p2_observation, u)
+            return self.get_state(), reward, done, info
 
     def reset(self, relaunch=False):
-        #print("Reset")
+        # print("Reset")
 
         self.time_step = 0
 
@@ -157,7 +222,7 @@ class TorcsEnv:
             self.client.R.d['meta'] = True
             self.client.respond_to_server()
 
-            ## TENTATIVE. Restarting TORCS every episode suffers the memory leak bug!
+            # TENTATIVE. Restarting TORCS every episode suffers the memory leak bug!
             if relaunch is True:
                 self.reset_torcs()
                 print("### TORCS is RELAUNCHED ###")
@@ -169,12 +234,54 @@ class TorcsEnv:
         client = self.client
         client.get_servers_input()  # Get the initial input from torcs
 
-        obs = client.S.d  # Get the current full-observation from torcs
-        self.observation = self.make_observaton(obs)
+        ob = client.S.d  # Get the current full-observation from torcs
+        # Save observation variables
+        self.observation = self.make_observation(ob)
+        self.p1_observation = self.observation
+        self.p2_observation = self.observation
 
         self.last_u = None
 
         self.initial_reset = False
+
+        noise1 = 0  # (np.random.rand()-0.5)*0.002
+        noise2 = 0  # (np.random.rand()-0.5)*0.002
+        auto_drive = True
+        start_line = False
+
+        os.system('sh slow_time_down.sh')
+        time.sleep(0.5)
+        print('Started auto driving')
+        while auto_drive:
+            ob_distFromStart = self.observation['distFromStart']
+
+            if ob_distFromStart < 100 and not start_line:  # just passed start line
+                print('Start Line')
+                start_line = True
+                action = [0, 0, 1, 7]
+                # Save old observations and get new one
+                self.observation, _, done, _ = self.step(action, raw=True)
+            elif ob_distFromStart < 5650.26 and not start_line:  # exit from pit stop
+                # print('-', j)
+                action = [0.012 + noise1, 0, 1, 7]
+                # Save old observations and get new one
+                self.observation, _, done, _ = self.step(action, raw=True)
+            elif ob_distFromStart < 5703.24 and not start_line:
+                # print('--', j)
+                action = [-0.033 + noise2, 0, 1, 7]
+                # Save old observations and get new one
+                self.observation, _, done, _ = self.step(action, raw=True)
+            elif ob_distFromStart < self.track_length and not start_line:
+                # print('---', j)
+                action = [0, 0, 1, 7]
+                # Save old observations and get new one
+                self.observation, _, done, _ = self.step(action, raw=True)
+            else:
+                # Start with agent driver and return the current state
+                auto_drive = False
+                print('Stopped auto driving')
+                return self.observation_to_state(self.observation, self.p1_observation, self.p2_observation, action)
+
         return self.get_obs()
 
     def end(self):
@@ -182,6 +289,9 @@ class TorcsEnv:
 
     def get_obs(self):
         return self.observation
+
+    def get_state(self):
+        return self.state
 
     def reset_torcs(self):
        #print("relaunch torcs")
@@ -211,8 +321,9 @@ class TorcsEnv:
 
         return torcs_action
 
-    def make_observaton(self, raw_obs):
+    def make_observation(self, raw_obs):
         return { k: np.array(raw_obs[k], dtype=np.float32) for k in torcs_features}
+
         """return {'angle' : np.array(raw_obs['angle'], dtype=np.float32),
                 'curLapTime' : np.array(raw_obs['curLapTime'], dtype=np.float32),
                 'damage' : np.array(raw_obs['damage'], dtype=np.float32),
@@ -233,6 +344,57 @@ class TorcsEnv:
                 'yaw' : np.array(raw_obs['yaw'], dtype=np.float32),
                 'speedGlobalX' : np.array(raw_obs['speedGlobalX'], dtype=np.float32),
                 'speedGlobalY' : np.array(raw_obs['speedGlobalY'], dtype=np.float32)}"""
+
+    def observation_to_state(self, ob, p_1, p_2, prev_action):
+        """Transform raw observation into state observation with extracted features
+        :param ob: (dict) raw torcs features
+        :param p_1: (dict) previous observation
+        :param p_2: (dict) two times previous observation
+        :param prev_action: (list) previous actions
+
+        :return obs: (list) state features in the order of the self.state_cols list
+        """
+        p = ob
+        nn = csf.nn_kdtree(np.array([p['x'], p['y']]), self.tree)
+        # check if you are at the end of the lap
+        if nn >= self.ref_df.shape[0] - 1:
+            nn = self.ref_df.shape[0] - 2
+        r = self.ref_df.iloc[nn]
+        r1 = self.ref_df.iloc[nn + 1]
+        r_1 = self.ref_df.iloc[nn - 1]
+
+        v_actual_module, v_ref_module, v_diff_module, v_diff_of_modules, v_angle = csf.velocity_acceleration(
+            np.array([p['speed_x'], p['speed_y']]), np.array([r['speed_x'], r['speed_y']]))
+        ap = np.array([p['Acceleration_x'], p['Acceleration_y']])
+        ar = np.array([r['Acceleration_x'], r['Acceleration_y']])
+        a_actual_module, a_ref_module, a_diff_module, a_diff_of_modules, a_angle = csf.velocity_acceleration(ap, ar)
+        rel_p, rho, theta = csf.position(np.array([r['xCarWorld'], r['yCarWorld']]),
+                                         np.array([r1['xCarWorld'], r1['yCarWorld']]), np.array([p['x'], p['y']]))
+        actual_c = csf.curvature(np.array([p['x'], p['y']]), np.array([p_1['x'], p_1['y']]),
+                                 np.array([p_2['x'], p_2['y']]))
+        ref_c = csf.curvature(np.array([r1['xCarWorld'], r1['yCarWorld']]), np.array([r['xCarWorld'], r['yCarWorld']]),
+                              np.array([r_1['xCarWorld'], r_1['yCarWorld']]))
+
+        state_features = {'xCarWorld': p['x'], 'yCarWorld': p['y'], 'nYawBody': p['yaw'], 'nEngine': p['rpm'],
+                          'NGear': p['Gear'],
+                          'positionRho': rho, 'positionTheta': theta, 'positionReferenceX': r['xCarWorld'],
+                          'positionReferenceY': r['yCarWorld'],
+                          'positionRelativeX': rel_p[0], 'positionRelativeY': rel_p[1], 'referenceCurvature': ref_c,
+                          'actualCurvature': actual_c,
+                          'actualSpeedModule': v_actual_module, 'speedDifferenceVectorModule': v_diff_module,
+                          'speedDifferenceOfModules': v_diff_of_modules,
+                          'actualAccelerationX': p['Acceleration_x'], 'actualAccelerationY': p['Acceleration_y'],
+                          'referenceAccelerationX': r['Acceleration_x'], 'referenceAccelerationY': r['Acceleration_y'],
+                          'accelerationDiffX': r['Acceleration_x'] - p['Acceleration_x'],
+                          'accelerationDiffY': r['Acceleration_y'] - p['Acceleration_y'],
+                          'prevaSteerWheel': prev_action[0], 'prevpBrakeF': prev_action[2],
+                          'prevrThrottlePedal': prev_action[1]}
+
+        observation = pd.DataFrame()
+        for k in self.state_cols:
+            observation.loc[0, k] = state_features[k]
+
+        return observation.values
 
     def auto_gear_snakeoil(self, speed_x):
         #  Automatic Gear Change by Snakeoil is possible
