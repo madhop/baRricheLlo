@@ -24,9 +24,13 @@ ref_df = pd.read_csv('trajectory/ref_traj.csv')
 ref_df.columns = ref_traj_cols
 
 reward_function = Temporal_projection(ref_df)
-simulations = pd.read_csv('trajectory/dataset_human.csv')
+simulations = pd.read_csv('trajectory/dataset_offroad_human.csv')
 # Reward function
-rf = Temporal_projection(ref_df)
+penalty = LikelihoodPenalty(kernel='gaussian', bandwidth=1.0)
+right_laps = np.array([ 1.,  8.,  9., 11., 14., 16., 17., 20., 45., 46., 49.,  59., 62.])
+penalty.fit(simulations[simulations.NLap.isin(right_laps)][penalty_cols].values)
+rf = Temporal_projection(ref_df, penalty=penalty)
+
 dataset = to_SARS(simulations, rf)
 
 env = TorcsEnv(reward_function, state_cols=state_cols, ref_df=ref_df, vision=False, throttle=True,
@@ -46,7 +50,7 @@ batch_samples = list(zip(dataset[state_cols].values,
 print('Started batch pretraining')
 model.batch_pretraining(batch_samples, max_iterations=10, tol=1e-20)
 print('Finished batch pretraining')
-model.save("../ddpg_torcs")
+model.save("model_file/ddpg_torcs")
 print('Model saved.')
 
 # model.learn(total_timesteps=2000)
