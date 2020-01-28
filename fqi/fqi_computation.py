@@ -24,13 +24,17 @@ from fqi.fqi_evaluate import run_evaluation
 
 def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, output_path, n_jobs,
                    output_name, reward_function, r_penalty, r_offroad_penalty, rp_kernel, rp_band, ad_type, tuning,
-                   tuning_file_name, kdt_norm, kdt_param, filt_a_outliers, double_fqi, policy_type, evaluation, first_step):
+                   tuning_file_name, kdt_norm, kdt_param, filt_a_outliers, double_fqi, policy_type, evaluation, first_step, how_many_laps):
 
     # Load dataset and refernce trajectory
     print('Loading data')
     simulations = pd.read_csv(os.path.join(data_path, track_file_name + '.csv'),
                               dtype={'isReference': bool, 'is_partial':bool})
     ref_tr = pd.read_csv(os.path.join(data_path, rt_file_name + '.csv'))
+
+    # Select only last 50 laps and reference lap
+    n_laps = simulations.tail(1).NLap.values.item(0)
+    simulations = simulations[(simulations.NLap == 17) | (simulations.NLap >= n_laps - how_many_laps)]
 
     if r_penalty:
         print('Computing penalty')

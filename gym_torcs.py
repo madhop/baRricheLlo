@@ -122,7 +122,7 @@ class TorcsEnv:
         episode_terminate = False
 
         # collision detection
-        if obs['damage'] - obs_pre['damage'] > 2:
+        if obs['damage'] - obs_pre['damage'] > 4:
             print('Hit wall')
             episode_terminate = True
             reward = 0

@@ -45,7 +45,8 @@ evaluation = False
 first_step = False
 output_name
 print(output_name)
+how_many_laps = 70
 
 run_experiment(track_file_name, rt_file_name, data_path, max_iterations, output_path, n_jobs,
                output_name, reward_function, r_penalty, r_offroad_penalty, rp_kernel, rp_band, 'rkdt', False,
-               '', False, 10, filt_a_outliers, True, policy_type, evaluation, first_step)
+               '', False, 10, filt_a_outliers, True, policy_type, evaluation, first_step, how_many_laps)
