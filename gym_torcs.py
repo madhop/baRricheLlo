@@ -19,7 +19,7 @@ class TorcsEnv(gym.Env):
     initial_reset = True
 
     def __init__(self, reward_function, state_cols, ref_df, vision=False, throttle=False, gear_change=False,
-                 brake=False, start_env=True, track_length=5783.85, damage_th=4.0, slow=True):
+                 brake=False, start_env=True, track_length=5783.85, damage_th=4.0, slow=True, graphic=True):
         # print("Init")
         self.vision = vision
         self.throttle = throttle
@@ -27,6 +27,7 @@ class TorcsEnv(gym.Env):
         self.brake = brake
         self.reward_function = reward_function
 
+        self.graphic = graphic
         self.slow = slow
         self.track_length = track_length
         self.damage_th = damage_th
@@ -65,23 +66,10 @@ class TorcsEnv(gym.Env):
 
         self.initial_run = True
         if start_env:
-            self.start_env()
+            self.reset_torcs()
         """
         obs = client.S.d  # Get the current full-observation from torcs
         """
-
-    def start_env(self):
-        ##print("launch torcs")
-        os.system('pkill torcs')
-        time.sleep(0.5)
-        if self.vision is True:
-            os.system('torcs -nofuel -nodamage -nolaptime  -vision &')
-        else:
-            os.system('torcs  -nofuel -nodamage -nolaptime &')
-            # os.system('torcs -r &')
-        time.sleep(0.5)
-        os.system('sh autostart.sh')  # autostart Practice
-        time.sleep(0.5)
 
     def step(self, u, raw=False):
         #print("Step")
@@ -163,8 +151,8 @@ class TorcsEnv(gym.Env):
                                 columns=self.state_cols + ['trackPos'])
             reward = self.reward_function(data)
 
-        #print('T={} B={} S={} r={} d={}'.format(action_torcs['accel'], action_torcs['brake'], action_torcs['steer'],
-        #                                        reward, obs['damage'] - obs_pre['damage']))
+        print('T={} B={} S={} r={} d={}'.format(action_torcs['accel'], action_torcs['brake'], action_torcs['steer'],
+                                                reward, obs['damage'] - obs_pre['damage']))
 
         # Save u as previous action for the next step
         self.prev_u = u
@@ -231,7 +219,7 @@ class TorcsEnv(gym.Env):
                 print("### TORCS is RELAUNCHED ###")
 
         # Modify here if you use multiple tracks in the environment
-        self.client = snakeoil3.Client(p=3001, vision=self.vision)  # Open new UDP in vtorcs
+        self.client = snakeoil3.Client(p=3001, vision=self.vision, graphic=self.graphic)  # Open new UDP in vtorcs
         self.client.MAX_STEPS = np.inf
 
         client = self.client
@@ -298,14 +286,20 @@ class TorcsEnv(gym.Env):
         return self.state
 
     def reset_torcs(self):
-       #print("relaunch torcs")
+        #print("relaunch torcs")
         os.system('pkill torcs')
         time.sleep(0.5)
-        if self.vision is True:
-            os.system('torcs -nofuel -nodamage -nolaptime -vision &')
+        if self.graphic:
+            command_str = 'torcs -nofuel -nodamage -nolaptime'
         else:
-            os.system('torcs -nofuel -nodamage -nolaptime &')
+            command_str = 'torcs -r /home/alessandro/.torcs/config/raceman/practice.xml -nofuel -nodamage -nolaptime'
+        if self.vision is True:
+            command_str += ' -vision'
+            # os.system('torcs -nofuel -nodamage -nolaptime -vision &')
+        #else:
+            # os.system('torcs -nofuel -nodamage -nolaptime &')
             #os.system('torcs -T -nofuel -nodamage -nolaptime &')
+        os.system(command_str + ' &')
         time.sleep(0.5)
         os.system('sh autostart.sh')
         time.sleep(0.5)
