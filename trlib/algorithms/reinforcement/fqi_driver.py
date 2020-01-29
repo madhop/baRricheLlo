@@ -1,4 +1,5 @@
 import numpy as np
+import pickle
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.neighbors import KDTree
 from trlib.algorithms.algorithm import Algorithm
@@ -444,6 +445,13 @@ class DoubleFQIDriver(Algorithm):
         fit_time_list = []
         for i in range(self._max_iterations):
             maxq_time, fit_time = self._iter(sa, r, s_prime, absorbing, **kwargs)
+
+
+            ## save Q pickle
+            Q_pickle_name = './model_file/Qs/Q' + str(self._iteration) + '.pkl'
+            with open(Q_pickle_name, 'wb') as output:
+                pickle.dump(self._policy.Q, output, pickle.HIGHEST_PROTOCOL)
+
 
             maxq_time_list = maxq_time_list + [maxq_time]
             fit_time_list = fit_time_list + [fit_time]

@@ -35,7 +35,7 @@ class TorcsEnv:
             os.system('torcs -nofuel -nodamage -nolaptime  -vision &')
         else:
             os.system('torcs  -nofuel -nodamage -nolaptime &')
-            #os.system('torcs -r &')
+            #os.system('torcs -r /home/umberto/.torcs/config/raceman/practice.xml -nofuel -nodamage -nolaptime &')
         time.sleep(0.5)
         os.system('sh autostart.sh')    # autostart Practice
         time.sleep(0.5)
@@ -191,7 +191,7 @@ class TorcsEnv:
             os.system('torcs -nofuel -nodamage -nolaptime -vision &')
         else:
             os.system('torcs -nofuel -nodamage -nolaptime &')
-            #os.system('torcs -T -nofuel -nodamage -nolaptime &')
+            #os.system('torcs -r /home/umberto/.torcs/config/raceman/practice.xml -nofuel -nodamage -nolaptime &')
         time.sleep(0.5)
         os.system('sh autostart.sh')
         time.sleep(0.5)

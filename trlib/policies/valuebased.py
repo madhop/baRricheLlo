@@ -131,7 +131,10 @@ class Softmax(ValueBased):
 
         num = self._q_values(state)
         exps = np.exp(num / self._tau)
-        return exps / np.sum(exps)
+        l = exps / np.sum(exps)
+        idx = np.isnan(l)
+        l[idx] = np.min(l[~idx])
+        return list(l)
 
     def sample_action(self, state):
 

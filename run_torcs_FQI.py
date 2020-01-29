@@ -68,7 +68,7 @@ def playGame(algorithm_name, policy_type):
         time.sleep(0.5)
 
         total_reward = 0.
-        noise1 = 0#(np.random.rand()-0.5)*0.002
+        noise1 = 0 #(np.random.rand()-0.5)*0.002
         noise2 = 0#(np.random.rand()-0.5)*0.002
         for j in range(max_steps):
             if ob['distFromStart'] < 100 and not start_line:    # just passed start line
@@ -145,7 +145,7 @@ if __name__ == "__main__":
         buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)"""
 
 
-    algorithm_name = 'temporal_penalty_xy_reward_model.pkl'#'temporal_penalty_xy_reward_model.pkl'#'temporal_penalty_xy_reward_boltzmann_model.pkl'#'temporal_penalty_reward_model.pkl'#'temporal_penalty_reward_greddy_model.pkl'
+    algorithm_name = 'temporal_penalty_xy_reward_model_old.pkl'#'temporal_penalty_xy_reward_model.pkl'#'temporal_penalty_xy_reward_boltzmann_model.pkl'#'temporal_penalty_reward_model.pkl'#'temporal_penalty_reward_greddy_model.pkl'
     #policy_type = 'boltzmann'#'greedy'#'greedy_noise'#
     for policy_type in ['boltzmann', 'greedy_noise']:
         playGame(algorithm_name, policy_type)

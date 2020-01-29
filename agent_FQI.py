@@ -24,13 +24,13 @@ class AgentFQI(object):
             self.policy = Softmax(pi.actions, pi.Q, tau)
         elif policy_type == 'greedy_noise':
             epsilon = 0
-            std = 0.005
+            std = 0.003
             self.policy = EpsilonGreedyNoise(pi.actions, pi.Q, epsilon, std)
 
         # load action dispatcher object
         with open(action_dispatcher_path, 'rb') as ad:
             self.action_dispatcher = pickle.load(ad)
-
+            
 
     def make_observaton(self, ob, p_1, p_2, prev_action):
         """

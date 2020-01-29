@@ -32,7 +32,7 @@ def run_experiment(track_file_name, rt_file_name, data_path, max_iterations, out
                               dtype={'isReference': bool, 'is_partial':bool})
     ref_tr = pd.read_csv(os.path.join(data_path, rt_file_name + '.csv'))
 
-    # Select only last 50 laps and reference lap
+    # Train only on the last "how_many_laps" laps and reference lap
     n_laps = simulations.tail(1).NLap.values.item(0)
     simulations = simulations[(simulations.NLap == 17) | (simulations.NLap >= n_laps - how_many_laps)]
 
