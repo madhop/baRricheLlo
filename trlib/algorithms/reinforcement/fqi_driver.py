@@ -447,11 +447,12 @@ class DoubleFQIDriver(Algorithm):
             maxq_time, fit_time = self._iter(sa, r, s_prime, absorbing, **kwargs)
 
 
-            ## save Q pickle
-            Q_pickle_name = './model_file/Qs/Q' + str(self._iteration) + '.pkl'
-            print('Save Q')
-            with open(Q_pickle_name, 'wb') as output:
-                pickle.dump(self._policy.Q, output, pickle.HIGHEST_PROTOCOL)
+            ## save policy pickle at each iteration
+            if (self._iteration+1)%5 == 0:
+                policy_pickle_name = './model_file/Policies/Policy' + str(self._iteration) + '.pkl'
+                print('Save Q')
+                with open(policy_pickle_name, 'wb') as output:
+                    pickle.dump(self._policy, output, pickle.HIGHEST_PROTOCOL)
 
 
             maxq_time_list = maxq_time_list + [maxq_time]

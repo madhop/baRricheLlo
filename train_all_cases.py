@@ -30,8 +30,6 @@ n_jobs = 10
 r_penalty = True
 r_offroad_penalty = True
 
-#reward_function = 'temporal'
-#output_name = reward_function + ('_penalty_xy' if r_penalty else '') + '_reward_model'
 reward_function = 'temporal'
 output_name = reward_function + ('_penalty_xy' if r_penalty else '') + '_reward_model'
 
