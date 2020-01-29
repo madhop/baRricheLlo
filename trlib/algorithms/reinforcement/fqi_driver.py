@@ -449,6 +449,7 @@ class DoubleFQIDriver(Algorithm):
 
             ## save Q pickle
             Q_pickle_name = './model_file/Qs/Q' + str(self._iteration) + '.pkl'
+            print('Save Q')
             with open(Q_pickle_name, 'wb') as output:
                 pickle.dump(self._policy.Q, output, pickle.HIGHEST_PROTOCOL)
 

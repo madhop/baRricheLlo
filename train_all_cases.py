@@ -30,8 +30,10 @@ n_jobs = 10
 r_penalty = True
 r_offroad_penalty = True
 
+#reward_function = 'temporal'
+#output_name = reward_function + ('_penalty_xy' if r_penalty else '') + '_reward_model'
 reward_function = 'temporal'
-output_name = reward_function + ('_penalty_xy' if r_penalty else '') + '_reward_model'#'first_model'
+output_name = reward_function + ('_penalty_xy' if r_penalty else '') + '_reward_model'
 
 
 rp_kernel = 'gaussian'#'exponential'
@@ -42,10 +44,10 @@ filt_a_outliers = False
 policy_type = 'greedy'#'boltzmann'
 evaluation = False
 
-first_step = False
+first_step = True
 output_name
 print(output_name)
-how_many_laps = 70
+how_many_laps = 1000#70
 
 run_experiment(track_file_name, rt_file_name, data_path, max_iterations, output_path, n_jobs,
                output_name, reward_function, r_penalty, r_offroad_penalty, rp_kernel, rp_band, 'rkdt', False,
