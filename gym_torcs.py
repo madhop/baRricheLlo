@@ -19,7 +19,7 @@ class TorcsEnv(gym.Env):
     initial_reset = True
 
     def __init__(self, reward_function, state_cols, ref_df, vision=False, throttle=False, gear_change=False,
-                 brake=False, start_env=True, track_length=5783.85, damage_th=4):
+                 brake=False, start_env=True, track_length=5783.85, damage_th=4.0, slow=True):
         # print("Init")
         self.vision = vision
         self.throttle = throttle
@@ -27,6 +27,7 @@ class TorcsEnv(gym.Env):
         self.brake = brake
         self.reward_function = reward_function
 
+        self.slow = slow
         self.track_length = track_length
         self.damage_th = damage_th
 
@@ -36,6 +37,7 @@ class TorcsEnv(gym.Env):
         self.tree = spatial.KDTree(list(zip(ref_df['xCarWorld'], ref_df['yCarWorld'])))
 
         # Create action space
+        # order: steer, brake, throttle
         if gear_change:
             high = np.array([1., 1., 1., 7])
             low = np.array([-1., 0., 0., 1])
@@ -133,8 +135,7 @@ class TorcsEnv(gym.Env):
         if self.brake is True:
             action_torcs['brake'] = this_action['brake']
 
-        #print(action_torcs)
-        # Save the privious full-obs from torcs to check if hit wall
+        # Save the previous full-obs from torcs to check if hit wall
         obs_pre = copy.deepcopy(client.S.d)
 
         # One-Step Dynamics Update #################################
@@ -154,11 +155,16 @@ class TorcsEnv(gym.Env):
             # Compute the current state
             current_state = self.observation_to_state(self.observation, self.p1_observation, self.p2_observation,
                                                       self.prev_u)
+            current_state_df = np.concatenate([current_state.reshape(1, -1), np.zeros((1, 1))], axis=1)
             # Compute the next state
             next_state = self.observation_to_state(self.make_observation(obs), self.observation, self.p1_observation, u)
-
-            data = pd.DataFrame(data=[current_state + [0], next_state + [obs['trackPos']]], columns=self.state_cols + ['trackPos'])
+            next_state_df = np.concatenate([next_state.reshape(1, -1), np.ones((1, 1)) * obs['trackPos']], axis=1)
+            data = pd.DataFrame(data=np.concatenate([current_state_df, next_state_df], axis=0),
+                                columns=self.state_cols + ['trackPos'])
             reward = self.reward_function(data)
+
+        #print('T={} B={} S={} r={} d={}'.format(action_torcs['accel'], action_torcs['brake'], action_torcs['steer'],
+        #                                        reward, obs['damage'] - obs_pre['damage']))
 
         # Save u as previous action for the next step
         self.prev_u = u
@@ -169,12 +175,16 @@ class TorcsEnv(gym.Env):
         # Make an observation from a raw observation vector from TORCS
         self.observation = self.make_observation(obs)
 
-        # Termination judgement #########################
-        if (obs['distFromStart'] < 50) and (not raw):
-            # we passed the start line
-            episode_terminate = True
-        else:
+        # The car passed the start line if the previous observation is before and the current is after it
+        if raw:
             episode_terminate = False
+        else:
+            if (self.prev_obs['distFromStart'] > self.track_length - 50) and (obs['distFromStart'] < 50):
+                # we passed the start line
+                print('Start reached!')
+                episode_terminate = True
+            else:
+                episode_terminate = False
 
         # collision detection
         if obs['damage'] - obs_pre['damage'] > self.damage_th:
@@ -190,7 +200,7 @@ class TorcsEnv(gym.Env):
 
         self.time_step += 1
 
-        # return self.get_obs(), reward, client.R.d['meta'], {}
+        self.prev_obs = obs
 
         # The episode ends when the car reaches the start or when a collision has occurred
         # however, the episode is considered a "success" only if the start is reached
@@ -242,7 +252,8 @@ class TorcsEnv(gym.Env):
         auto_drive = True
         start_line = False
 
-        os.system('sh slow_time_down.sh')
+        if self.slow:
+            os.system('sh slow_time_down.sh')
         time.sleep(0.5)
         print('Started auto driving')
         while auto_drive:
@@ -387,7 +398,7 @@ class TorcsEnv(gym.Env):
         for k in self.state_cols:
             observation.loc[0, k] = state_features[k]
 
-        return observation.values
+        return observation.values.reshape(-1, 1).ravel()
 
     def auto_gear_snakeoil(self, speed_x):
         #  Automatic Gear Change by Snakeoil is possible

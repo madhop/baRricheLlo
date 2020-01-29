@@ -47,6 +47,8 @@ batch_samples = list(zip(dataset[state_cols].values,
                          dataset[state_prime_cols].values,
                          dataset['absorbing'].values))
 
+# batch_samples = dataset[state_cols + action_cols + ['r'] + state_prime_cols + ['absorbing']]
+
 print('Started batch pretraining')
 model.batch_pretraining(batch_samples, max_iterations=3000, tol=1e-10)
 print('Finished batch pretraining')

@@ -287,7 +287,7 @@ class LikelihoodPenalty(RewardPenalty):
         mask = np.absolute(trackPos) > 1
         trackPos[~mask] = 0
         trackPos[mask] = -np.absolute(trackPos[mask])*20#-50
-        trackPos = np.clip(trackPos, a_min=-50, a_max = None)
+        trackPos = np.clip(trackPos, a_min=-50, a_max=None)
         return self.alpha * logp + self.scale_f + trackPos
 
 
