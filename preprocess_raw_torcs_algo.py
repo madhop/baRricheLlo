@@ -6,9 +6,11 @@ import compute_state_features as sf
 def preprocess_raw_torcs(output_name = "preprocessed_torcs_algo", output_file = 'trajectory/dataset.csv'):
     track_length = 5780
 
-    dataset = pd.read_csv(output_file)
-    n_laps = dataset.tail(1)['NLap'].values
-    #print('n_laps:', n_laps)
+    try:
+        dataset = pd.read_csv(output_file)
+        n_laps = dataset.tail(1)['NLap'].values
+    except Exception as e:
+        n_laps = 0
 
     raw_df = pd.read_csv('raw_torcs_data/raw_data_algo.csv', dtype='str')
     raw_df['NLap'] = 0

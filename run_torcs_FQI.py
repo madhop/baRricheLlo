@@ -23,14 +23,16 @@ def emptyStoreObs():
         store_obs[a] = []
     return store_obs
 
-def playGame(algorithm_name, policy_type, episode_count):
+def playGame(algorithm_name, policy_type, episode_count, policy_path = None, action_dispatcher_path = None):
     print('Using model:', algorithm_name)
     start_line = False
     track_length = 5783.85
     raw_output_path = 'raw_torcs_data/'
     raw_output_name = 'raw_data_algo.csv'
-    policy_path = 'model_file/policy_' + algorithm_name
-    action_dispatcher_path = 'model_file/AD_' + algorithm_name
+    if policy_path is None:
+        policy_path = 'model_file/policy_' + algorithm_name
+    if action_dispatcher_path is None:
+        action_dispatcher_path = 'model_file/AD_' + algorithm_name
     max_steps = 100000
     reward = 0
     done = False

@@ -133,7 +133,11 @@ class Softmax(ValueBased):
         exps = np.exp(num / self._tau)
         l = exps / np.sum(exps)
         idx = np.isnan(l)
-        l[idx] = np.min(l[~idx])
+        try:
+            l[idx] = np.min(l[~idx])
+        except Exception as e:
+            l = [(1/len(l))]* len(l)
+            print('l:', l)
         return list(l)
 
     def sample_action(self, state):
