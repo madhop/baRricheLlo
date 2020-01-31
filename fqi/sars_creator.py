@@ -31,7 +31,12 @@ def to_SARS(data, reward_function):
             absorbing[-1] = True
         absorbing = pd.DataFrame({'absorbing': absorbing}, dtype=bool)
 
-        episodes[e] = pd.concat((nlap, timestamp, state_action, reward, state_prime, absorbing), axis=1)
+        # episode starts: similarly to absoribing it is True for the first sample
+        starts = np.full([n_samples - 1, ], False)
+        starts[0] = True
+        episode_starts = pd.DataFrame({'episode_starts': starts}, dtype=bool)
+
+        episodes[e] = pd.concat((nlap, timestamp, state_action, reward, state_prime, absorbing, episode_starts), axis=1)
 
     sars = pd.concat(episodes)
     if reward_function.clipping:

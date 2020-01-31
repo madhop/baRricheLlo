@@ -12,15 +12,14 @@ from stable_baselines.common.math_util import scale_action
 ref_df = pd.read_csv('trajectory/ref_traj.csv')
 ref_df.columns = ref_traj_cols
 
-reward_function = Temporal_projection(ref_df)
 simulations = pd.read_csv('trajectory/dataset_offroad_human.csv')
 # Reward function
 penalty = LikelihoodPenalty(kernel='gaussian', bandwidth=1.0)
 right_laps = np.array([ 1.,  8.,  9., 11., 14., 16., 17., 20., 45., 46., 49.,  59., 62.])
 penalty.fit(simulations[simulations.NLap.isin(right_laps)][penalty_cols].values)
-rf = Temporal_projection(ref_df, penalty=penalty)
+reward_function = Temporal_projection(ref_df, penalty=penalty)
 
-dataset = to_SARS(simulations, rf)
+dataset = to_SARS(simulations, reward_function)
 
 env = TorcsEnv(reward_function, state_cols=state_cols, ref_df=ref_df, vision=False, throttle=True,
                gear_change=False, brake=True, start_env=False, damage_th=3, slow=False, graphic=True)
@@ -42,4 +41,4 @@ action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=floa
 
 model = DDPG(MlpPolicy, env, verbose=1, param_noise=param_noise, action_noise=action_noise, batch_size=128)
 model.learn(total_timesteps=1000)
-model.save('model_file/ddpg_online')
+#model.save('model_file/ddpg_online')

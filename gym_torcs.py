@@ -20,7 +20,7 @@ class TorcsEnv(gym.Env):
 
     def __init__(self, reward_function, state_cols, ref_df, vision=False, throttle=False, gear_change=False,
                  brake=False, start_env=True, track_length=5783.85, damage_th=4.0, slow=True, graphic=True,
-                 speed_limit=5, verbose=True):
+                 speed_limit=5, verbose=True, collision_penalty=-20):
 
         self.vision = vision
         self.throttle = throttle
@@ -34,6 +34,7 @@ class TorcsEnv(gym.Env):
         self.slow = slow
         self.track_length = track_length
         self.damage_th = damage_th
+        self.collision_penalty = collision_penalty
 
         # save variables used for feature extraction
         self.state_cols = state_cols
@@ -172,7 +173,7 @@ class TorcsEnv(gym.Env):
         episode_terminate = False
         # 1) Start line
         # The car passed the start line if the previous observation is before and the current is after it
-        if (self.prev_obs['distFromStart'] > self.track_length - 50) and (obs['distFromStart'] < 50) and not raw:
+        if (obs_pre['distFromStart'] > self.track_length - 50) and (obs['distFromStart'] < 50) and not raw:
             # we passed the start line
             if self.verbose:
                 print('Start reached!')
@@ -187,7 +188,7 @@ class TorcsEnv(gym.Env):
                 print('Hit wall')
             collision = True
             episode_terminate = True
-            reward = 0
+            reward = self.collision_penalty
         else:
             collision = False
 

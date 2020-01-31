@@ -642,14 +642,13 @@ class DDPG(OffPolicyRLModel):
         if self.normalize_observations:
             self.obs_rms.update(np.array([obs]))
 
-    def _train_step(self, step, writer, log=False, return_grad=False):
+    def _train_step(self, step, writer, log=False):
         """
         run a step of training from batch
 
         :param step: (int) the current step iteration
         :param writer: (TensorFlow Summary.writer) the writer for tensorboard
         :param log: (bool) whether or not to log to metadata
-        :param return_grad: (bool) true to return the norm 2 of the actor gradient matrix
         :return: (float, float) critic loss, actor loss
         """
         # Get a batch
@@ -709,10 +708,7 @@ class DDPG(OffPolicyRLModel):
         self.actor_optimizer.update(actor_grads, learning_rate=self.actor_lr)
         self.critic_optimizer.update(critic_grads, learning_rate=self.critic_lr)
 
-        if return_grad:
-            return critic_loss, actor_loss, np.linalg.norm(actor_grads, ord=2)
-        else:
-            return critic_loss, actor_loss
+        return critic_loss, actor_loss
 
     def _initialize(self, sess):
         """
@@ -807,80 +803,8 @@ class DDPG(OffPolicyRLModel):
                 self.param_noise_stddev: self.param_noise.current_stddev,
             })
 
-    def batch_pretraining(self, batch_samples, max_iterations=1000, tol=1e-5, tb_log_name="DDPG",
-                          reset_num_timesteps=True, replay_wrapper=None):
-        """Perform training of the networks until either maximum iterations or gradient step tolerance are reached.
-        The training is using the replay buffer that contains samples from expert demonstrations.
-
-        :param batch_samples: (list) list containing tuples (obs, action, reward, next_obs, done) to put into the
-        replay buffer
-        :param max_iterations: (int) maximum number of training iterations
-        :param tol: (float) tolerance for the optimization. When the gradient is lower than tol then the training is
-        stopped.
-        """
-
-        new_tb_log = self._init_num_timesteps(reset_num_timesteps)
-
-        if replay_wrapper is not None:
-            self.replay_buffer = replay_wrapper(self.replay_buffer)
-
-        # Fill the replay buffer with the samples in batch_samples
-        # The sample is composed by: obs, action, reward, new_obs, done
-        # actions need to be scaled into the networks action space which is a tanh-squashed
-        for t in batch_samples:
-            scaled_a = scale_action(self.action_space, t[1])
-            self.replay_buffer.add(t[0], scaled_a, *t[2:])
-
-        with SetVerbosity(self.verbose), TensorboardWriter(self.graph, self.tensorboard_log, tb_log_name, new_tb_log) \
-                as writer:
-            self._setup_learn()
-
-            # a list for tensorboard logging, to prevent logging with the same step number, if it already occured
-            self.tb_seen_steps = []
-
-            self.episode_reward = np.zeros((1,))
-            with self.sess.as_default(), self.graph.as_default():
-                # Prepare everything.
-                self._reset()
-
-                # Train.
-                epoch_actor_losses = []
-                epoch_critic_losses = []
-                epoch_adaptive_distances = []
-                t_train = 0
-                a_grad = np.inf
-                while(t_train < max_iterations) and (a_grad > tol):
-                    
-                    # Not enough samples in the replay buffer
-                    if not self.replay_buffer.can_sample(self.batch_size):
-                        break
-
-                    # Adapt param noise, if necessary.
-                    if len(self.replay_buffer) >= self.batch_size and \
-                            t_train % self.param_noise_adaption_interval == 0:
-                        distance = self._adapt_param_noise()
-                        epoch_adaptive_distances.append(distance)
-
-                    # a_grad is the norm 2 of actor gradient matrix
-                    critic_loss, actor_loss, a_grad = self._train_step(t_train, writer, log=t_train == 0,
-                                                                       return_grad=True)
-                    epoch_critic_losses.append(critic_loss)
-                    epoch_actor_losses.append(actor_loss)
-                    self._update_target_net()
-
-                    print("Iteration: {}, norm_grad {}".format(t_train, a_grad))
-                    # increment counter
-                    t_train += 1
-
-                if t_train == max_iterations:
-                    print('Max iterations reached')
-                else:
-                    print('Gradient tolerance reached')
-
     def learn(self, total_timesteps, callback=None, log_interval=100, tb_log_name="DDPG",
-              reset_num_timesteps=True, replay_wrapper=None, batch_env=False):
-        # the parameter batch_env specified if we are in initialization settings in which the environment is fake and
-        # returns already sampled episodes.
+              reset_num_timesteps=True, replay_wrapper=None):
 
         new_tb_log = self._init_num_timesteps(reset_num_timesteps)
 
@@ -907,12 +831,10 @@ class DDPG(OffPolicyRLModel):
             with self.sess.as_default(), self.graph.as_default():
                 # Prepare everything.
                 self._reset()
-
-                # The environment reset is move forward
-                #obs = self.env.reset()
-                #eval_obs = None
-                #if self.eval_env is not None:
-                #    eval_obs = self.eval_env.reset()
+                """obs = self.env.reset()
+                eval_obs = None
+                if self.eval_env is not None:
+                    eval_obs = self.eval_env.reset()"""
                 episode_reward = 0.
                 episode_step = 0
                 episodes = 0
@@ -935,11 +857,6 @@ class DDPG(OffPolicyRLModel):
                 while True:
                     for _ in range(log_interval):
                         # Perform rollouts.
-                        print('Collecting data')
-                        obs = self.env.reset()
-                        eval_obs = None
-                        if self.eval_env is not None:
-                           eval_obs = self.eval_env.reset()
                         for _ in range(self.nb_rollout_steps):
                             if total_steps >= total_timesteps:
                                 return self
@@ -964,14 +881,10 @@ class DDPG(OffPolicyRLModel):
                                 unscaled_action = unscale_action(self.action_space, action)
 
                             new_obs, reward, done, info = self.env.step(unscaled_action)
-                            # in case the car goes offroad or if it crash on the wall the episode terminates but it is
-                            # not a terminal state. Thus, we consider 'done' if the car passed the start line
-                            # which is given in the field 'is_success' of the dictionary info
 
                             if writer is not None:
                                 ep_rew = np.array([reward]).reshape((1, -1))
-                                # ep_done = np.array([done]).reshape((1, -1))
-                                ep_done = np.array([info['is_success']]).reshape((1, -1))
+                                ep_done = np.array([done]).reshape((1, -1))
                                 self.episode_reward = total_episode_reward_logger(self.episode_reward, ep_rew, ep_done,
                                                                                   writer, self.num_timesteps)
                             step += 1
@@ -985,7 +898,7 @@ class DDPG(OffPolicyRLModel):
                             # Book-keeping.
                             epoch_actions.append(action)
                             epoch_qs.append(q_value)
-                            # self._store_transition(obs, action, reward, new_obs, done)
+                            #self._store_transition(obs, action, reward, new_obs, done)
                             self._store_transition(obs, action, reward, new_obs, info['is_success'])
                             obs = new_obs
                             if callback is not None:
@@ -995,7 +908,6 @@ class DDPG(OffPolicyRLModel):
                                     return self
 
                             if done:
-                                print('Done')
                                 # Episode done.
                                 epoch_episode_rewards.append(episode_reward)
                                 episode_rewards_history.append(episode_reward)
@@ -1014,14 +926,11 @@ class DDPG(OffPolicyRLModel):
                                     obs = self.env.reset()
 
                         # Train.
-                        print('Check for training')
-
                         epoch_actor_losses = []
                         epoch_critic_losses = []
                         epoch_adaptive_distances = []
                         for t_train in range(self.nb_train_steps):
                             # Not enough samples in the replay buffer
-                            print(t_train)
                             if not self.replay_buffer.can_sample(self.batch_size):
                                 break
 
@@ -1035,7 +944,7 @@ class DDPG(OffPolicyRLModel):
                             # to nb_rollout_steps
                             step = (int(t_train * (self.nb_rollout_steps / self.nb_train_steps)) +
                                     self.num_timesteps - self.nb_rollout_steps)
-                            print('Started train step')
+
                             critic_loss, actor_loss = self._train_step(step, writer, log=t_train == 0)
                             epoch_critic_losses.append(critic_loss)
                             epoch_actor_losses.append(actor_loss)
