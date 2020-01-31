@@ -19,13 +19,16 @@ class TorcsEnv(gym.Env):
     initial_reset = True
 
     def __init__(self, reward_function, state_cols, ref_df, vision=False, throttle=False, gear_change=False,
-                 brake=False, start_env=True, track_length=5783.85, damage_th=4.0, slow=True, graphic=True):
-        # print("Init")
+                 brake=False, start_env=True, track_length=5783.85, damage_th=4.0, slow=True, graphic=True,
+                 speed_limit=5, verbose=True):
+
         self.vision = vision
         self.throttle = throttle
         self.gear_change = gear_change
         self.brake = brake
         self.reward_function = reward_function
+        self.speed_limit = speed_limit
+        self.verbose = verbose
 
         self.graphic = graphic
         self.slow = slow
@@ -38,7 +41,7 @@ class TorcsEnv(gym.Env):
         self.tree = spatial.KDTree(list(zip(ref_df['xCarWorld'], ref_df['yCarWorld'])))
 
         # Create action space
-        # order: steer, brake, throttle
+        # order: steer, brake, throttle<, gear>
         if gear_change:
             high = np.array([1., 1., 1., 7])
             low = np.array([-1., 0., 0., 1])
@@ -61,31 +64,34 @@ class TorcsEnv(gym.Env):
         self.p1_observation = None
         self.p2_observation = None
 
-        # Create state variable
+        # Create current state variable
         self.state = None
 
         self.initial_run = True
         if start_env:
             self.reset_torcs()
-        """
-        obs = client.S.d  # Get the current full-observation from torcs
-        """
 
     def step(self, u, raw=False):
-        #print("Step")
-        # convert thisAction to the actual torcs actionstr
+        """
+
+        :param u: (list) action
+        :param raw: (bool) True to return torcs observation, False to return the extracted features i.e., state
+        :return: next observation
+        """
         client = self.client
 
+        # convert thisAction to the actual torcs actionstr
         this_action = self.agent_to_torcs(u)
 
-        # Apply Action
+        # Get the dictionary of torcs action
         action_torcs = client.R.d
-        #print('action_torcs', action_torcs)
+
+        # Update each field of the action dict with the current action
 
         # Steering
         action_torcs['steer'] = this_action['steer']  # in [-1, 1]
 
-        # Simple Automatic Throttle Control by Snakeoil
+        # Throttle
         if self.throttle is False:
             target_speed = self.default_speed
             if client.S.d['speed_x'] < target_speed - (client.R.d['steer']*50):
@@ -106,12 +112,10 @@ class TorcsEnv(gym.Env):
         else:
             action_torcs['accel'] = this_action['accel']
 
-        #  Automatic Gear Change by Snakeoil
+        # Gear
         if self.gear_change is True:
             action_torcs['gear'] = this_action['gear']
         else:
-            #  Automatic Gear Change by Snakeoil is possible
-            # self.auto_gear_snakeoil(client.S.d['speed_x'])
             # return 0 to call automatic gear change
             action_torcs['gear'] = 0
 
@@ -119,11 +123,11 @@ class TorcsEnv(gym.Env):
         if raw:
             action_torcs['gear'] = 7
 
-        # braking
+        # Brake
         if self.brake is True:
             action_torcs['brake'] = this_action['brake']
 
-        # Save the previous full-obs from torcs to check if hit wall
+        # Save the previous full-obs from torcs to check if the car hit wall
         obs_pre = copy.deepcopy(client.S.d)
 
         # One-Step Dynamics Update #################################
@@ -151,8 +155,9 @@ class TorcsEnv(gym.Env):
                                 columns=self.state_cols + ['trackPos'])
             reward = self.reward_function(data)
 
-        print('T={} B={} S={} r={} d={}'.format(action_torcs['accel'], action_torcs['brake'], action_torcs['steer'],
-                                                reward, obs['damage'] - obs_pre['damage']))
+        if self.verbose:
+            print('T={} B={} S={} r={} d={}'.format(action_torcs['accel'], action_torcs['brake'], action_torcs['steer'],
+                                                    reward, obs['damage'] - obs_pre['damage']))
 
         # Save u as previous action for the next step
         self.prev_u = u
@@ -163,26 +168,44 @@ class TorcsEnv(gym.Env):
         # Make an observation from a raw observation vector from TORCS
         self.observation = self.make_observation(obs)
 
+        # Episode termination checks ###
+        episode_terminate = False
+        # 1) Start line
         # The car passed the start line if the previous observation is before and the current is after it
-        if raw:
-            episode_terminate = False
-        else:
-            if (self.prev_obs['distFromStart'] > self.track_length - 50) and (obs['distFromStart'] < 50):
-                # we passed the start line
+        if (self.prev_obs['distFromStart'] > self.track_length - 50) and (obs['distFromStart'] < 50) and not raw:
+            # we passed the start line
+            if self.verbose:
                 print('Start reached!')
-                episode_terminate = True
-            else:
-                episode_terminate = False
+            checkered_flag = True
+            episode_terminate = True
+        else:
+            checkered_flag = False
 
-        # collision detection
+        # 2) Collision
         if obs['damage'] - obs_pre['damage'] > self.damage_th:
-            print('Hit wall')
+            if self.verbose:
+                print('Hit wall')
             collision = True
+            episode_terminate = True
             reward = 0
         else:
             collision = False
 
-        if client.R.d['meta'] is True: # Send a reset signal
+        # 3) Low speed
+        if obs['speed_x'] <= self.speed_limit:
+            if self.verbose:
+                print('Low speed')
+            episode_terminate = True
+            low_speed = True
+        else:
+            low_speed = False
+
+        # If there is automatic driving to exit from the pit stop then episode terminate is False
+        if raw:
+            episode_terminate = False
+
+        # Send a reset signal
+        if client.R.d['meta'] is True:
             self.initial_run = False
             client.respond_to_server()
 
@@ -190,19 +213,15 @@ class TorcsEnv(gym.Env):
 
         self.prev_obs = obs
 
-        # The episode ends when the car reaches the start or when a collision has occurred
-        # however, the episode is considered a "success" only if the start is reached
-        info = {'collision': collision, 'is_success': episode_terminate}
-        done = episode_terminate or collision
+        info = {'collision': collision, 'is_success': checkered_flag, 'low_speed': low_speed}
 
         if raw:
             # If raw then return current observation otherwise return the state
-            return self.get_obs(), reward, done, info
-
+            return self.get_obs(), reward, episode_terminate, info
         else:
             # Transform raw torcs data to state
             self.state = self.observation_to_state(self.observation, self.p1_observation, self.p2_observation, u)
-            return self.get_state(), reward, done, info
+            return self.get_state(), reward, episode_terminate, info
 
     def reset(self, relaunch=False):
         # print("Reset")
@@ -270,7 +289,6 @@ class TorcsEnv(gym.Env):
                 self.observation, _, done, _ = self.step(action, raw=True)
             else:
                 # Start with agent driver and return the current state
-                auto_drive = False
                 print('Stopped auto driving')
                 return self.observation_to_state(self.observation, self.p1_observation, self.p2_observation, action)
 
@@ -286,7 +304,6 @@ class TorcsEnv(gym.Env):
         return self.state
 
     def reset_torcs(self):
-        #print("relaunch torcs")
         os.system('pkill torcs')
         time.sleep(0.5)
         if self.graphic:
@@ -295,14 +312,12 @@ class TorcsEnv(gym.Env):
             command_str = 'torcs -r /home/alessandro/.torcs/config/raceman/practice.xml -nofuel -nodamage -nolaptime'
         if self.vision is True:
             command_str += ' -vision'
-            # os.system('torcs -nofuel -nodamage -nolaptime -vision &')
-        #else:
-            # os.system('torcs -nofuel -nodamage -nolaptime &')
-            #os.system('torcs -T -nofuel -nodamage -nolaptime &')
+
         os.system(command_str + ' &')
-        time.sleep(0.5)
-        os.system('sh autostart.sh')
-        time.sleep(0.5)
+        if self.graphic:
+            time.sleep(0.5)
+            os.system('sh autostart.sh')
+            time.sleep(0.5)
 
     def agent_to_torcs(self, u):
         torcs_action = {'steer': u[0]}
@@ -315,7 +330,6 @@ class TorcsEnv(gym.Env):
 
         if self.gear_change is True: # gear change action is enabled
             torcs_action.update({'gear': u[3]})
-
 
         return torcs_action
 

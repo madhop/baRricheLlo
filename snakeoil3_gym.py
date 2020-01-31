@@ -173,24 +173,19 @@ class Client():
                 if n_fail < 0:
                     print("relaunch torcs")
                     os.system('pkill torcs')
-                    time.sleep(1.0)
-                    """if self.vision is False:
-                        os.system('torcs -nofuel -nodamage -nolaptime &')
-                    else:
-                        os.system('torcs -nofuel -nodamage -nolaptime -vision &')
-
-                    time.sleep(1.0)
-                    os.system('sh autostart.sh')"""
+                    time.sleep(0.5)
                     if self.graphic:
                         command_str = 'torcs -nofuel -nodamage -nolaptime'
                     else:
                         command_str = 'torcs -r /home/alessandro/.torcs/config/raceman/practice.xml -nofuel -nodamage -nolaptime'
                     if self.vision is True:
                         command_str += ' -vision'
+
                     os.system(command_str + ' &')
-                    time.sleep(1.0)
-                    os.system('sh autostart.sh')
-                    time.sleep(0.5)
+                    if self.graphic:
+                        time.sleep(0.5)
+                        os.system('sh autostart.sh')
+                        time.sleep(0.5)
                     n_fail = 5
                 n_fail -= 1
 
