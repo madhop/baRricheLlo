@@ -116,9 +116,10 @@ def bargraph(x,mn,mx,w,c='X'):
     return '[%s]' % (nnc+npc+ppc+pnc)
 
 class Client():
-    def __init__(self,H=None,p=None,i=None,e=None,t=None,s=None,d=None,vision=False):
+    def __init__(self,H=None,p=None,i=None,e=None,t=None,s=None,d=None,vision=False, graphic = True):
         # If you don't like the option defaults,  change them here.
         self.vision = vision
+        self.graphic = graphic
 
         self.host= 'localhost'
         self.port= 3001
@@ -173,14 +174,19 @@ class Client():
                 if n_fail < 0:
                     print("relaunch torcs")
                     os.system('pkill torcs')
-                    time.sleep(1.0)
-                    if self.vision is False:
-                        os.system('torcs -nofuel -nodamage -nolaptime &')
+                    time.sleep(0.5)
+                    if self.graphic:
+                        command_str = 'torcs -nofuel -nodamage -nolaptime'
                     else:
-                        os.system('torcs -nofuel -nodamage -nolaptime -vision &')
+                        command_str = 'torcs -r /home/umberto/.torcs/config/raceman/practice.xml -nofuel -nodamage -nolaptime'
+                    if self.vision:
+                        command_str += ' -vision'
 
-                    time.sleep(1.0)
-                    os.system('sh autostart.sh')
+                    os.system(command_str + ' &')
+                    if self.graphic:
+                        time.sleep(0.5)
+                        os.system('sh autostart.sh')
+                        time.sleep(0.5)
                     n_fail = 5
                 n_fail -= 1
 

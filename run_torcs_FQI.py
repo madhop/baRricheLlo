@@ -23,7 +23,7 @@ def emptyStoreObs():
         store_obs[a] = []
     return store_obs
 
-def playGame(algorithm_name, policy_type, episode_count, policy_path = None, action_dispatcher_path = None):
+def playGame(algorithm_name, policy_type, episode_count, policy_path = None, action_dispatcher_path = None, graphics = True):
     print('Using model:', algorithm_name)
     start_line = False
     track_length = 5783.85
@@ -50,7 +50,7 @@ def playGame(algorithm_name, policy_type, episode_count, policy_path = None, act
     #agent = AgentMEAN()
 
     # Generate a Torcs environment
-    env = TorcsEnv(reward_function, vision=False, throttle=True, gear_change=True, brake=True) #gear_change = False -> automatic gear change
+    env = TorcsEnv(reward_function, vision=False, throttle=True, gear_change=True, brake=True, graphics = graphics) #gear_change = False -> automatic gear change
 
     print("TORCS Experiment Start.")
     for i in range(episode_count):
@@ -65,12 +65,14 @@ def playGame(algorithm_name, policy_type, episode_count, policy_path = None, act
             ob_2 = ob_1 = ob
 
         # at the moment we need to slow time, because the agent is too slow
-        os.system('sh slow_time_down.sh')
-        time.sleep(0.5)
+        if graphics:
+            os.system('sh slow_time_down.sh')
+            time.sleep(0.5)
 
         total_reward = 0.
         noise1 = 0 #(np.random.rand()-0.5)*0.002
         noise2 = 0#(np.random.rand()-0.5)*0.002
+        gear = 0
         for j in range(max_steps):
             if ob['distFromStart'] < 100 and not start_line:    # just passed start line
                 print('Start Line')
@@ -81,19 +83,21 @@ def playGame(algorithm_name, policy_type, episode_count, policy_path = None, act
                 ob, _, done, _ = env.step(action)
             elif ob['distFromStart'] < 5650.26 and not start_line:   # exit from pit stop
                 #print('-', j)
-                action = [0.012+noise1,0,1, 7]
+                action = [0,0,1, gear]
+                #action = [0.012+noise1,0,1, 7]
                 ob_2 = ob_1
                 ob_1 = ob
                 ob, _, done, _ = env.step(action)
             elif ob['distFromStart'] < 5703.24 and not start_line:
                 #print('--', j)
-                action = [-0.033+noise2,0,1, 7]
+                action = [0,0,1, gear]
+                #action = [-0.033+noise2,0,1, 7]
                 ob_2 = ob_1
                 ob_1 = ob
                 ob, _, done, _ = env.step(action)
             elif ob['distFromStart'] < track_length and not start_line:
                 #print('---', j)
-                action = [0,0,1, 7]
+                action = [0,0,1, gear]
                 ob_2 = ob_1
                 ob_1 = ob
                 ob, _, done, _ = env.step(action)
@@ -147,11 +151,12 @@ if __name__ == "__main__":
 
 
     algorithm_name = 'temporal_penalty_xy_reward_model_old.pkl'#'temporal_penalty_xy_reward_model.pkl'#'temporal_penalty_xy_reward_boltzmann_model.pkl'#'temporal_penalty_reward_model.pkl'#'temporal_penalty_reward_greddy_model.pkl'
-    #policy_type = 'boltzmann'#'greedy'#'greedy_noise'#
-    for policy_type in ['boltzmann', 'greedy_noise']:
-        episode_count = 5
-        playGame(algorithm_name, policy_type, episode_count)
-        file_name = "preprocessed_torcs_algo"
-        output_file = "trajectory/dataset_offroad.csv"
-        preprocess_raw_torcs(file_name, output_file)
-        buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)
+    policy_type = 'greedy_noise'#'boltzmann'#'greedy'#
+    #for policy_type in ['boltzmann', 'greedy_noise']:
+    episode_count = 5
+    graphics = True#False#
+    playGame(algorithm_name, policy_type, episode_count, graphics = graphics)
+    file_name = "preprocessed_torcs_algo"
+    output_file = "trajectory/dataset_offroad.csv"
+    preprocess_raw_torcs(file_name, output_file)
+    buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)

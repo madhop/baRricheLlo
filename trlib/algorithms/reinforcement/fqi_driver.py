@@ -448,8 +448,9 @@ class DoubleFQIDriver(Algorithm):
 
 
             ## save policy pickle at each iteration
-            if (self._iteration+1)%5 == 0:
-                policy_pickle_name = './model_file/Policies/Policy' + str(self._iteration) + '.pkl'
+            #if (self._iteration+1)%5 == 0:
+            if self._iteration+1 == 45 or self._iteration+1 == 80:
+                policy_pickle_name = './model_file/Policies/Policy_' + str(self._iteration) + '.pkl'
                 print('Save Q')
                 with open(policy_pickle_name, 'wb') as output:
                     pickle.dump(self._policy, output, pickle.HIGHEST_PROTOCOL)

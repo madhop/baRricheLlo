@@ -30,7 +30,7 @@ class AgentFQI(object):
         # load action dispatcher object
         with open(action_dispatcher_path, 'rb') as ad:
             self.action_dispatcher = pickle.load(ad)
-            
+
 
     def make_observaton(self, ob, p_1, p_2, prev_action):
         """
