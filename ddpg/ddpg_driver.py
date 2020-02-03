@@ -857,6 +857,11 @@ class DDPG(OffPolicyRLModel):
                 while True:
                     for _ in range(log_interval):
                         # Perform rollouts.
+                        obs = self.env.reset()
+                        eval_obs = None
+                        if self.eval_env is not None:
+                            eval_obs = self.eval_env.reset()
+
                         for _ in range(self.nb_rollout_steps):
                             if total_steps >= total_timesteps:
                                 return self

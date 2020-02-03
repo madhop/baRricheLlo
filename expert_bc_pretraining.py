@@ -7,7 +7,7 @@ import numpy as np
 from stable_baselines.gail.dataset.dataset import ExpertDataset
 from stable_baselines.ddpg.policies import MlpPolicy
 from stable_baselines.common.noise import OrnsteinUhlenbeckActionNoise
-from stable_baselines.ddpg.ddpg import DDPG
+from ddpg.ddpg_driver import DDPG
 from gym_torcs import TorcsEnv
 
 # load reference trajectory
