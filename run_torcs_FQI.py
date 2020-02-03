@@ -33,6 +33,8 @@ def playGame(algorithm_name, policy_type, episode_count, policy_path = None, act
         policy_path = 'model_file/policy_' + algorithm_name
     if action_dispatcher_path is None:
         action_dispatcher_path = 'model_file/AD_' + algorithm_name
+    else:
+        action_dispatcher_path = 'model_file/' + action_dispatcher_path
     max_steps = 100000
     reward = 0
     done = False
@@ -72,7 +74,7 @@ def playGame(algorithm_name, policy_type, episode_count, policy_path = None, act
         total_reward = 0.
         noise1 = 0 #(np.random.rand()-0.5)*0.002
         noise2 = 0#(np.random.rand()-0.5)*0.002
-        gear = 0
+        gear = 7
         for j in range(max_steps):
             if ob['distFromStart'] < 100 and not start_line:    # just passed start line
                 print('Start Line')
@@ -83,21 +85,21 @@ def playGame(algorithm_name, policy_type, episode_count, policy_path = None, act
                 ob, _, done, _ = env.step(action)
             elif ob['distFromStart'] < 5650.26 and not start_line:   # exit from pit stop
                 #print('-', j)
-                action = [0,0,1, gear]
+                action = [0,0,0.9, gear]
                 #action = [0.012+noise1,0,1, 7]
                 ob_2 = ob_1
                 ob_1 = ob
                 ob, _, done, _ = env.step(action)
             elif ob['distFromStart'] < 5703.24 and not start_line:
                 #print('--', j)
-                action = [0,0,1, gear]
+                action = [0,0,0.9, gear]
                 #action = [-0.033+noise2,0,1, 7]
                 ob_2 = ob_1
                 ob_1 = ob
                 ob, _, done, _ = env.step(action)
             elif ob['distFromStart'] < track_length and not start_line:
                 #print('---', j)
-                action = [0,0,1, gear]
+                action = [0,0,0.9, gear]
                 ob_2 = ob_1
                 ob_1 = ob
                 ob, _, done, _ = env.step(action)
@@ -140,23 +142,38 @@ def playGame(algorithm_name, policy_type, episode_count, policy_path = None, act
 
 
 if __name__ == "__main__":
-    #for r in ['speed', 'spatial', 'temporal']:
-    """for r in ['temporal_penalty']:    #temporal09_penalty, temporal_penalty
-        algorithm_name = r + '_reward_model.pkl'#  'model_r_speed_50laps_pc.pkl'#'first_model.pkl'
-        playGame(algorithm_name)
-        file_name = "preprocessed_torcs_algo"
-        output_file = "trajectory/dataset_offroad.csv"
-        preprocess_raw_torcs(file_name, output_file)
-        buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)"""
-
-
-    algorithm_name = 'temporal_penalty_xy_reward_model_old.pkl'#'temporal_penalty_xy_reward_model.pkl'#'temporal_penalty_xy_reward_boltzmann_model.pkl'#'temporal_penalty_reward_model.pkl'#'temporal_penalty_reward_greddy_model.pkl'
-    policy_type = 'greedy_noise'#'boltzmann'#'greedy'#
-    #for policy_type in ['boltzmann', 'greedy_noise']:
-    episode_count = 5
+    #policy_type = 'greedy_noise'#'boltzmann'#'greedy'#
     graphics = True#False#
-    playGame(algorithm_name, policy_type, episode_count, graphics = graphics)
     file_name = "preprocessed_torcs_algo"
     output_file = "trajectory/dataset_offroad.csv"
+    algorithm_name = 'temporal_penalty_xy_reward_model_old'
+    algorithm_name = algorithm_name + '.pkl'
+    action_dispatcher_path = 'AD_temporal_penalty_xy_reward_model_old.pkl'
+    episode_count = 3
+    policy_type = 'greedy_noise'
+    playGame(algorithm_name, policy_type, episode_count, action_dispatcher_path = action_dispatcher_path, graphics = graphics)
     preprocess_raw_torcs(file_name, output_file)
     buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)
+
+
+    """action_dispatcher_path = 'AD_temporal_penalty_xy_reward_model.pkl'
+    #policy_type = 'greedy_noise'#'boltzmann'#'greedy'#
+    graphics = True#False#
+    file_name = "preprocessed_torcs_algo"
+    output_file = "trajectory/dataset_offroad.csv"
+    #for policy_type in ['boltzmann', 'greedy_noise']:
+    for i in ['_44', '_79', '_99']:
+        algorithm_name = 'temporal_penalty_xy_reward_model'#'temporal_penalty_xy_reward_model.pkl'#'temporal_penalty_xy_reward_boltzmann_model.pkl'#'temporal_penalty_reward_model.pkl'#'temporal_penalty_reward_greddy_model.pkl'
+        algorithm_name = algorithm_name + i + '.pkl'
+        episode_count = 3
+        policy_type = 'greedy_noise'
+        playGame(algorithm_name, policy_type, episode_count, action_dispatcher_path = action_dispatcher_path, graphics = graphics)
+        preprocess_raw_torcs(file_name, output_file)
+        buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)
+
+        episode_count = 1
+        policy_type = 'greedy_noise'
+        playGame(algorithm_name, policy_type, episode_count, action_dispatcher_path = action_dispatcher_path, graphics = graphics)
+        preprocess_raw_torcs(file_name, output_file)
+        buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)
+"""
