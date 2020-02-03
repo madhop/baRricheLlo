@@ -143,7 +143,7 @@ def playGame(algorithm_name, policy_type, episode_count, policy_path = None, act
 
 if __name__ == "__main__":
     #policy_type = 'greedy_noise'#'boltzmann'#'greedy'#
-    graphics = True#False#
+    """graphics = True#False#
     file_name = "preprocessed_torcs_algo"
     output_file = "trajectory/dataset_offroad.csv"
     algorithm_name = 'temporal_penalty_xy_reward_model_old'
@@ -153,10 +153,10 @@ if __name__ == "__main__":
     policy_type = 'greedy_noise'
     playGame(algorithm_name, policy_type, episode_count, action_dispatcher_path = action_dispatcher_path, graphics = graphics)
     preprocess_raw_torcs(file_name, output_file)
-    buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)
+    buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)"""
 
 
-    """action_dispatcher_path = 'AD_temporal_penalty_xy_reward_model.pkl'
+    action_dispatcher_path = 'AD_temporal_penalty_xy_reward_model.pkl'
     #policy_type = 'greedy_noise'#'boltzmann'#'greedy'#
     graphics = True#False#
     file_name = "preprocessed_torcs_algo"
@@ -172,8 +172,7 @@ if __name__ == "__main__":
         buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)
 
         episode_count = 1
-        policy_type = 'greedy_noise'
+        policy_type = 'greedy'
         playGame(algorithm_name, policy_type, episode_count, action_dispatcher_path = action_dispatcher_path, graphics = graphics)
         preprocess_raw_torcs(file_name, output_file)
         buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)
-"""
