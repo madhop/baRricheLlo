@@ -720,8 +720,7 @@ class DDPG(OffPolicyRLModel):
         self.critic_optimizer.update(critic_grads, learning_rate=self.critic_lr)
 
         # update priorities of Prioritized Replay Buffer
-        new_priorities = np.abs(td_errors) + self.prioritized_replay_eps + self.prioritized_replay_eps_D
-        self.replay_buffer.update_priorities(batch_idxes, new_priorities)
+        self.replay_buffer.update_priorities(batch_idxes, td_errors)
 
         return critic_loss, actor_loss
 

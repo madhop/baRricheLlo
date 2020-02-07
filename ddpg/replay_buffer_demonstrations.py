@@ -23,12 +23,11 @@ class PrioritizedReplayBufferDemonstrations(PrioritizedReplayBuffer):
         for t in demonstrations:
             scaled_a = scale_action(action_space, t[1])
             super().add(t[0], scaled_a, *t[2:])
-        print('PRBD Initialized')
 
 
-    def update_priorities(self, batch_idxes, new_priorities, td_errors):
-        new_priorities = np.abs(td_errors) + self.prioritized_replay_eps + self.prioritized_replay_eps_D
-        # TODO: different update for demonstration and non-demonstration
+    def update_priorities(self, batch_idxes, td_errors):
+        new_priorities = np.power(td_errors, 2) + self.prioritized_replay_eps
+        new_priorities[batch_idxes < self.d_size] = new_priorities[batch_idxes < self.d_size] + self.prioritized_replay_eps_D
         super.update_priorities(batch_idxes, new_priorities)
 
     def add(self, obs_t, action, reward, obs_tp1, done):
