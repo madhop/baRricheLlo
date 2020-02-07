@@ -275,17 +275,19 @@ class TorcsEnv(gym.Env):
                 self.observation, _, done, _ = self.step(action, raw=True)
             elif ob_distFromStart < 5650.26 and not start_line:  # exit from pit stop
                 # print('-', j)
-                action = [0.012 + noise1, 0, 1, 7]
+                action = [0, 0, 0.9, 7]
+                #action = [0.012 + noise1, 0, 1, 7]
                 # Save old observations and get new one
                 self.observation, _, done, _ = self.step(action, raw=True)
             elif ob_distFromStart < 5703.24 and not start_line:
                 # print('--', j)
-                action = [-0.033 + noise2, 0, 1, 7]
+                action = [0, 0, 0.9, 7]
+                #action = [-0.033 + noise2, 0, 1, 7]
                 # Save old observations and get new one
                 self.observation, _, done, _ = self.step(action, raw=True)
             elif ob_distFromStart < self.track_length and not start_line:
                 # print('---', j)
-                action = [0, 0, 1, 7]
+                action = [0, 0, 0.9, 7]
                 # Save old observations and get new one
                 self.observation, _, done, _ = self.step(action, raw=True)
             else:
