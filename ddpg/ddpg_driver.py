@@ -4,6 +4,7 @@ import time
 from collections import deque
 import pickle
 import warnings
+import pandas as pd
 
 import gym
 import numpy as np
@@ -21,6 +22,9 @@ from stable_baselines.common.mpi_running_mean_std import RunningMeanStd
 from stable_baselines.a2c.utils import total_episode_reward_logger
 from stable_baselines.deepq.replay_buffer import ReplayBuffer
 
+from utils_torcs import *
+from preprocess_raw_torcs_algo import *
+from build_dataset_offroad import *
 
 def normalize(tensor, stats):
     """
@@ -137,6 +141,19 @@ def get_perturbed_actor_updates(actor, perturbed_actor, param_noise_stddev, verb
             updates.append(tf.assign(perturbed_var, var))
     assert len(updates) == len(tf_util.get_globals_vars(actor))
     return tf.group(*updates)
+
+def appendObs(store_obs, ob, action):
+    for k in torcs_features:
+        store_obs[k] = np.append(store_obs[k], ob[k])
+    for a_idx, a in enumerate(torcs_actions):
+        store_obs[a] = np.append(store_obs[a], action[a_idx])
+
+def emptyStoreObs(store_obs):
+    print('create empty store_obs')
+    store_obs = { k : [] for k in torcs_features}
+    for a in torcs_actions:
+        store_obs[a] = []
+    return store_obs
 
 
 class DDPG(OffPolicyRLModel):
@@ -862,6 +879,10 @@ class DDPG(OffPolicyRLModel):
                         if self.eval_env is not None:
                             eval_obs = self.eval_env.reset()
 
+                        # create empty dic to store raw data
+                        store_obs = { k : [] for k in torcs_features}
+                        for a in torcs_actions:
+                            store_obs[a] = []
                         for _ in range(self.nb_rollout_steps):
                             if total_steps >= total_timesteps:
                                 self.env.end()
@@ -886,6 +907,7 @@ class DDPG(OffPolicyRLModel):
                                 # inferred actions need to be transformed to environment action_space before stepping
                                 unscaled_action = unscale_action(self.action_space, action)
 
+                            appendObs(store_obs, self.env.get_obs(), unscaled_action)
                             new_obs, reward, done, info = self.env.step(unscaled_action)
 
                             if writer is not None:
@@ -914,6 +936,7 @@ class DDPG(OffPolicyRLModel):
                                     return self
 
                             if done:
+                                appendObs(store_obs, self.env.get_obs(), unscaled_action)
                                 # Episode done.
                                 epoch_episode_rewards.append(episode_reward)
                                 episode_rewards_history.append(episode_reward)
@@ -931,6 +954,19 @@ class DDPG(OffPolicyRLModel):
                                 if not isinstance(self.env, VecEnv):
                                     obs = self.env.reset()
 
+
+                        print('********************')
+                        print('********************')
+                        print('********************')
+                        print('append data to dataset_offroad.csv')
+                        df = pd.DataFrame(store_obs)
+                        raw_output_path = 'raw_torcs_data/'
+                        raw_output_name = 'raw_data_algo.csv'
+                        df.to_csv(index = False, path_or_buf = raw_output_path + raw_output_name, mode = 'w', header = True)
+                        file_name = "preprocessed_torcs_algo"
+                        output_file = "trajectory/dataset_offroad_ddpg.csv"
+                        preprocess_raw_torcs(file_name, output_file)
+                        buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)
                         # Train.
                         epoch_actor_losses = []
                         epoch_critic_losses = []
