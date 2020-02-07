@@ -1,0 +1,18 @@
+sudo apt-get install libglib2.0-dev  libgl1-mesa-dev libglu1-mesa-dev  freeglut3-dev  libplib-dev  libopenal-dev libalut-dev libxi-dev libxmu-dev libxrender-dev  libxrandr-dev libpng-dev
+
+https://github.com/fmirus/torcs-1.3.7
+
+export CFLAGS="-fPIC"
+export CPPFLAGS=$CFLAGS
+export CXXFLAGS=$CFLAGS
+./configure
+make
+sudo make install
+sudo make datainstall
+
+Torcs patch files:
+
+src/drivers/scr_server/scr_server.cpp
+src/drivers/scr_server/scr_server.xml
+src/interfaces/raceman.h
+src/raceman/practice.xml
