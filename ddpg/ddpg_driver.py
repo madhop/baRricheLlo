@@ -864,6 +864,7 @@ class DDPG(OffPolicyRLModel):
 
                         for _ in range(self.nb_rollout_steps):
                             if total_steps >= total_timesteps:
+                                self.env.end()
                                 return self
 
                             # Predict next action.
