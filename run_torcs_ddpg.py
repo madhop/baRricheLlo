@@ -22,7 +22,7 @@ reward_function = Temporal_projection(ref_df, penalty=penalty)
 dataset = to_SARS(simulations, reward_function)
 
 env = TorcsEnv(reward_function, state_cols=state_cols, ref_df=ref_df, vision=False, throttle=True,
-               gear_change=False, brake=True, start_env=False, damage_th=3, slow=False, graphic=True)
+               gear_change=False, brake=True, start_env=False, damage_th=3, slow=False, graphic=False)
 
 """model = DDPG.load("model_file/ddpg_torcs")
 model.env = env
