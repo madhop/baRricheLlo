@@ -40,5 +40,5 @@ param_noise = None
 action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.1) * np.ones(n_actions))
 
 model = DDPG(MlpPolicy, env, verbose=1, param_noise=param_noise, action_noise=action_noise, batch_size=128)
-model.learn(total_timesteps=1000)
+model.learn(total_timesteps=102)
 #model.save('model_file/ddpg_online')
