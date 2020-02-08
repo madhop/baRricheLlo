@@ -177,7 +177,7 @@ class Client():
                     if self.graphic:
                         command_str = 'torcs -nofuel -nodamage -nolaptime'
                     else:
-                        command_str = 'torcs -r /home/alessandro/.torcs/config/raceman/practice.xml -nofuel -nodamage -nolaptime'
+                        command_str = 'torcs -r /home/driver/.torcs/config/raceman/practice.xml -nofuel -nodamage -nolaptime'
                     if self.vision is True:
                         command_str += ' -vision'
 
