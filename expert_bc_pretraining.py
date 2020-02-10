@@ -52,9 +52,9 @@ env = TorcsEnv(reward_function, state_cols=state_cols, ref_df=ref_df, vision=Fal
                gear_change=False, brake=True, start_env=False, damage_th=3, slow=False, graphic=True)
 
 model = DDPG(MlpPolicy, env, verbose=1, param_noise=param_noise, action_noise=action_noise, batch_size=800)
-model.pretrain(expert_ds, n_epochs=4000)
+model.pretrain(expert_ds, n_epochs=50000)
 model.save('model_file/ddpg_bc')
-obs = env.reset()
+"""obs = env.reset()
 reward_sum = 0.0
 for _ in range(1000):
     action, _ = model.predict(obs)
@@ -67,3 +67,4 @@ for _ in range(1000):
         obs = env.reset()
 
 env.close()
+"""
