@@ -821,7 +821,7 @@ class DDPG(OffPolicyRLModel):
             })
 
     def learn(self, total_timesteps, callback=None, log_interval=100, tb_log_name="DDPG",
-              reset_num_timesteps=True, replay_wrapper=None, episode_count=5):
+              reset_num_timesteps=True, replay_wrapper=None, episode_count=5, save_buffer=False):
 
         new_tb_log = self._init_num_timesteps(reset_num_timesteps)
 
@@ -884,6 +884,7 @@ class DDPG(OffPolicyRLModel):
                         for a in torcs_actions:
                             store_obs[a] = []
                         for _ in range(self.nb_rollout_steps):
+                            print('total_steps:', total_steps)
                             if total_steps >= total_timesteps:
                                 self.env.end()
                                 return self
@@ -954,16 +955,16 @@ class DDPG(OffPolicyRLModel):
                                 if not isinstance(self.env, VecEnv):
                                     obs = self.env.reset()
 
-
-                        print('append data to dataset_offroad.csv')
-                        df = pd.DataFrame(store_obs)
-                        raw_output_path = 'raw_torcs_data/'
-                        raw_output_name = 'raw_data_algo.csv'
-                        df.to_csv(index = False, path_or_buf = raw_output_path + raw_output_name, mode = 'w', header = True)
-                        file_name = "preprocessed_torcs_algo"
-                        output_file = "trajectory/dataset_offroad_ddpg.csv"
-                        preprocess_raw_torcs(file_name, output_file)
-                        buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)
+                        if save_buffer:
+                            print('append data to dataset_offroad.csv')
+                            df = pd.DataFrame(store_obs)
+                            raw_output_path = 'raw_torcs_data/'
+                            raw_output_name = 'raw_data_algo.csv'
+                            df.to_csv(index = False, path_or_buf = raw_output_path + raw_output_name, mode = 'w', header = True)
+                            file_name = "preprocessed_torcs_algo"
+                            output_file = "trajectory/dataset_offroad_ddpg.csv"
+                            preprocess_raw_torcs(file_name, output_file)
+                            buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)
                         # Train.
                         epoch_actor_losses = []
                         epoch_critic_losses = []
@@ -1013,7 +1014,7 @@ class DDPG(OffPolicyRLModel):
                                     eval_episode_rewards_history.append(eval_episode_reward)
                                     eval_episode_reward = 0.
 
-                        self.save('model_file/ddpg_' + str(log_i))
+                        #self.save('model_file/ddpg_' + str(log_i))
 
                     mpi_size = MPI.COMM_WORLD.Get_size()
                     # Log stats.

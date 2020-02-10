@@ -22,9 +22,9 @@ reward_function = Temporal_projection(ref_df, penalty=penalty)
 dataset = to_SARS(simulations, reward_function)
 
 env = TorcsEnv(reward_function, state_cols=state_cols, ref_df=ref_df, vision=False, throttle=True,
-               gear_change=False, brake=True, start_env=False, damage_th=3, slow=False, graphic=False)
+               gear_change=False, brake=True, start_env=False, damage_th=3, slow=False, graphic=True)
 
-model = DDPG.load("model_file/ddpg_bc")
+model = DDPG.load("model_file/ddpg_52")
 model.env = env
 batch_samples = list(zip(dataset[state_cols].values,
                          dataset[action_cols].values,
@@ -42,5 +42,19 @@ param_noise = None
 action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.1) * np.ones(n_actions))
 
 model = DDPG(MlpPolicy, env, verbose=1, param_noise=param_noise, action_noise=action_noise, batch_size=128)"""
-model.learn(total_timesteps=60000, episode_count = 2)
+#model.learn(total_timesteps=60000, episode_count = 2)
 #model.save('model_file/ddpg_online')
+
+obs = env.reset()
+reward_sum = 0.0
+for _ in range(1000):
+    action, _ = model.predict(obs)
+    obs, reward, done, _ = env.step(action)
+    reward_sum += reward
+    #env.render()
+    if done:
+        print(reward_sum)
+        reward_sum = 0.0
+        obs = env.reset()
+
+env.close()
