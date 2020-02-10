@@ -821,7 +821,7 @@ class DDPG(OffPolicyRLModel):
             })
 
     def learn(self, total_timesteps, callback=None, log_interval=100, tb_log_name="DDPG",
-              reset_num_timesteps=True, replay_wrapper=None):
+              reset_num_timesteps=True, replay_wrapper=None, episode_count=5):
 
         new_tb_log = self._init_num_timesteps(reset_num_timesteps)
 
@@ -872,7 +872,7 @@ class DDPG(OffPolicyRLModel):
                 epoch_episodes = 0
                 epoch = 0
                 while True:
-                    for _ in range(log_interval):
+                    for log_i in range(log_interval):
                         # Perform rollouts.
                         obs = self.env.reset()
                         eval_obs = None
@@ -955,9 +955,6 @@ class DDPG(OffPolicyRLModel):
                                     obs = self.env.reset()
 
 
-                        print('********************')
-                        print('********************')
-                        print('********************')
                         print('append data to dataset_offroad.csv')
                         df = pd.DataFrame(store_obs)
                         raw_output_path = 'raw_torcs_data/'
@@ -1015,6 +1012,8 @@ class DDPG(OffPolicyRLModel):
                                     eval_episode_rewards.append(eval_episode_reward)
                                     eval_episode_rewards_history.append(eval_episode_reward)
                                     eval_episode_reward = 0.
+
+                        self.save('model_file/ddpg_' + str(log_i))
 
                     mpi_size = MPI.COMM_WORLD.Get_size()
                     # Log stats.
