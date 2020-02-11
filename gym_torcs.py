@@ -156,9 +156,6 @@ class TorcsEnv(gym.Env):
                                 columns=self.state_cols + ['trackPos'])
             reward = self.reward_function(data)
 
-        if self.verbose:
-            print('T={} B={} S={} r={} d={}'.format(action_torcs['accel'], action_torcs['brake'], action_torcs['steer'],
-                                                    reward, obs['damage'] - obs_pre['damage']))
 
         # Save u as previous action for the next step
         self.prev_u = u
@@ -215,6 +212,9 @@ class TorcsEnv(gym.Env):
         self.prev_obs = obs
 
         info = {'collision': collision, 'is_success': checkered_flag, 'low_speed': low_speed}
+        if self.verbose:
+            print('T={} B={} S={} r={} d={}'.format(action_torcs['accel'], action_torcs['brake'], action_torcs['steer'],
+            reward, obs['damage'] - obs_pre['damage']))
 
         if raw:
             # If raw then return current observation otherwise return the state

@@ -885,9 +885,9 @@ class DDPG(OffPolicyRLModel):
                         for a in torcs_actions:
                             store_obs[a] = []
                         for _ in range(self.nb_rollout_steps):
-                            if total_steps >= total_timesteps:
+                            """if total_steps >= total_timesteps:
                                 self.env.end()
-                                return self
+                                return self"""
 
                             # Predict next action.
                             action, q_value = self._policy(obs, apply_noise=True, compute_q=True)
@@ -927,8 +927,8 @@ class DDPG(OffPolicyRLModel):
                             # Book-keeping.
                             epoch_actions.append(action)
                             epoch_qs.append(q_value)
-                            #self._store_transition(obs, action, reward, new_obs, done)
-                            self._store_transition(obs, action, reward, new_obs, info['is_success'])
+                            self._store_transition(obs, action, reward, new_obs, done)
+                            #self._store_transition(obs, action, reward, new_obs, info['is_success'])
                             obs = new_obs
                             if callback is not None:
                                 # Only stop training if return value is False, not when it is None.
@@ -1004,8 +1004,8 @@ class DDPG(OffPolicyRLModel):
                         if self.eval_env is not None:
                             eval_episode_reward = 0.
                             for _ in range(self.nb_eval_steps):
-                                if total_steps >= total_timesteps:
-                                    return self
+                                """if total_steps >= total_timesteps:
+                                    return self"""
 
                                 eval_action, eval_q = self._policy(eval_obs, apply_noise=False, compute_q=True)
                                 unscaled_action = unscale_action(self.action_space, eval_action)
@@ -1022,7 +1022,7 @@ class DDPG(OffPolicyRLModel):
                                     eval_episode_rewards_history.append(eval_episode_reward)
                                     eval_episode_reward = 0.
 
-                        if save_model:
+                        if save_model and log_i % 10 == 0:
                             self.save('model_file/ddpg_' + str(log_i))
 
                     mpi_size = MPI.COMM_WORLD.Get_size()
