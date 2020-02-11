@@ -821,7 +821,7 @@ class DDPG(OffPolicyRLModel):
             })
 
     def learn(self, total_timesteps, callback=None, log_interval=100, tb_log_name="DDPG",
-              reset_num_timesteps=True, replay_wrapper=None, episode_count=5, save_buffer=False):
+              reset_num_timesteps=True, replay_wrapper=None, episode_count=5, save_buffer=False, save_model=False):
 
         new_tb_log = self._init_num_timesteps(reset_num_timesteps)
 
@@ -873,6 +873,7 @@ class DDPG(OffPolicyRLModel):
                 epoch = 0
                 while True:
                     for log_i in range(log_interval):
+                        print('log interval:', log_i)
                         # Perform rollouts.
                         obs = self.env.reset()
                         eval_obs = None
@@ -884,7 +885,6 @@ class DDPG(OffPolicyRLModel):
                         for a in torcs_actions:
                             store_obs[a] = []
                         for _ in range(self.nb_rollout_steps):
-                            print('total_steps:', total_steps)
                             if total_steps >= total_timesteps:
                                 self.env.end()
                                 return self
@@ -952,8 +952,13 @@ class DDPG(OffPolicyRLModel):
                                     episode_successes.append(float(maybe_is_success))
 
                                 self._reset()
+                                if episodes % episode_count == 0:
+                                    print(episodes, 'episodes. Go training')
+                                    break
                                 if not isinstance(self.env, VecEnv):
                                     obs = self.env.reset()
+
+
 
                         if save_buffer:
                             print('append data to dataset_offroad.csv')
@@ -966,6 +971,7 @@ class DDPG(OffPolicyRLModel):
                             preprocess_raw_torcs(file_name, output_file)
                             buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)
                         # Train.
+                        print('Training')
                         epoch_actor_losses = []
                         epoch_critic_losses = []
                         epoch_adaptive_distances = []
@@ -989,6 +995,8 @@ class DDPG(OffPolicyRLModel):
                             epoch_critic_losses.append(critic_loss)
                             epoch_actor_losses.append(actor_loss)
                             self._update_target_net()
+
+                        print('Training done')
 
                         # Evaluate.
                         eval_episode_rewards = []
@@ -1014,7 +1022,8 @@ class DDPG(OffPolicyRLModel):
                                     eval_episode_rewards_history.append(eval_episode_reward)
                                     eval_episode_reward = 0.
 
-                        #self.save('model_file/ddpg_' + str(log_i))
+                        if save_model:
+                            self.save('model_file/ddpg_' + str(log_i))
 
                     mpi_size = MPI.COMM_WORLD.Get_size()
                     # Log stats.

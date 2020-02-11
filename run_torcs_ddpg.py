@@ -22,9 +22,9 @@ reward_function = Temporal_projection(ref_df, penalty=penalty)
 dataset = to_SARS(simulations, reward_function)
 
 env = TorcsEnv(reward_function, state_cols=state_cols, ref_df=ref_df, vision=False, throttle=True,
-               gear_change=False, brake=True, start_env=False, damage_th=3, slow=False, graphic=True)
+               gear_change=False, brake=True, start_env=False, damage_th=3, slow=False, graphic=False)
 
-model = DDPG.load("model_file/ddpg_52")
+"""model = DDPG.load("model_file/ddpg_99")
 model.env = env
 batch_samples = list(zip(dataset[state_cols].values,
                          dataset[action_cols].values,
@@ -35,26 +35,24 @@ for t in batch_samples:
     scaled_a = scale_action(model.action_space, t[1])
     model.replay_buffer.add(t[0], scaled_a, *t[2:])
 
-model.nb_rollout_steps = 400
+model.nb_rollout_steps = 400"""
 
-"""n_actions = 3
+n_actions = 3
 param_noise = None
-action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.1) * np.ones(n_actions))
+#action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.1) * np.ones(n_actions))
+#action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=float(0.1) * np.ones(n_actions))
+action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=np.array([0.1, 0.1, 0.1]))
 
-model = DDPG(MlpPolicy, env, verbose=1, param_noise=param_noise, action_noise=action_noise, batch_size=128)"""
-#model.learn(total_timesteps=60000, episode_count = 2)
+model = DDPG(MlpPolicy, env, nb_rollout_steps=1000, verbose=1, param_noise=param_noise, action_noise=action_noise, batch_size=10000)
+print('Adding demonstrations to replay buffer')
+batch_samples = list(zip(dataset[state_cols].values,
+                         dataset[action_cols].values,
+                         dataset['r'].values,
+                         dataset[state_prime_cols].values,
+                         dataset['absorbing'].values))
+for t in batch_samples:
+    scaled_a = scale_action(model.action_space, t[1])
+    model.replay_buffer.add(t[0], scaled_a, *t[2:])
+
+model.learn(log_interval=1000, total_timesteps=60000, episode_count=5, save_buffer=True, save_model=True)
 #model.save('model_file/ddpg_online')
-
-obs = env.reset()
-reward_sum = 0.0
-for _ in range(1000):
-    action, _ = model.predict(obs)
-    obs, reward, done, _ = env.step(action)
-    reward_sum += reward
-    #env.render()
-    if done:
-        print(reward_sum)
-        reward_sum = 0.0
-        obs = env.reset()
-
-env.close()
