@@ -155,6 +155,10 @@ class TorcsEnv(gym.Env):
             data = pd.DataFrame(data=np.concatenate([current_state_df, next_state_df], axis=0),
                                 columns=self.state_cols + ['trackPos'])
             reward = self.reward_function(data)
+            # gym-torcs reward
+            """sp = np.array(obs['speed_x'])
+            progress = sp*np.cos(obs['angle']) - np.abs(sp*np.sin(obs['angle'])) - sp * np.abs(obs['trackPos'])
+            reward = progress"""
 
 
         # Save u as previous action for the next step

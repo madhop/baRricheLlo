@@ -875,7 +875,14 @@ class DDPG(OffPolicyRLModel):
                     for log_i in range(log_interval):
                         print('log interval:', log_i)
                         # Perform rollouts.
+                        # Sometimes you need to relaunch TORCS because of the memory leak error
+                        """if np.mod(log_i, 5) == 0:
+                            # Sometimes you need to relaunch TORCS because of the memory leak error
+                            obs = self.env.reset(relaunch=True)
+                        else:
+                            obs = self.env.reset()"""
                         obs = self.env.reset()
+
                         eval_obs = None
                         if self.eval_env is not None:
                             eval_obs = self.eval_env.reset()
@@ -891,6 +898,7 @@ class DDPG(OffPolicyRLModel):
 
                             # Predict next action.
                             action, q_value = self._policy(obs, apply_noise=True, compute_q=True)
+                            print(action)
                             assert action.shape == self.env.action_space.shape
 
                             # Execute next action.
@@ -908,7 +916,8 @@ class DDPG(OffPolicyRLModel):
                                 # inferred actions need to be transformed to environment action_space before stepping
                                 unscaled_action = unscale_action(self.action_space, action)
 
-                            appendObs(store_obs, self.env.get_obs(), unscaled_action)
+                            if save_buffer:
+                                appendObs(store_obs, self.env.get_obs(), unscaled_action)
                             new_obs, reward, done, info = self.env.step(unscaled_action)
 
                             if writer is not None:
@@ -937,7 +946,8 @@ class DDPG(OffPolicyRLModel):
                                     return self
 
                             if done:
-                                appendObs(store_obs, self.env.get_obs(), unscaled_action)
+                                if save_buffer:
+                                    appendObs(store_obs, self.env.get_obs(), unscaled_action)
                                 # Episode done.
                                 epoch_episode_rewards.append(episode_reward)
                                 episode_rewards_history.append(episode_reward)
@@ -978,6 +988,7 @@ class DDPG(OffPolicyRLModel):
                         for t_train in range(self.nb_train_steps):
                             # Not enough samples in the replay buffer
                             if not self.replay_buffer.can_sample(self.batch_size):
+                                print('Not enough samples in buffer')
                                 break
 
                             # Adapt param noise, if necessary.
@@ -996,7 +1007,6 @@ class DDPG(OffPolicyRLModel):
                             epoch_actor_losses.append(actor_loss)
                             self._update_target_net()
 
-                        print('Training done')
 
                         # Evaluate.
                         eval_episode_rewards = []
@@ -1022,8 +1032,8 @@ class DDPG(OffPolicyRLModel):
                                     eval_episode_rewards_history.append(eval_episode_reward)
                                     eval_episode_reward = 0.
 
-                        if save_model and log_i % 10 == 0:
-                            self.save('model_file/ddpg_' + str(log_i))
+                        if save_model and log_i % 100 == 0:
+                            self.save('model_file/ddpg_um_' + str(log_i))
 
                     mpi_size = MPI.COMM_WORLD.Get_size()
                     # Log stats.
