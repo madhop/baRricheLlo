@@ -1,4 +1,4 @@
-from gym_torcs import TorcsEnv
+from gym_torcs_std import TorcsEnv
 from fqi.reward_function import *
 from fqi.sars_creator import to_SARS
 from fqi.utils import *
@@ -44,7 +44,7 @@ action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=floa
 #action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=np.array([0.5, 0.1, 0.1]))
 
 #model = DDPG(MlpPolicy, env, nb_rollout_steps=3000, verbose=1, param_noise=param_noise, action_noise=action_noise, buffer_size=50000, batch_size=128)
-model = DDPG(MlpPolicy, env, nb_train_steps=1, nb_rollout_steps=3000, verbose=1, param_noise=param_noise, action_noise=action_noise, buffer_size=50000, batch_size=128)
+#model = DDPG(MlpPolicy, env, nb_train_steps=1, nb_rollout_steps=3000, verbose=1, param_noise=param_noise, action_noise=action_noise, buffer_size=50000, batch_size=512)
 """print('Adding demonstrations to replay buffer')
 batch_samples = list(zip(dataset[state_cols].values,
                          dataset[action_cols].values,
@@ -55,5 +55,8 @@ for t in batch_samples:
     scaled_a = scale_action(model.action_space, t[1])
     model.replay_buffer.add(t[0], scaled_a, *t[2:])"""
 
-model.learn(log_interval=5000, total_timesteps=60000, episode_count=1, save_buffer=False, save_model=True)
-model.save('model_file/ddpg_online')
+#model.learn(log_interval=5000, total_timesteps=60000, episode_count=1, save_buffer=False, save_model=True)
+#model.save('model_file/ddpg_online')
+
+model = DDPG(MlpPolicy, env, verbose=1, param_noise=param_noise, action_noise=action_noise, render=True)
+model.learn(total_timesteps=400000)
