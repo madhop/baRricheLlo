@@ -848,10 +848,10 @@ class DDPG(OffPolicyRLModel):
             with self.sess.as_default(), self.graph.as_default():
                 # Prepare everything.
                 self._reset()
-                """obs = self.env.reset()
+                obs = self.env.reset()
                 eval_obs = None
                 if self.eval_env is not None:
-                    eval_obs = self.eval_env.reset()"""
+                    eval_obs = self.eval_env.reset()
                 episode_reward = 0.
                 episode_step = 0
                 episodes = 0
@@ -880,25 +880,24 @@ class DDPG(OffPolicyRLModel):
                             # Sometimes you need to relaunch TORCS because of the memory leak error
                             obs = self.env.reset(relaunch=True)
                         else:
-                            obs = self.env.reset()"""
+                            obs = self.env.reset()
                         obs = self.env.reset()
 
                         eval_obs = None
                         if self.eval_env is not None:
-                            eval_obs = self.eval_env.reset()
+                            eval_obs = self.eval_env.reset()"""
 
                         # create empty dic to store raw data
                         store_obs = { k : [] for k in torcs_features}
                         for a in torcs_actions:
                             store_obs[a] = []
                         for _ in range(self.nb_rollout_steps):
-                            """if total_steps >= total_timesteps:
+                            if total_steps >= total_timesteps:
                                 self.env.end()
-                                return self"""
+                                return self
 
                             # Predict next action.
                             action, q_value = self._policy(obs, apply_noise=True, compute_q=True)
-                            print(action)
                             assert action.shape == self.env.action_space.shape
 
                             # Execute next action.
@@ -946,6 +945,7 @@ class DDPG(OffPolicyRLModel):
                                     return self
 
                             if done:
+                                print(log_i, 'DONE')
                                 if save_buffer:
                                     appendObs(store_obs, self.env.get_obs(), unscaled_action)
                                 # Episode done.
@@ -962,9 +962,9 @@ class DDPG(OffPolicyRLModel):
                                     episode_successes.append(float(maybe_is_success))
 
                                 self._reset()
-                                if episodes % episode_count == 0:
+                                """if episodes % episode_count == 0:
                                     print(episodes, 'episodes. Go training')
-                                    break
+                                    break"""
                                 if not isinstance(self.env, VecEnv):
                                     obs = self.env.reset()
 
@@ -1014,8 +1014,8 @@ class DDPG(OffPolicyRLModel):
                         if self.eval_env is not None:
                             eval_episode_reward = 0.
                             for _ in range(self.nb_eval_steps):
-                                """if total_steps >= total_timesteps:
-                                    return self"""
+                                if total_steps >= total_timesteps:
+                                    return self
 
                                 eval_action, eval_q = self._policy(eval_obs, apply_noise=False, compute_q=True)
                                 unscaled_action = unscale_action(self.action_space, eval_action)
