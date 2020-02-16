@@ -19,8 +19,8 @@ class TorcsEnv(gym.Env):
     initial_reset = True
 
     def __init__(self, reward_function, state_cols, ref_df, vision=False, throttle=False, gear_change=False,
-                 brake=False, start_env=True, track_length=5783.85, damage_th=4.0, slow=True, graphic=True,
-                 speed_limit=5, verbose=True, collision_penalty=-20):
+                 brake=False, start_env=True, track_length=5783.85, damage_th=4.0, slow=True, faster=False, 
+                 graphic=True, speed_limit=5, verbose=True, collision_penalty=-1000, low_speed_penalty=-1000):
 
         self.vision = vision
         self.throttle = throttle
@@ -32,9 +32,11 @@ class TorcsEnv(gym.Env):
 
         self.graphic = graphic
         self.slow = slow
+        self.faster = faster
         self.track_length = track_length
         self.damage_th = damage_th
         self.collision_penalty = collision_penalty
+        self.low_speed_penalty = low_speed_penalty
 
         # save variables used for feature extraction
         self.state_cols = state_cols
@@ -122,7 +124,7 @@ class TorcsEnv(gym.Env):
 
         # In the case of autodriver to exit from the pitstop we set the gear to 7
         if raw:
-            action_torcs['gear'] = 7
+            action_torcs['gear'] = 0
 
         # Brake
         if self.brake is True:
@@ -189,7 +191,7 @@ class TorcsEnv(gym.Env):
                 print('Hit wall')
             collision = True
             episode_terminate = True
-            reward = self.collision_penalty
+            reward += self.collision_penalty
         else:
             collision = False
 
@@ -199,8 +201,29 @@ class TorcsEnv(gym.Env):
                 print('Low speed')
             episode_terminate = True
             low_speed = True
+            reward += self.low_speed_penalty
         else:
             low_speed = False
+            
+        # 4) Running backward
+        if np.cos(obs['angle']) < 0: # Episode is terminated if the agent runs backward
+            episode_terminate = True
+            running_backward = True
+        else:
+            running_backward = False
+        
+        # 5) Out of track
+        if abs(obs['trackPos']) > 1.01:  # Episode is terminated if the car is out of track
+            print('out of track')
+            episode_terminate = True
+            out_of_track = True
+            reward += self.collision_penalty
+        else:
+            out_of_track = False
+            
+        # 6) No break and throttle at the same time
+        #if action_torcs['accel'] > 0.8 and action_torcs['brake'] > 0.8:
+        #    reward += -200
 
         # If there is automatic driving to exit from the pit stop then episode terminate is False
         if raw:
@@ -215,7 +238,8 @@ class TorcsEnv(gym.Env):
 
         self.prev_obs = obs
 
-        info = {'collision': collision, 'is_success': checkered_flag, 'low_speed': low_speed}
+        info = {'collision': collision, 'is_success': checkered_flag, 'low_speed': low_speed,
+                'running_backward': running_backward, 'out_of_track': out_of_track }
         if self.verbose:
             print('T={} B={} S={} r={} d={}'.format(action_torcs['accel'], action_torcs['brake'], action_torcs['steer'],
             reward, obs['damage'] - obs_pre['damage']))
@@ -266,6 +290,8 @@ class TorcsEnv(gym.Env):
 
         if self.slow:
             os.system('sh slow_time_down.sh')
+        if self.faster:
+            os.system('sh faster_time.sh')
         time.sleep(0.5)
         print('Started auto driving')
         while auto_drive:

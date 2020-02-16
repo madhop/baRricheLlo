@@ -12,7 +12,7 @@ state_cols = ['xCarWorld', 'yCarWorld',
        'referenceCurvature', 'actualCurvature',
        'actualSpeedModule', 'speedDifferenceVectorModule', 'actualAccelerationX',
        'actualAccelerationY', 'referenceAccelerationX',
-       'referenceAccelerationY', 'accelerationDiffX', 'accelerationDiffY'] + prev_action_cols
+       'referenceAccelerationY', 'accelerationDiffX', 'accelerationDiffY'] #+ prev_action_cols
 
 """state_cols = ['xCarWorld', 'yCarWorld', 'positionRho', 'positionTheta',
        'actualCurvature', 'referenceCurvature',

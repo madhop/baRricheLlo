@@ -8,6 +8,8 @@ from stable_baselines.common.noise import NormalActionNoise, OrnsteinUhlenbeckAc
 from ddpg.ddpg_driver import DDPG
 from stable_baselines.common.math_util import scale_action
 
+print('state_cols:', state_cols)
+
 # load reference trajectory
 ref_df = pd.read_csv('trajectory/ref_traj.csv')
 ref_df.columns = ref_traj_cols
@@ -22,7 +24,8 @@ reward_function = Temporal_projection(ref_df, penalty=penalty)
 dataset = to_SARS(simulations, reward_function)
 
 env = TorcsEnv(reward_function,collision_penalty=-1000, state_cols=state_cols, ref_df=ref_df, vision=False, throttle=True,
-               gear_change=False, brake=True, start_env=False, damage_th=0, slow=False, graphic=True)
+               gear_change=False, brake=True, start_env=False, damage_th=0, slow=False, faster=True, graphic=True)
+
 
 """model = DDPG.load("model_file/ddpg_99")
 model.env = env
@@ -38,13 +41,14 @@ for t in batch_samples:
 model.nb_rollout_steps = 400"""
 
 n_actions = 3
-param_noise = None
-action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.1) * np.ones(n_actions))
-#action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=float(0.1) * np.ones(n_actions))
-#action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=np.array([0.5, 0.1, 0.1]))
 
-#model = DDPG(MlpPolicy, env, nb_rollout_steps=3000, verbose=1, param_noise=param_noise, action_noise=action_noise, buffer_size=50000, batch_size=128)
-model = DDPG(MlpPolicy, env, nb_train_steps=1, nb_rollout_steps=3000, verbose=1, param_noise=param_noise, action_noise=action_noise, buffer_size=50000, batch_size=128)
+#param_noise = None
+param_noise = AdaptiveParamNoiseSpec()
+#action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.1) * np.ones(n_actions))
+action_noise = OrnsteinUhlenbeckActionNoise(mean=np.array([0., -0.2, 0.]), sigma=float(0.2) * np.ones(n_actions), theta=0.6)
+#action_noise = NormalActionNoise(mean=np.array([0., 0., 0.]), sigma=np.array([0.1,0.1, 0.1]))
+
+#model = DDPG(MlpPolicy, env, nb_train_steps=1, nb_rollout_steps=3000, verbose=1, param_noise=param_noise, action_noise=action_noise, buffer_size=50000, batch_size=128)
 """print('Adding demonstrations to replay buffer')
 batch_samples = list(zip(dataset[state_cols].values,
                          dataset[action_cols].values,
@@ -55,5 +59,10 @@ for t in batch_samples:
     scaled_a = scale_action(model.action_space, t[1])
     model.replay_buffer.add(t[0], scaled_a, *t[2:])"""
 
-model.learn(log_interval=5000, total_timesteps=60000, episode_count=1, save_buffer=False, save_model=True)
+#model.learn(log_interval=5000, total_timesteps=60000, episode_count=1, save_buffer=False, save_model=True)
+
+
+model = DDPG(MlpPolicy, env, verbose=1, nb_rollout_steps=100,  param_noise=param_noise, action_noise=action_noise, batch_size=128,
+             policy_kwargs={'layers': [128, 128]})
+model.learn(total_timesteps=400000, episode_count=5)
 model.save('model_file/ddpg_online')

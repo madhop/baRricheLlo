@@ -875,23 +875,12 @@ class DDPG(OffPolicyRLModel):
                     for log_i in range(log_interval):
                         print('log interval:', log_i)
                         # Perform rollouts.
-                        # Sometimes you need to relaunch TORCS because of the memory leak error
-                        """if np.mod(log_i, 5) == 0:
-                            # Sometimes you need to relaunch TORCS because of the memory leak error
-                            obs = self.env.reset(relaunch=True)
-                        else:
-                            obs = self.env.reset()
-                        obs = self.env.reset()
-
-                        eval_obs = None
-                        if self.eval_env is not None:
-                            eval_obs = self.eval_env.reset()"""
 
                         # create empty dic to store raw data
                         store_obs = { k : [] for k in torcs_features}
                         for a in torcs_actions:
                             store_obs[a] = []
-                        for _ in range(self.nb_rollout_steps):
+                        for roll_steps in range(self.nb_rollout_steps):
                             if total_steps >= total_timesteps:
                                 self.env.end()
                                 return self
@@ -956,18 +945,22 @@ class DDPG(OffPolicyRLModel):
                                 episode_step = 0
                                 epoch_episodes += 1
                                 episodes += 1
+                                print('Episode:', episodes)
 
                                 maybe_is_success = info.get('is_success')
                                 if maybe_is_success is not None:
                                     episode_successes.append(float(maybe_is_success))
 
                                 self._reset()
-                                """if episodes % episode_count == 0:
-                                    print(episodes, 'episodes. Go training')
-                                    break"""
                                 if not isinstance(self.env, VecEnv):
-                                    obs = self.env.reset()
-
+                                    # Sometimes you need to relaunch TORCS because of the memory leak error
+                                    if np.mod(episodes, 3) == 0:
+                                        obs = self.env.reset(relaunch=True)
+                                    else:
+                                        obs = self.env.reset()
+                                    
+                            
+                                    
 
 
                         if save_buffer:
