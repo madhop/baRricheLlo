@@ -637,7 +637,9 @@ class DDPG(OffPolicyRLModel):
             action = self.sess.run(actor_tf, feed_dict=feed_dict)
             q_value = None
 
+        print('action before:', action)
         action = action.flatten()
+        print('action after:', action)
         if self.action_noise is not None and apply_noise:
             noise = self.action_noise()
             action += noise

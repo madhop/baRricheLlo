@@ -51,8 +51,8 @@ class TorcsEnv:
             self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(2,))
 
         if vision is False:
-            high = np.array([1., np.inf, np.inf, np.inf, 1., np.inf, 1., np.inf])
-            low = np.array([0., -np.inf, -np.inf, -np.inf, 0., -np.inf, 0., -np.inf])
+            high = np.ones(29)
+            low = np.zeros(29)
             self.observation_space = spaces.Box(low=low, high=high)
         else:
             high = np.array([1., np.inf, np.inf, np.inf, 1., np.inf, 1., np.inf, 255])
@@ -200,7 +200,13 @@ class TorcsEnv:
         os.system('pkill torcs')
 
     def get_obs(self):
-        return self.observation
+        ob = np.hstack((self.observation.speed_x, self.observation.speed_y, self.observation.speed_z,
+                        self.observation.angle,
+                        self.observation.rpm,
+                        self.observation.track,
+                        self.observation.trackPos,
+                        self.observation.wheelSpinVel))
+        return ob #self.observation
 
     def reset_torcs(self):
        #print("relaunch torcs")
@@ -241,7 +247,7 @@ class TorcsEnv:
 
     def make_observaton(self, raw_obs):
         if self.vision is False:
-            names = ['speed_x', 'speed_y', 'speed_z', 'angle', 'damage',
+            names = ['speed_x', 'speed_y', 'speed_z', 'angle', #'damage',
                      'rpm',
                      'track', 
                      'trackPos',
@@ -251,8 +257,8 @@ class TorcsEnv:
                                speed_y=np.array(raw_obs['speed_y'], dtype=np.float32)/330.0,
                                speed_z=np.array(raw_obs['speed_z'], dtype=np.float32)/330.0,
                                angle=np.array(raw_obs['angle'], dtype=np.float32)/3.1416,
-                               damage=np.array(raw_obs['damage'], dtype=np.float32),
-                               rpm=np.array(raw_obs['rpm'], dtype=np.float32)/10000,
+                               #damage=np.array(raw_obs['damage'], dtype=np.float32),
+                               rpm=np.array(raw_obs['rpm'], dtype=np.float32)/20000,
                                track=np.array(raw_obs['track'], dtype=np.float32)/200.,
                                trackPos=np.array(raw_obs['trackPos'], dtype=np.float32)/1.,
                                wheelSpinVel=np.array(raw_obs['wheelSpinVel'], dtype=np.float32))

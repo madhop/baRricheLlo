@@ -14,10 +14,10 @@ param_noise = AdaptiveParamNoiseSpec()  # None
 action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.2) * np.ones(n_actions))
 env = TorcsEnv(vision=False, throttle=True, gear_change=False)
 
-"""model = DDPG(MlpPolicy, env, verbose=1, nb_rollout_steps=100,  param_noise=param_noise, action_noise=action_noise, batch_size=128,
+model = DDPG(MlpPolicy, env, verbose=1, nb_rollout_steps=100,  param_noise=param_noise, action_noise=action_noise, batch_size=128,
              policy_kwargs={'layers': [300, 600]})
 
-model.learn(total_timesteps=400000)"""
+model.learn(total_timesteps=400000)
 
 #%% 
 print(env.observation_space)
