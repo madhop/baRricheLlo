@@ -130,7 +130,7 @@ class TorcsEnv:
         # direction-dependent positive reward
         track = np.array(obs['track'])
         trackPos = np.array(obs['trackPos'])
-        sp = np.array(obs['speedX'])
+        sp = np.array(obs['speed_x'])
         damage = np.array(obs['damage'])
         rpm = np.array(obs['rpm'])
 
@@ -241,15 +241,15 @@ class TorcsEnv:
 
     def make_observaton(self, raw_obs):
         if self.vision is False:
-            names = ['speedX', 'speedY', 'speedZ', 'angle', 'damage',
+            names = ['speed_x', 'speed_y', 'speed_z', 'angle', 'damage',
                      'rpm',
                      'track', 
                      'trackPos',
                      'wheelSpinVel']
             Observation = col.namedtuple('Observaion', names)
-            return Observation(speedX=np.array(raw_obs['speedX'], dtype=np.float32)/300.0,
-                               speedY=np.array(raw_obs['speedY'], dtype=np.float32)/300.0,
-                               speedZ=np.array(raw_obs['speedZ'], dtype=np.float32)/300.0,
+            return Observation(speed_x=np.array(raw_obs['speed_x'], dtype=np.float32)/330.0,
+                               speed_y=np.array(raw_obs['speed_y'], dtype=np.float32)/330.0,
+                               speed_z=np.array(raw_obs['speed_z'], dtype=np.float32)/330.0,
                                angle=np.array(raw_obs['angle'], dtype=np.float32)/3.1416,
                                damage=np.array(raw_obs['damage'], dtype=np.float32),
                                rpm=np.array(raw_obs['rpm'], dtype=np.float32)/10000,
