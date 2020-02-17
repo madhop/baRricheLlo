@@ -924,8 +924,8 @@ class DDPG(OffPolicyRLModel):
                             # Book-keeping.
                             epoch_actions.append(action)
                             epoch_qs.append(q_value)
-                            self._store_transition(obs, action, reward, new_obs, done)
-                            #self._store_transition(obs, action, reward, new_obs, info['is_success'])
+                            #self._store_transition(obs, action, reward, new_obs, done)
+                            self._store_transition(obs, action, reward, new_obs, info['is_success'])
                             obs = new_obs
                             if callback is not None:
                                 # Only stop training if return value is False, not when it is None.

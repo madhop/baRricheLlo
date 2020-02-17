@@ -7,12 +7,15 @@ prev_action_cols = ['prev'+a for a in action_cols]
        'referenceCurvature', 'actualCurvature',
        'actualSpeedModule', 'speedDifferenceVectorModule']"""
 
+"""2500., 15000., np.pi, 21000., 2500., np.pi, np.pi, np.pi, 340., 340., 25., 85., 15., 50., 50., 70., 1., 1., 1.
+10., 40., -np.pi, 0., 0., -np.pi, -np.pi, -np.pi, 0., 0. -55., -75., -50., -50., -60., -90., -1., 0., 0."""
+
 state_cols = ['xCarWorld', 'yCarWorld',
        'nYawBody', 'nEngine', 'positionRho', 'positionTheta',
        'referenceCurvature', 'actualCurvature',
        'actualSpeedModule', 'speedDifferenceVectorModule', 'actualAccelerationX',
        'actualAccelerationY', 'referenceAccelerationX',
-       'referenceAccelerationY', 'accelerationDiffX', 'accelerationDiffY'] #+ prev_action_cols
+       'referenceAccelerationY', 'accelerationDiffX', 'accelerationDiffY'] + prev_action_cols
 
 """state_cols = ['xCarWorld', 'yCarWorld', 'positionRho', 'positionTheta',
        'actualCurvature', 'referenceCurvature',
