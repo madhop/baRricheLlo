@@ -11,7 +11,8 @@ from stable_baselines.common.math_util import scale_action
 
 n_actions = 3
 param_noise = AdaptiveParamNoiseSpec()  # None
-action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.2) * np.ones(n_actions))
+action_noise = OrnsteinUhlenbeckActionNoise(mean=np.array([0., 0.6, -0.2]), sigma=float(0.5) * np.ones(n_actions))
+#action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.5) * np.ones(n_actions))
 env = TorcsEnv(vision=False, throttle=True, gear_change=False)
 
 model = DDPG(MlpPolicy, env, verbose=1, nb_rollout_steps=100,  param_noise=param_noise, action_noise=action_noise, batch_size=128,
@@ -20,4 +21,4 @@ model = DDPG(MlpPolicy, env, verbose=1, nb_rollout_steps=100,  param_noise=param
 model.learn(total_timesteps=400000)
 
 #%% 
-print(env.observation_space)
+print(env.action_space)

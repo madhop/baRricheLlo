@@ -45,14 +45,22 @@ class TorcsEnv:
 
         obs = client.S.d  # Get the current full-observation from torcs
         """
-        if throttle is False:
+        """if throttle is False:
             self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(1,))
         else:
-            self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(2,))
+            self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(2,))"""
+        high = np.array([1., 1., 1.])
+        low = np.array([-1., 0., 0.])
+
+        self.action_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
         if vision is False:
-            high = np.ones(29)
-            low = np.zeros(29)
+            high = np.append(np.ones(23), np.ones(4)*np.inf)
+            low = np.append(np.zeros(23), np.ones(4)*(-np.inf))
+            high = np.append(high, np.ones(2))
+            low = np.append(low, np.ones(2)*(-1))
+            #high = np.append(high, 7)
+            #low = np.append(low, 0)
             self.observation_space = spaces.Box(low=low, high=high)
         else:
             high = np.array([1., np.inf, np.inf, np.inf, 1., np.inf, 1., np.inf, 255])
@@ -101,15 +109,15 @@ class TorcsEnv:
             #  Automatic Gear Change by Snakeoil is possible
             action_torcs['gear'] = 1
             if self.throttle:
-                if client.S.d['speedX'] > 50:
+                if client.S.d['speed_x'] > 50:
                     action_torcs['gear'] = 2
-                if client.S.d['speedX'] > 80:
+                if client.S.d['speed_x'] > 80:
                     action_torcs['gear'] = 3
-                if client.S.d['speedX'] > 110:
+                if client.S.d['speed_x'] > 110:
                     action_torcs['gear'] = 4
-                if client.S.d['speedX'] > 140:
+                if client.S.d['speed_x'] > 140:
                     action_torcs['gear'] = 5
-                if client.S.d['speedX'] > 170:
+                if client.S.d['speed_x'] > 170:
                     action_torcs['gear'] = 6
         # Save the privious full-obs from torcs for the reward calculation
         obs_pre = copy.deepcopy(client.S.d)
@@ -201,11 +209,11 @@ class TorcsEnv:
 
     def get_obs(self):
         ob = np.hstack((self.observation.speed_x, self.observation.speed_y, self.observation.speed_z,
-                        self.observation.angle,
                         self.observation.rpm,
                         self.observation.track,
-                        self.observation.trackPos,
-                        self.observation.wheelSpinVel))
+                        self.observation.wheelSpinVel,
+                        self.observation.angle,
+                        self.observation.trackPos))
         return ob #self.observation
 
     def reset_torcs(self):
@@ -247,21 +255,21 @@ class TorcsEnv:
 
     def make_observaton(self, raw_obs):
         if self.vision is False:
-            names = ['speed_x', 'speed_y', 'speed_z', 'angle', #'damage',
+            names = ['speed_x', 'speed_y', 'speed_z', #'damage',
                      'rpm',
-                     'track', 
-                     'trackPos',
-                     'wheelSpinVel']
+                     'track',
+                     'wheelSpinVel',
+                     'angle', 
+                     'trackPos']
             Observation = col.namedtuple('Observaion', names)
             return Observation(speed_x=np.array(raw_obs['speed_x'], dtype=np.float32)/330.0,
                                speed_y=np.array(raw_obs['speed_y'], dtype=np.float32)/330.0,
                                speed_z=np.array(raw_obs['speed_z'], dtype=np.float32)/330.0,
-                               angle=np.array(raw_obs['angle'], dtype=np.float32)/3.1416,
-                               #damage=np.array(raw_obs['damage'], dtype=np.float32),
-                               rpm=np.array(raw_obs['rpm'], dtype=np.float32)/20000,
+                               rpm=np.array(raw_obs['rpm'], dtype=np.float32)/20100,
                                track=np.array(raw_obs['track'], dtype=np.float32)/200.,
-                               trackPos=np.array(raw_obs['trackPos'], dtype=np.float32)/1.,
-                               wheelSpinVel=np.array(raw_obs['wheelSpinVel'], dtype=np.float32))
+                               wheelSpinVel=np.array(raw_obs['wheelSpinVel'], dtype=np.float32)/100.,
+                               angle=np.array(raw_obs['angle'], dtype=np.float32)/3.1416,
+                               trackPos=np.array(raw_obs['trackPos'], dtype=np.float32)/1.)
         else:
             names = ['focus',
                      'speedX', 'speedY', 'speedZ', 'angle',
