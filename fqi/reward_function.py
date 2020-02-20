@@ -3,7 +3,7 @@ from sklearn.neighbors import KDTree
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
 
-from fqi.utils import vectorized_rotate_and_translate, state_cols, penalty_cols
+from fqi.utils import vectorized_rotate_and_translate, penalty_cols
 
 # abstract
 class Reward_function:

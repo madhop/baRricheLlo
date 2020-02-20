@@ -24,7 +24,7 @@ reward_function = Temporal_projection(ref_df, penalty=penalty)
 dataset = to_SARS(simulations, reward_function)
 
 env = TorcsEnv(reward_function,collision_penalty=-1000, state_cols=state_cols, ref_df=ref_df, vision=False, throttle=True,
-               gear_change=False, brake=True, start_env=False, damage_th=0, slow=False, faster=True, graphic=True)
+               gear_change=False, brake=True, start_env=False, damage_th=0, slow=False, faster=False, graphic=True)
 
 
 """model = DDPG.load("model_file/ddpg_99")
@@ -43,10 +43,10 @@ model.nb_rollout_steps = 400"""
 n_actions = 3
 
 #param_noise = None
-param_noise = AdaptiveParamNoiseSpec()
+param_noise = None #AdaptiveParamNoiseSpec()
 #action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.1) * np.ones(n_actions))
-action_noise = OrnsteinUhlenbeckActionNoise(mean=np.array([0., -0.2, 0.]), sigma=float(0.2) * np.ones(n_actions), theta=0.6)
-#action_noise = NormalActionNoise(mean=np.array([0., 0., 0.]), sigma=np.array([0.1,0.1, 0.1]))
+#action_noise = OrnsteinUhlenbeckActionNoise(mean=np.array([0., -0.2, 0.]), sigma=float(0.2) * np.ones(n_actions), theta=0.6)
+action_noise = None#NormalActionNoise(mean=np.array([0., 0., 0.]), sigma=np.array([0.05,0.05, 0.05]))
 
 #model = DDPG(MlpPolicy, env, nb_train_steps=1, nb_rollout_steps=3000, verbose=1, param_noise=param_noise, action_noise=action_noise, buffer_size=50000, batch_size=128)
 """print('Adding demonstrations to replay buffer')
@@ -62,7 +62,23 @@ for t in batch_samples:
 #model.learn(log_interval=5000, total_timesteps=60000, episode_count=1, save_buffer=False, save_model=True)
 
 
-model = DDPG(MlpPolicy, env, verbose=1, nb_rollout_steps=100,  param_noise=param_noise, action_noise=action_noise, batch_size=128,
-             policy_kwargs={'layers': [128, 128]})
-model.learn(total_timesteps=400000, episode_count=5)
-model.save('model_file/ddpg_online')
+#model = DDPG(MlpPolicy, env, verbose=1, nb_rollout_steps=100,  param_noise=param_noise, action_noise=action_noise, batch_size=128,
+#             policy_kwargs={'layers': [128, 128]})
+#model.learn(total_timesteps=400000, episode_count=5)
+#model.save('model_file/ddpg_online')
+
+model = DDPG.load('../bc_ddpg/ddpgbc_0_[32, 32]_relu_5000_10000.zip')
+model.env = env
+obs = env.reset()
+reward_sum = 0.0
+for _ in range(1000):
+    action, _ = model.predict(obs)
+    obs, reward, done, _ = env.step(action)
+    reward_sum += reward
+    #env.render()
+    if done:
+        print(reward_sum)
+        reward_sum = 0.0
+        obs = env.reset()
+
+env.close()

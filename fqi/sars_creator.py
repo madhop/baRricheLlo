@@ -1,10 +1,14 @@
 import numpy as np
 import pandas as pd
+#from fqi.utils import *
+from fqi import utils
 
-from fqi.utils import *
+def to_SARS(data, reward_function, state_cols=None):
 
+    if state_cols is None:
+        state_cols = utils.state_cols
 
-def to_SARS(data, reward_function):
+    state_prime_cols = ['prime_' + c for c in state_cols]
     # For each episode create sequence of samples
     episodes = {}
     for e in np.unique(data['NLap']):
@@ -16,7 +20,7 @@ def to_SARS(data, reward_function):
         # Create NLap column
         nlap = pd.DataFrame({'NLap': np.ones([n_samples - 1]) * e}, dtype=int)
         # Add state and action
-        state_action = lap_df[state_cols+action_cols].iloc[:-1].reset_index(drop=True)
+        state_action = lap_df[state_cols+utils.action_cols].iloc[:-1].reset_index(drop=True)
         # Add reward
         reward = pd.DataFrame({'r': reward_function(lap_df)})
         # Add next state

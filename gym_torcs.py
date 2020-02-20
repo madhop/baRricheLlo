@@ -6,6 +6,7 @@ import pandas as pd
 import copy
 import compute_state_features as csf
 from scipy import spatial
+import auto_driver
 import os
 import time
 from utils_torcs import *
@@ -57,10 +58,10 @@ class TorcsEnv(gym.Env):
         # Create observation space
         state_dim = len(state_cols)
 
-        high =np.array([2500., 15000., np.pi, 21000., 2500., np.pi, np.pi, np.pi, 340., 340., 25., 85., 15., 50., 50., 70., 1., 1., 1.])
-        low = np.array([0., 0., -np.pi, 0., 0., -np.pi, -np.pi, -np.pi, 0., 0., -55., -75., -50., -50., -60., -90., -1., 0., 0.])
-        """high = np.ones(state_dim) * np.inf
-        low = np.ones(state_dim) * (-np.inf)"""
+        #high =np.array([2500., 15000., np.pi, 21000., 2500., np.pi, np.pi, np.pi, 340., 340., 25., 85., 15., 50., 50., 70., 1., 1., 1.])
+        #low = np.array([0., 0., -np.pi, 0., 0., -np.pi, -np.pi, -np.pi, 0., 0., -55., -75., -50., -50., -60., -90., -1., 0., 0.])
+        high = np.ones(state_dim) * np.inf
+        low = np.ones(state_dim) * (-np.inf)
         self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
         # Create observation variables that comes from make_observations method
@@ -158,7 +159,7 @@ class TorcsEnv(gym.Env):
             next_state_df = np.concatenate([next_state.reshape(1, -1), np.ones((1, 1)) * obs['trackPos']], axis=1)
             data = pd.DataFrame(data=np.concatenate([current_state_df, next_state_df], axis=0),
                                 columns=self.state_cols + ['trackPos'])
-            reward = self.reward_function(data) + 100
+            reward = self.reward_function(data)
             # gym-torcs reward
             """sp = np.array(obs['speed_x'])
             progress = sp*np.cos(obs['angle']) - np.abs(sp*np.sin(obs['angle'])) - sp * np.abs(obs['trackPos'])
@@ -215,14 +216,14 @@ class TorcsEnv(gym.Env):
             running_backward = False
         
         # 5) Out of track
-        if abs(obs['trackPos']) > 1.01:  # Episode is terminated if the car is out of track
-            print('out of track')
-            episode_terminate = True
-            out_of_track = True
-            reward += self.collision_penalty
-        else:
-            out_of_track = False
-            
+        #if abs(obs['trackPos']) > 1.01:  # Episode is terminated if the car is out of track
+        #    print('out of track')
+        #    episode_terminate = True
+        #    out_of_track = True
+        #    reward += self.collision_penalty
+        #else:
+        #    out_of_track = False
+        out_of_track=0
         # 6) No break and throttle at the same time
         #if action_torcs['accel'] > 0.8 and action_torcs['brake'] > 0.8:
         #    reward += -200
@@ -296,10 +297,20 @@ class TorcsEnv(gym.Env):
             os.system('sh faster_time.sh')
         time.sleep(0.5)
         print('Started auto driving')
+
         while auto_drive:
             ob_distFromStart = self.observation['distFromStart']
+            track_pos = self.observation['trackPos']
+            action = auto_driver.get_action(track_pos)
+            self.observation, _, done, info = self.step(action, raw=True)
 
-            if ob_distFromStart < 100 and not start_line:  # just passed start line
+            if ob_distFromStart < 100:
+                # Start with agent driver and return the current state
+
+                print('Stopped auto driving')
+                return self.observation_to_state(self.observation, self.p1_observation, self.p2_observation, action)
+
+            """if ob_distFromStart < 100 and not start_line:  # just passed start line
                 print('Start Line')
                 start_line = True
                 action = [0, 0, 1, 7]
@@ -319,13 +330,14 @@ class TorcsEnv(gym.Env):
                 self.observation, _, done, _ = self.step(action, raw=True)
             elif ob_distFromStart < self.track_length and not start_line:
                 # print('---', j)
+                
                 action = [0, 0, 0.9, 7]
                 # Save old observations and get new one
                 self.observation, _, done, _ = self.step(action, raw=True)
             else:
                 # Start with agent driver and return the current state
                 print('Stopped auto driving')
-                return self.observation_to_state(self.observation, self.p1_observation, self.p2_observation, action)
+                return self.observation_to_state(self.observation, self.p1_observation, self.p2_observation, action)"""
 
         return self.get_obs()
 

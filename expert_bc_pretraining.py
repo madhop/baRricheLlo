@@ -6,18 +6,29 @@ import numpy as np
 
 from stable_baselines.gail.dataset.dataset import ExpertDataset
 from stable_baselines.ddpg.policies import MlpPolicy
-from stable_baselines.common.noise import OrnsteinUhlenbeckActionNoise
+from stable_baselines.common.noise import NormalActionNoise
 from ddpg.ddpg_driver import DDPG
 from gym_torcs import TorcsEnv
+
+import tensorflow as tf
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 # load reference trajectory
 ref_df = pd.read_csv('trajectory/ref_traj.csv')
 ref_df.columns = ref_traj_cols
 
 simulations = pd.read_csv('trajectory/dataset_offroad_human.csv')
+
+# Find best laps from demonstrations
+all_laps = np.unique(simulations.NLap)
+lap_times = map(lambda lap: simulations[simulations.NLap == lap]['time'].values[-1], all_laps)
+ref_time = ref_df['curLapTime'].values[-1]
+perc_deltas = list(map(lambda t: (abs(t - ref_time) / ref_time * 100) <= 1.5, lap_times))
+right_laps = all_laps[perc_deltas]
+print('Using {} demonstrator laps'.format(len(right_laps)))
+
 # Reward function
 penalty = LikelihoodPenalty(kernel='gaussian', bandwidth=1.0)
-right_laps = np.array([ 1.,  8.,  9., 11., 14., 16., 17., 20., 45., 46., 49.,  59., 62.])
 penalty.fit(simulations[simulations.NLap.isin(right_laps)][penalty_cols].values)
 reward_function = Temporal_projection(ref_df, penalty=penalty)
 
@@ -44,16 +55,26 @@ expert_demonstrations['episode_returns'] = np.array(episode_returns)
 #np.savez('trajectory/expert_demonstrations', expert_demonstrations)
 #expert_ds = ExpertDataset(expert_path='trajectory/expert_demonstrations.npz')
 
-expert_ds = ExpertDataset(traj_data=expert_demonstrations, batch_size=200)
+expert_ds = ExpertDataset(traj_data=expert_demonstrations, batch_size=1000, train_fraction=0.8)
+
 n_actions = 3
 param_noise = None
-action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.1) * np.ones(n_actions))
+action_noise = None  # NormalActionNoise(mean=np.array([0., 0., 0.]), sigma=np.array([0.05,0.05, 0.05]))
 env = TorcsEnv(reward_function, state_cols=state_cols, ref_df=ref_df, vision=False, throttle=True,
                gear_change=False, brake=True, start_env=False, damage_th=3, slow=False, graphic=True)
 
-model = DDPG(MlpPolicy, env, verbose=1, param_noise=param_noise, action_noise=action_noise, batch_size=800)
-model.pretrain(expert_ds, n_epochs=50000)
+policy_kwargs = {'layers': [64, 64], 'act_fun': tf.tanh}
+model = DDPG(MlpPolicy, env, verbose=1, param_noise=param_noise, action_noise=action_noise, batch_size=3000,
+             policy_kwargs=policy_kwargs)
+
+model2, log = model.pretrain(expert_ds, n_epochs=50, learning_rate=1e-4)
+
+import matplotlib.pyplot as plt
+plt.plot(log['train_loss'])
+plt.plot(log['val_loss'])
+plt.show()
 model.save('model_file/ddpg_bc')
+
 """obs = env.reset()
 reward_sum = 0.0
 for _ in range(1000):
