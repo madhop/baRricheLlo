@@ -58,10 +58,15 @@ class TorcsEnv(gym.Env):
         # Create observation space
         state_dim = len(state_cols)
 
+        high = np.array(
+            [2500., 15000., np.pi, 21000., 2500., np.pi, np.pi, np.pi, 340., 340., 25., 85., 50., 70., 1., 1.,
+             1.])
+        low = np.array(
+            [0., 0., -np.pi, 0., 0., -np.pi, -np.pi, -np.pi, 0., 0., -55., -75., -60., -90., -1., 0., 0.])
         #high =np.array([2500., 15000., np.pi, 21000., 2500., np.pi, np.pi, np.pi, 340., 340., 25., 85., 15., 50., 50., 70., 1., 1., 1.])
         #low = np.array([0., 0., -np.pi, 0., 0., -np.pi, -np.pi, -np.pi, 0., 0., -55., -75., -50., -50., -60., -90., -1., 0., 0.])
-        high = np.ones(state_dim) * np.inf
-        low = np.ones(state_dim) * (-np.inf)
+        #high = np.ones(state_dim) * np.inf
+        #low = np.ones(state_dim) * (-np.inf)
         self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
         # Create observation variables that comes from make_observations method

@@ -67,7 +67,7 @@ def run_experiment(state_id, policy_layers, policy_activation, batch_size, epoch
                    gear_change=False, brake=True, start_env=False, damage_th=3, slow=False, graphic=True)
 
     model = DDPG(MlpPolicy, env, verbose=0, param_noise=None, action_noise=None, batch_size=-5,
-                 policy_kwargs=policy_kwargs)
+                 normalize_observations=True, policy_kwargs=policy_kwargs)
 
     model, log = model.pretrain(expert_ds, n_epochs=epochs, val_interval=100)
 
@@ -76,6 +76,7 @@ def run_experiment(state_id, policy_layers, policy_activation, batch_size, epoch
     model.save(out_dir + name)
     pickle.dump(log, open(out_dir + 'log_' + name + '.pkl', 'wb'))
     print('Saved {}'.format(name))
+
 
 if __name__ == '__main__':
 
