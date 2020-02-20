@@ -1199,7 +1199,7 @@ class DDPG(OffPolicyRLModel):
         return model
 
     def pretrain(self, dataset, n_epochs=10, learning_rate=1e-4,
-                 adam_epsilon=1e-8, val_interval=None):
+                 adam_epsilon=1e-8, val_interval=None, action_weights=None):
         """
         Pretrain a model using behavior cloning:
         supervised learning given an expert dataset.
@@ -1235,7 +1235,13 @@ class DDPG(OffPolicyRLModel):
             with tf.variable_scope('pretrain'):
                 if continuous_actions:
                     obs_ph, actions_ph, deterministic_actions_ph = self._get_pretrain_placeholders()
-                    loss = tf.reduce_mean(tf.square(actions_ph - deterministic_actions_ph))
+                    if action_weights is None:
+                        loss = tf.reduce_mean(tf.square(actions_ph - deterministic_actions_ph))
+                    else:
+                        rs = tf.square(actions_ph - deterministic_actions_ph)
+                        am = tf.reduce_mean(rs, 0)
+                        wam = tf.multiply(am, action_weights)
+                        loss = tf.reduce_mean(wam)
                 else:
                     obs_ph, actions_ph, actions_logits_ph = self._get_pretrain_placeholders()
                     # actions_ph has a shape if (n_batch,), we reshape it to (n_batch, 1)

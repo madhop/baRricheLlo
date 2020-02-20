@@ -18,7 +18,7 @@ import tensorflow as tf
 #tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 
-def run_experiment(state_id, policy_layers, policy_activation, batch_size, epochs, out_dir):
+def run_experiment(state_id, policy_layers, policy_activation, batch_size, epochs, action_weights, out_dir):
 
     state_cols = state_dict[state_id]
     # load reference trajectory
@@ -69,7 +69,7 @@ def run_experiment(state_id, policy_layers, policy_activation, batch_size, epoch
     model = DDPG(MlpPolicy, env, verbose=0, param_noise=None, action_noise=None, batch_size=-5,
                  normalize_observations=True, policy_kwargs=policy_kwargs)
 
-    model, log = model.pretrain(expert_ds, n_epochs=epochs, val_interval=100)
+    model, log = model.pretrain(expert_ds, n_epochs=epochs, val_interval=100, action_weights=action_weights)
 
     activation_name = 'tanh' if policy_activation == tf.nn.tanh else 'relu'
     name = 'ddpgbc_{}_{}_{}_{}_{}'.format(state_id, policy_layers, activation_name, batch_size, epochs)
@@ -88,6 +88,7 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', nargs='+', type=int)
     #parser.add_argument('--learning_rate', nargs='+', type=np.float64)
     parser.add_argument('--state_type', nargs='+', type=int, default=0)
+    parser.add_argument('--action_weights', nargs='+', type=np.float32, action='append')
     parser.add_argument('--out_dir', type=str, default='../ddpg_bc/')
     parser.add_argument('--n_jobs', type=int, default=-1)
     args = parser.parse_args()
@@ -97,7 +98,7 @@ if __name__ == '__main__':
 
     activations = [tf.nn.tanh if a == 'tanh' else tf.nn.relu for a in args.activation]
 
-    params = [args.state_type, args.layers, activations, args.batch_size, args.epochs]#, args.learning_rate]
+    params = [args.state_type, args.layers, activations, args.batch_size, args.epochs, args.action_weights]#, args.learning_rate]
     params_comb = list(itertools.product(*params))
 
     print('Started experiments')
