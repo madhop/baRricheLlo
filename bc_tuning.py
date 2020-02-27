@@ -26,6 +26,7 @@ def run_experiment(state_id, policy_layers, policy_activation, batch_size, epoch
     ref_df.columns = ref_traj_cols
 
     simulations = pd.read_csv('trajectory/dataset_offroad_human.csv')
+    demonstrations_df = pd.read_csv('trajectory/demonstrations.csv')
 
     # Find best laps from demonstrations
     all_laps = np.unique(simulations.NLap)
@@ -40,7 +41,7 @@ def run_experiment(state_id, policy_layers, policy_activation, batch_size, epoch
     reward_function = Temporal_projection(ref_df, penalty=penalty)
 
     # Create dataset
-    expert_simulations = to_SARS(simulations[simulations.NLap.isin(right_laps)], reward_function, state_cols)
+    expert_simulations = to_SARS(demonstrations_df, reward_function, state_cols)
     expert_simulations = expert_simulations.reset_index(drop=True)
 
     # Create dictionary structure

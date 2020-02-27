@@ -17,7 +17,8 @@ ref_df.columns = ref_traj_cols
 simulations = pd.read_csv('trajectory/dataset_offroad_human.csv')
 # Reward function
 penalty = LikelihoodPenalty(kernel='gaussian', bandwidth=1.0)
-right_laps = np.array([ 1.,  8.,  9., 11., 14., 16., 17., 20., 45., 46., 49.,  59., 62.])
+#right_laps = np.array([ 1.,  8.,  9., 11., 14., 16., 17., 20., 45., 46., 49.,  59., 62.])
+right_laps = np.array([ 9., 14., 16., 17., 20., 47., 49., 55., 59., 60., 61., 62., 63., 65., 68.])
 penalty.fit(simulations[simulations.NLap.isin(right_laps)][penalty_cols].values)
 reward_function = Temporal_projection(ref_df, penalty=penalty)
 
@@ -66,8 +67,10 @@ for t in batch_samples:
 #             policy_kwargs={'layers': [128, 128]})
 #model.learn(total_timesteps=400000, episode_count=5)
 #model.save('model_file/ddpg_online')
-
-model = DDPG.load('../bc_ddpg/ddpgbc_0_[32, 32]_relu_5000_10000.zip')
+#%%
+#ddpgbc_0_[64, 64]_relu_5000_6000.zip
+#ddpgbc_0_[150, 150]_relu_2000_6000.zip
+model = DDPG.load('../bc_ddpg/ddpgbc_0_[150, 300]_tanh_5000_6000.zip')
 model.env = env
 obs = env.reset()
 reward_sum = 0.0
