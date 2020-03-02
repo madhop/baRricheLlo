@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-#from fqi.utils import *
 from fqi import utils
+
 
 def to_SARS(data, reward_function, state_cols=None):
 

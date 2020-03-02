@@ -2,6 +2,7 @@ from joblib import Parallel, delayed
 import os
 from fqi.reward_function import *
 from fqi.sars_creator import to_SARS
+from fqi.direction_feature import create_direction_feature
 from fqi.utils import action_cols, ref_traj_cols, penalty_cols, state_dict
 import pandas as pd
 import numpy as np
@@ -26,7 +27,9 @@ def run_experiment(state_id, policy_layers, policy_activation, batch_size, epoch
     ref_df.columns = ref_traj_cols
 
     simulations = pd.read_csv('trajectory/dataset_offroad_human.csv')
-    demonstrations_df = pd.read_csv('trajectory/demonstrations.csv')
+    simulations = create_direction_feature(simulations)
+    demonstrations_df = pd.read_csv('trajectory/start_demonstrations.csv')
+    demonstrations_df = create_direction_feature(demonstrations_df)
 
     # Find best laps from demonstrations
     all_laps = np.unique(simulations.NLap)
@@ -70,10 +73,14 @@ def run_experiment(state_id, policy_layers, policy_activation, batch_size, epoch
     model = DDPG(MlpPolicy, env, verbose=0, param_noise=None, action_noise=None, batch_size=-5,
                  normalize_observations=True, policy_kwargs=policy_kwargs)
 
-    model, log = model.pretrain(expert_ds, n_epochs=epochs, val_interval=100, action_weights=action_weights)
+    model, log = model.pretrain(expert_ds, n_epochs=epochs, val_interval=10, action_weights=action_weights)
 
     activation_name = 'tanh' if policy_activation == tf.nn.tanh else 'relu'
-    name = 'ddpgbc_{}_{}_{}_{}_{}'.format(state_id, policy_layers, activation_name, batch_size, epochs)
+    if action_weights:
+        aw = '{}_{}_{}'.format(*action_weights)
+    else:
+        aw = '1_1_1'
+    name = 'ddpgbc_{}_{}_{}_{}_{}_{}'.format(state_id, policy_layers, activation_name, batch_size, epochs, aw)
     model.save(out_dir + name)
     pickle.dump(log, open(out_dir + 'log_' + name + '.pkl', 'wb'))
     print('Saved {}'.format(name))
@@ -87,9 +94,8 @@ if __name__ == '__main__':
     parser.add_argument('--layers', nargs='+', type=int, action='append')
     parser.add_argument('--activation', nargs='+')
     parser.add_argument('--epochs', nargs='+', type=int)
-    #parser.add_argument('--learning_rate', nargs='+', type=np.float64)
     parser.add_argument('--state_type', nargs='+', type=int, default=0)
-    parser.add_argument('--action_weights', nargs='+', type=np.float32, action='append')
+    parser.add_argument('--action_weights', nargs='+', type=np.float32, action='append', default=[None])
     parser.add_argument('--out_dir', type=str, default='../ddpg_bc/')
     parser.add_argument('--n_jobs', type=int, default=-1)
     args = parser.parse_args()
