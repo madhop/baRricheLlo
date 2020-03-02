@@ -104,6 +104,11 @@ def nn_ahead(p, ref_df, last_ref = 0 ):
         j += 1
     return j-1
 
+
+def direction(p, p_1):
+    direction = p - p_1
+    return direction
+
 def nn_kdtree(p, ref_tree):
     _, nn = ref_tree.query([p[0], p[1]])
     return nn

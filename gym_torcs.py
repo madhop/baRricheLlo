@@ -60,9 +60,9 @@ class TorcsEnv(gym.Env):
 
         high = np.array(
             [2500., 15000., np.pi, 21000., 2500., np.pi, np.pi, np.pi, 340., 340., 25., 85., 50., 70., 1., 1.,
-             1.])
+             1., 10., 10.])
         low = np.array(
-            [0., 0., -np.pi, 0., 0., -np.pi, -np.pi, -np.pi, 0., 0., -55., -75., -60., -90., -1., 0., 0.])
+            [0., 0., -np.pi, 0., 0., -np.pi, -np.pi, -np.pi, 0., 0., -55., -75., -60., -90., -1., 0., 0., -10, -10])
         #high =np.array([2500., 15000., np.pi, 21000., 2500., np.pi, np.pi, np.pi, 340., 340., 25., 85., 15., 50., 50., 70., 1., 1., 1.])
         #low = np.array([0., 0., -np.pi, 0., 0., -np.pi, -np.pi, -np.pi, 0., 0., -55., -75., -50., -50., -60., -90., -1., 0., 0.])
         #high = np.ones(state_dim) * np.inf
@@ -438,6 +438,7 @@ class TorcsEnv(gym.Env):
                                  np.array([p_2['x'], p_2['y']]))
         ref_c = csf.curvature(np.array([r1['xCarWorld'], r1['yCarWorld']]), np.array([r['xCarWorld'], r['yCarWorld']]),
                               np.array([r_1['xCarWorld'], r_1['yCarWorld']]))
+        direction = csf.direction(np.array([p['x'], p['y']]), np.array([p_1['x'], p_1['y']]))
 
         state_features = {'xCarWorld': p['x'], 'yCarWorld': p['y'], 'nYawBody': p['yaw'], 'nEngine': p['rpm'],
                           'NGear': p['Gear'],
@@ -451,6 +452,8 @@ class TorcsEnv(gym.Env):
                           'referenceAccelerationX': r['Acceleration_x'], 'referenceAccelerationY': r['Acceleration_y'],
                           'accelerationDiffX': r['Acceleration_x'] - p['Acceleration_x'],
                           'accelerationDiffY': r['Acceleration_y'] - p['Acceleration_y'],
+                          'direction_x': direction[0],
+                          'direction_y': direction[1],
                           'prevaSteerWheel': prev_action[0], 'prevpBrakeF': prev_action[2],
                           'prevrThrottlePedal': prev_action[1]}
 

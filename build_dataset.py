@@ -45,6 +45,7 @@ def buildDataset(file_name = 'preprocessed_torcs_algo'):
             rel_p, rho, theta = sf.position(np.array([r['x'], r['y']]), np.array([r1['x'], r1['y']]), np.array([p['x'], p['y']]))
             actual_c = sf.curvature(np.array([p['x'], p['y']]), np.array([p_1['x'], p_1['y']]), np.array([p_2['x'], p_2['y']]))
             ref_c = sf.curvature(np.array([r1['x'], r1['y']]), np.array([r['x'], r['y']]), np.array([r_1['x'], r_1['y']]))
+            direction = sf.direction(np.array([p['x'], p['y']]), np.array([p_1['x'], p_1['y']]))
 
             if index > 10 and plot_coords:
                 print('rel_p:', rel_p)
@@ -85,6 +86,8 @@ def buildDataset(file_name = 'preprocessed_torcs_algo'):
             actual_df.loc[index, 'referenceAccelerationY'] = r['Acceleration_y']
             actual_df.loc[index, 'accelerationDiffX'] = r['Acceleration_x'] - p['Acceleration_x']
             actual_df.loc[index, 'accelerationDiffY'] = r['Acceleration_y'] - p['Acceleration_y']
+            actual_df.loc[index, 'direction_x'] = direction[0]
+            actual_df.loc[index, 'direction_y'] = direction[1]
             actual_df.loc[index, 'aSteerWheel'] =  p['Steer']
             actual_df.loc[index, 'pBrakeF'] =  p['Brake']
             actual_df.loc[index, 'rThrottlePedal'] =  p['Throttle']

@@ -20,7 +20,7 @@ prev_action_cols = ['prev'+a for a in action_cols]
 state_cols = ['xCarWorld', 'yCarWorld', 'nYawBody', 'nEngine', 'positionRho', 'positionTheta',
                   'referenceCurvature', 'actualCurvature', 'actualSpeedModule', 'speedDifferenceVectorModule',
                   'actualAccelerationX', 'actualAccelerationY', 'accelerationDiffX',
-                  'accelerationDiffY'] + prev_action_cols
+                  'accelerationDiffY', 'direction_x', 'direction_y'] + prev_action_cols
 
 """state_cols = ['xCarWorld', 'yCarWorld', 'positionRho', 'positionTheta',
        'actualCurvature', 'referenceCurvature',
@@ -45,7 +45,7 @@ penalty_cols = ['xCarWorld', 'yCarWorld']
 state_dict = {0: ['xCarWorld', 'yCarWorld', 'nYawBody', 'nEngine', 'positionRho', 'positionTheta',
                   'referenceCurvature', 'actualCurvature', 'actualSpeedModule', 'speedDifferenceVectorModule',
                   'actualAccelerationX', 'actualAccelerationY', 'accelerationDiffX',
-                  'accelerationDiffY'] + prev_action_cols,
+                  'accelerationDiffY', 'direction_x', 'direction_y'] + prev_action_cols,
               1: ['xCarWorld', 'yCarWorld', 'nYawBody', 'nEngine', 'actualSpeedModule', 'actualAccelerationX',
                   'actualAccelerationY'] + prev_action_cols
               }
