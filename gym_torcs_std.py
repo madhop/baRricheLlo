@@ -202,7 +202,12 @@ class TorcsEnv:
         self.last_u = None
 
         self.initial_reset = False
-        return self.get_obs()
+        for _ in range(50):
+            self.observation, _, _, _ = self.step([0.,1.,0.])
+        print('stop auto driver')
+            
+        #return self.get_obs()
+        return self.observation
 
     def end(self):
         os.system('pkill torcs')

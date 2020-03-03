@@ -8,17 +8,20 @@ from stable_baselines.common.noise import NormalActionNoise, OrnsteinUhlenbeckAc
 from ddpg.ddpg_driver import DDPG
 from stable_baselines.common.math_util import scale_action
 
-
+#%% Build model
 n_actions = 3
 param_noise = AdaptiveParamNoiseSpec()  # None
-action_noise = OrnsteinUhlenbeckActionNoise(mean=np.array([0., 0.6, -0.2]), sigma=float(0.5) * np.ones(n_actions))
-#action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.5) * np.ones(n_actions))
 env = TorcsEnv(vision=False, throttle=True, gear_change=False)
 
-model = DDPG(MlpPolicy, env, verbose=1, nb_rollout_steps=100,  param_noise=param_noise, action_noise=action_noise, batch_size=128,
-             policy_kwargs={'layers': [300, 600]})
+action_noise = OrnsteinUhlenbeckActionNoise(mean=np.array([0., 0., 0.]),
+                                            theta=.02,  
+                                            dt=1e-2,
+                                            sigma=np.array([0.02, 0.05, 0.05]),
+                                            initial_noise=[0., 2., -3.])
 
+model = DDPG(MlpPolicy, env, gamma=0.9999, verbose=1, nb_rollout_steps=5, nb_train_steps=1, normalize_observations=True,
+             param_noise=param_noise, action_noise=action_noise,
+             batch_size=32, policy_kwargs={'layers': [64, 64]})
+
+#%% learn
 model.learn(total_timesteps=400000)
-
-#%% 
-print(env.action_space)
