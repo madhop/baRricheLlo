@@ -19,7 +19,7 @@ import tensorflow as tf
 #tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 
-def run_experiment(state_id, policy_layers, policy_activation, batch_size, epochs, action_weights, out_dir):
+def run_experiment(state_id, policy_layers, policy_activation, batch_size, epochs, action_weights, demo_name, out_dir):
 
     state_cols = state_dict[state_id]
     # load reference trajectory
@@ -28,7 +28,7 @@ def run_experiment(state_id, policy_layers, policy_activation, batch_size, epoch
 
     simulations = pd.read_csv('trajectory/dataset_offroad_human.csv')
     simulations = create_direction_feature(simulations)
-    demonstrations_df = pd.read_csv('trajectory/start_demonstrations.csv')
+    demonstrations_df = pd.read_csv('trajectory/' + demo_name + '.csv')
     demonstrations_df = create_direction_feature(demonstrations_df)
 
     # Find best laps from demonstrations
@@ -70,7 +70,7 @@ def run_experiment(state_id, policy_layers, policy_activation, batch_size, epoch
     env = TorcsEnv(reward_function, state_cols=state_cols, ref_df=ref_df, vision=False, throttle=True,
                    gear_change=False, brake=True, start_env=False, damage_th=3, slow=False, graphic=True)
 
-    model = DDPG(MlpPolicy, env, verbose=0, param_noise=None, action_noise=None, batch_size=-5,
+    model = DDPG(MlpPolicy, env, verbose=0, reward_scale=1/1100 , param_noise=None, action_noise=None, batch_size=-5,
                  normalize_observations=True, policy_kwargs=policy_kwargs)
 
     model, log = model.pretrain(expert_ds, n_epochs=epochs, val_interval=10, action_weights=action_weights)
@@ -98,6 +98,7 @@ if __name__ == '__main__':
     parser.add_argument('--action_weights', nargs='+', type=np.float32, action='append', default=[None])
     parser.add_argument('--out_dir', type=str, default='../ddpg_bc/')
     parser.add_argument('--n_jobs', type=int, default=-1)
+    parser.add_argument('--demo_name', type=str, default='demonstrations', help='Name of the demonstrations file')
     args = parser.parse_args()
     out_dir = args.out_dir
     if not os.path.exists(out_dir):
@@ -110,5 +111,5 @@ if __name__ == '__main__':
 
     print('Started experiments')
     #Parallel(prefer="threads", n_jobs=args.n_jobs)(delayed(run_experiment)(*x, out_dir) for x in params_comb)
-    Parallel(n_jobs=args.n_jobs)(delayed(run_experiment)(*x, out_dir) for x in params_comb)
+    Parallel(n_jobs=args.n_jobs)(delayed(run_experiment)(*x, args.demo_name, out_dir) for x in params_comb)
     print('Experiments terminated')

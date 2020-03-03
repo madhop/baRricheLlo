@@ -2,6 +2,7 @@ from gym_torcs import TorcsEnv
 from fqi.reward_function import *
 from fqi.sars_creator import to_SARS
 from fqi.utils import *
+from fqi.direction_feature import create_direction_feature
 import pandas as pd
 from stable_baselines.ddpg.policies import MlpPolicy
 from stable_baselines.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise, AdaptiveParamNoiseSpec
@@ -15,6 +16,7 @@ ref_df = pd.read_csv('trajectory/ref_traj.csv')
 ref_df.columns = ref_traj_cols
 
 simulations = pd.read_csv('trajectory/dataset_offroad_human.csv')
+simulations = create_direction_feature(simulations)
 # Reward function
 penalty = LikelihoodPenalty(kernel='gaussian', bandwidth=1.0)
 #right_laps = np.array([ 1.,  8.,  9., 11., 14., 16., 17., 20., 45., 46., 49.,  59., 62.])
@@ -70,7 +72,7 @@ for t in batch_samples:
 #%%
 #ddpgbc_0_[64, 64]_relu_5000_6000.zip
 #ddpgbc_0_[150, 150]_relu_2000_6000.zip
-model = DDPG.load('../bc_ddpg/ddpgbc_0_[150, 300]_tanh_5000_6000.zip')
+model = DDPG.load('../bc_training_200302/start_demonstrations/ddpgbc_0_[64, 64]_tanh_3500_20000_1_1_1.zip')
 model.env = env
 obs = env.reset()
 reward_sum = 0.0

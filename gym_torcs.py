@@ -221,13 +221,13 @@ class TorcsEnv(gym.Env):
             running_backward = False
         
         # 5) Out of track
-        #if abs(obs['trackPos']) > 1.01:  # Episode is terminated if the car is out of track
-        #    print('out of track')
-        #    episode_terminate = True
-        #    out_of_track = True
-        #    reward += self.collision_penalty
-        #else:
-        #    out_of_track = False
+        if abs(obs['trackPos']) > 1.01:  # Episode is terminated if the car is out of track
+            print('out of track')
+            episode_terminate = True
+            out_of_track = True
+            reward += self.collision_penalty
+        else:
+            out_of_track = False
         out_of_track=0
         # 6) No break and throttle at the same time
         #if action_torcs['accel'] > 0.8 and action_torcs['brake'] > 0.8:
