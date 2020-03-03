@@ -1026,7 +1026,8 @@ class DDPG(OffPolicyRLModel):
                                     eval_episode_reward = 0.
 
                         if save_model and log_i % 100 == 0:
-                            self.save('model_file/ddpg_um_' + str(log_i))
+                            self.save('model_file/ddpg_um_std')
+                            #self.save('model_file/ddpg_um_std' + str(log_i))
 
                     mpi_size = MPI.COMM_WORLD.Get_size()
                     # Log stats.

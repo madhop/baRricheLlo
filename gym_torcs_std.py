@@ -8,6 +8,7 @@ import copy
 import collections as col
 import os
 import time
+import auto_driver
 
 
 class TorcsEnv:
@@ -30,7 +31,7 @@ class TorcsEnv:
         if self.vision is True:
             os.system('torcs -nofuel -nodamage -nolaptime -vision &')
         else:
-            os.system('torcs -nofuel -nolaptime &')
+            os.system('torcs -nofuel -nodamage -nolaptime &')
         time.sleep(0.5)
         os.system('sh autostart.sh')
         time.sleep(0.5)
@@ -152,10 +153,10 @@ class TorcsEnv:
 
         # Termination judgement #########################
         episode_terminate = False
-        #if (abs(track.any()) > 1 or abs(trackPos) > 1):  # Episode is terminated if the car is out of track
-        #    reward = -200
-        #    episode_terminate = True
-        #    client.R.d['meta'] = True
+        if (abs(track.any()) > 1 or abs(trackPos) > 1):  # Episode is terminated if the car is out of track
+            reward = -200
+            episode_terminate = True
+            client.R.d['meta'] = True
 
         #if self.terminal_judge_start < self.time_step: # Episode terminates if the progress of agent is small
         #    if progress < self.termination_limit_progress:
@@ -203,9 +204,16 @@ class TorcsEnv:
         self.last_u = None
 
         self.initial_reset = False
-        for _ in range(50):
-            self.observation, _, _, _ = self.step([0.,1.,0.])
-        print('stop auto driver')
+        while True: #auto_drive:
+            ob_distFromStart = obs['distFromStart']
+            track_pos = obs['trackPos']
+            action = auto_driver.get_action(track_pos)
+            self.observation, _, done, info = self.step(action)
+
+            if ob_distFromStart > 450 and ob_distFromStart < 550:
+                print('Stopped auto driving')
+                return self.observation
+
             
         #return self.get_obs()
         return self.observation
@@ -229,7 +237,7 @@ class TorcsEnv:
         if self.vision is True:
             os.system('torcs -nofuel -nodamage -nolaptime -vision &')
         else:
-            os.system('torcs -nofuel -nolaptime &')
+            os.system('torcs -nofuel -nodamage -nolaptime &')
         time.sleep(0.5)
         os.system('sh autostart.sh')
         time.sleep(0.5)
