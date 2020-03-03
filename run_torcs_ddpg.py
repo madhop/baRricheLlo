@@ -23,5 +23,5 @@ model = DDPG(MlpPolicy, env, gamma=0.9999, verbose=1, nb_rollout_steps=5, nb_tra
              param_noise=param_noise, action_noise=action_noise,
              batch_size=32, policy_kwargs={'layers': [64, 64]})
 
-#%% learn
+#% learn
 model.learn(total_timesteps=400000)

@@ -875,23 +875,12 @@ class DDPG(OffPolicyRLModel):
                     for log_i in range(log_interval):
                         print('log interval:', log_i)
                         # Perform rollouts.
-                        # Sometimes you need to relaunch TORCS because of the memory leak error
-                        """if np.mod(log_i, 5) == 0:
-                            # Sometimes you need to relaunch TORCS because of the memory leak error
-                            obs = self.env.reset(relaunch=True)
-                        else:
-                            obs = self.env.reset()
-                        obs = self.env.reset()
-
-                        eval_obs = None
-                        if self.eval_env is not None:
-                            eval_obs = self.eval_env.reset()"""
 
                         # create empty dic to store raw data
                         store_obs = { k : [] for k in torcs_features}
                         for a in torcs_actions:
                             store_obs[a] = []
-                        for _ in range(self.nb_rollout_steps):
+                        for roll_steps in range(self.nb_rollout_steps):
                             if total_steps >= total_timesteps:
                                 self.env.end()
                                 return self
@@ -917,8 +906,6 @@ class DDPG(OffPolicyRLModel):
 
                             if save_buffer:
                                 appendObs(store_obs, self.env.get_obs(), unscaled_action)
-                                
-                            print(action)
                             new_obs, reward, done, info = self.env.step(unscaled_action)
 
                             if writer is not None:
@@ -958,18 +945,22 @@ class DDPG(OffPolicyRLModel):
                                 episode_step = 0
                                 epoch_episodes += 1
                                 episodes += 1
+                                print('Episode:', episodes)
 
                                 maybe_is_success = info.get('is_success')
                                 if maybe_is_success is not None:
                                     episode_successes.append(float(maybe_is_success))
 
                                 self._reset()
-                                """if episodes % episode_count == 0:
-                                    print(episodes, 'episodes. Go training')
-                                    break"""
                                 if not isinstance(self.env, VecEnv):
-                                    obs = self.env.reset()
-
+                                    # Sometimes you need to relaunch TORCS because of the memory leak error
+                                    if np.mod(episodes, 3) == 0:
+                                        obs = self.env.reset(relaunch=True)
+                                    else:
+                                        obs = self.env.reset()
+                                    
+                            
+                                    
 
 
                         if save_buffer:
@@ -1206,3 +1197,106 @@ class DDPG(OffPolicyRLModel):
         model.load_parameters(params)
 
         return model
+
+    def pretrain(self, dataset, n_epochs=10, learning_rate=1e-4,
+                 adam_epsilon=1e-8, val_interval=None, action_weights=None):
+        """
+        Pretrain a model using behavior cloning:
+        supervised learning given an expert dataset.
+
+        NOTE: only Box and Discrete spaces are supported for now.
+
+        :param dataset: (ExpertDataset) Dataset manager
+        :param n_epochs: (int) Number of iterations on the training set
+        :param learning_rate: (float) Learning rate
+        :param adam_epsilon: (float) the epsilon value for the adam optimizer
+        :param val_interval: (int) Report training and validation losses every n epochs.
+            By default, every 10th of the maximum number of epochs.
+        :return: (BaseRLModel) the pretrained model
+        """
+
+        # log that save the train and validation losses during the epochs
+        log = {'train_loss': [], 'val_loss': []}
+
+        continuous_actions = isinstance(self.action_space, gym.spaces.Box)
+        discrete_actions = isinstance(self.action_space, gym.spaces.Discrete)
+
+        assert discrete_actions or continuous_actions, 'Only Discrete and Box action spaces are supported'
+
+        # Validate the model every 10% of the total number of iteration
+        if val_interval is None:
+            # Prevent modulo by zero
+            if n_epochs < 10:
+                val_interval = 1
+            else:
+                val_interval = int(n_epochs / 10)
+
+        with self.graph.as_default():
+            with tf.variable_scope('pretrain'):
+                if continuous_actions:
+                    obs_ph, actions_ph, deterministic_actions_ph = self._get_pretrain_placeholders()
+                    if action_weights is None:
+                        loss = tf.reduce_mean(tf.square(actions_ph - deterministic_actions_ph))
+                    else:
+                        rs = tf.square(actions_ph - deterministic_actions_ph)
+                        am = tf.reduce_mean(rs, 0)
+                        wam = tf.multiply(am, action_weights)
+                        loss = tf.reduce_mean(wam)
+                else:
+                    obs_ph, actions_ph, actions_logits_ph = self._get_pretrain_placeholders()
+                    # actions_ph has a shape if (n_batch,), we reshape it to (n_batch, 1)
+                    # so no additional changes is needed in the dataloader
+                    actions_ph = tf.expand_dims(actions_ph, axis=1)
+                    one_hot_actions = tf.one_hot(actions_ph, self.action_space.n)
+                    loss = tf.nn.softmax_cross_entropy_with_logits_v2(
+                        logits=actions_logits_ph,
+                        labels=tf.stop_gradient(one_hot_actions)
+                    )
+                    loss = tf.reduce_mean(loss)
+                optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate, epsilon=adam_epsilon)
+                optim_op = optimizer.minimize(loss, var_list=self.params)
+
+            self.sess.run(tf.global_variables_initializer())
+
+        if self.verbose > 0:
+            print("Pretraining with Behavior Cloning...")
+
+        for epoch_idx in range(int(n_epochs)):
+            train_loss = 0.0
+            # Full pass on the training set
+            for _ in range(len(dataset.train_loader)):
+                expert_obs, expert_actions = dataset.get_next_batch('train')
+                feed_dict = {
+                    obs_ph: expert_obs,
+                    actions_ph: expert_actions,
+                }
+                train_loss_, _ = self.sess.run([loss, optim_op], feed_dict)
+                train_loss += train_loss_
+
+            train_loss /= len(dataset.train_loader)
+
+            if (epoch_idx + 1) % val_interval == 0:
+                val_loss = 0.0
+                # Full pass on the validation set
+                for _ in range(len(dataset.val_loader)):
+                    expert_obs, expert_actions = dataset.get_next_batch('val')
+                    val_loss_, = self.sess.run([loss], {obs_ph: expert_obs,
+                                                        actions_ph: expert_actions})
+                    val_loss += val_loss_
+
+                val_loss /= len(dataset.val_loader)
+                if self.verbose > 0:
+                    print("==== Training progress {:.2f}% ====".format(100 * (epoch_idx + 1) / n_epochs))
+                    print('Epoch {}'.format(epoch_idx + 1))
+                    print("Training loss: {:.6f}, Validation loss: {:.6f}".format(train_loss, val_loss))
+                    print()
+
+                # Save to the log
+                log['train_loss'].append(train_loss)
+                log['val_loss'].append(val_loss)
+
+            # Free memory
+            del expert_obs, expert_actions
+        if self.verbose > 0:
+            print("Pretraining done.")
+        return self, log

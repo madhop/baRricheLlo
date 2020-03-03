@@ -73,6 +73,7 @@ class TorcsEnv:
         client = self.client
 
         this_action = self.agent_to_torcs(u)
+        print(this_action)
 
         # Apply Action
         action_torcs = client.R.d
