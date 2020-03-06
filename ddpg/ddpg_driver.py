@@ -821,7 +821,7 @@ class DDPG(OffPolicyRLModel):
             })
 
     def learn(self, total_timesteps, callback=None, log_interval=100, tb_log_name="DDPG",
-              reset_num_timesteps=True, replay_wrapper=None, episode_count=5, save_buffer=False, save_model=False):
+              reset_num_timesteps=True, replay_wrapper=None, episode_count=5, save_buffer=False, save_model=False, output_name=None):
 
         new_tb_log = self._init_num_timesteps(reset_num_timesteps)
 
@@ -964,13 +964,13 @@ class DDPG(OffPolicyRLModel):
 
 
                         if save_buffer:
-                            print('append data to dataset_offroad.csv')
+                            print('append data to demonstrations_ddpg.csv')
                             df = pd.DataFrame(store_obs)
                             raw_output_path = 'raw_torcs_data/'
                             raw_output_name = 'raw_data_algo.csv'
                             df.to_csv(index = False, path_or_buf = raw_output_path + raw_output_name, mode = 'w', header = True)
                             file_name = "preprocessed_torcs_algo"
-                            output_file = "trajectory/dataset_offroad_ddpg.csv"
+                            output_file = "trajectory/demonstrations_ddpg.csv"
                             preprocess_raw_torcs(file_name, output_file)
                             buildDataset(raw_input_file_name = file_name, output_file = output_file, header = False)
                         # Train.
@@ -1025,8 +1025,9 @@ class DDPG(OffPolicyRLModel):
                                     eval_episode_rewards_history.append(eval_episode_reward)
                                     eval_episode_reward = 0.
 
-                        if save_model and log_i % 100 == 0:
-                            self.save('model_file/ddpg_um_' + str(log_i))
+                        if output_name is not None and log_i % 100 == 0:
+                            print('Now we save the model')
+                            self.save('model_file/ddpg_um_' + output_name)
 
                     mpi_size = MPI.COMM_WORLD.Get_size()
                     # Log stats.
