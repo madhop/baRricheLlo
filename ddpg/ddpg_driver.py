@@ -913,6 +913,7 @@ class DDPG(OffPolicyRLModel):
                                 ep_done = np.array([done]).reshape((1, -1))
                                 self.episode_reward = total_episode_reward_logger(self.episode_reward, ep_rew, ep_done,
                                                                                   writer, self.num_timesteps)
+                            
                             step += 1
                             total_steps += 1
                             self.num_timesteps += 1
@@ -958,8 +959,6 @@ class DDPG(OffPolicyRLModel):
                                         obs = self.env.reset(relaunch=True)
                                     else:
                                         obs = self.env.reset()
-                                    
-                            
                                     
 
 

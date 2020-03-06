@@ -74,7 +74,6 @@ class TorcsEnv:
         client = self.client
 
         this_action = self.agent_to_torcs(u)
-        print(this_action)
 
         # Apply Action
         action_torcs = client.R.d
@@ -174,6 +173,8 @@ class TorcsEnv:
             client.respond_to_server()
 
         self.time_step += 1
+        reward = 1#obs['distFromStart']
+        print(this_action, 'reward:', reward)
 
         return self.get_obs(), reward, client.R.d['meta'], {}
 
@@ -210,13 +211,14 @@ class TorcsEnv:
             action = auto_driver.get_action(track_pos)
             self.observation, _, done, info = self.step(action)
 
-            if ob_distFromStart > 450 and ob_distFromStart < 550:
+            if ob_distFromStart < 100:
+            #if ob_distFromStart > 450 and ob_distFromStart < 550:
                 print('Stopped auto driving')
                 return self.observation
 
             
-        #return self.get_obs()
-        return self.observation
+        return self.get_obs()
+        #return self.observation
 
     def end(self):
         os.system('pkill torcs')
