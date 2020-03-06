@@ -24,6 +24,19 @@ class Controller():
         return 1 / (1 + np.exp(-x))
     
     
+    def act(self, obs):
+        # Find projection on reference trajectory
+        
+        Vref = None
+        V = None
+        p = None    # position of the car wrt the reference
+        delta_O = None  # delta orientation of the car
+        # Compute actions
+        throttle = self.sigmoid(self.alpha1 * (Vref - V) + self.k1 * np.power(V, 2))
+        brake = self.sigmoid(self.beta1 * (V - Vref) + self.k2 * np.power(V, 2))
+        steer = np.tanh(self.gamma1 * p + self.gamma2 * delta_O)
+    
+    
     
 
 if __name__ == '__main__':
