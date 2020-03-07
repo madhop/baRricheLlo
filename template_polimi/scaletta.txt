@@ -1,0 +1,51 @@
+1 Intro 2-3 pagine, discorsiva - livello nonna
+    - importanza: spiego Ferrari, gp, progetto, sensori, aerodinamica della macchina
+    - contesto
+    - problema: taps selection e prediction (descrizione a parole)
+    - soluzione: cosa ho usato per risolvere il problema fs e prediction
+    - struttura tesi: spiego cosa ci sarà dopo
+
+2 Contesto (opzionale)
+    - ripeto il problema in maniera un pò più dettagliata
+
+3 Formulazione del problema 3-4 pagine
+    - descrivo i dati che ho
+    - obettivo
+    - dico cosa voglio minimizzare
+    dico tutto in maniera formale, spiego ad esempio cos'è la regressione con le formule
+
+4 Related works max 10 pagine
+    - articoli che già fanno queste cose o simili anche in altri ambiti
+    - soluzione Ferrari, Area Match
+    metto molte citazioni
+
+5 Tecniche max 10 pagine
+    in quello che segue sono state utilizzate le seguenti tecniche...
+    - spiego le cose già esistenti che ho usato in maniera generale e senza il contesto del problema corrente
+    è la cassetta degli attrezzi
+    metto molte citazioni
+
+3,4,5 possono avere qualsiasi ordine
+
+6 Metodo max 20 pagine
+    - applicazione delle tecniche al caso specifico
+    - descrivo i miei fs e i predictor (quello scritto in taps selection)
+
+7 Esperimenti infinite pagine, è la parte più grossa
+    - dico che pc ho usato e che programma
+    - Metto quanti esperimenti voglio, la struttura è:
+        - experimental setting
+        - results
+    le immagini che metto devono essere tutte commentate
+    devo scrivere in modo che un esterno possa replicare da zero senza interpretazione
+
+8 Conclusioni 1-2 pagine
+    - come introduzione + commenti ai risultati
+    - future work
+
+9 Appendici
+    immagini che voglio mostrare ma senza spiegarle
+
+Intro: parlo al futuro
+corpo centrale: parlo al presente
+conclusione: parlo al passato
