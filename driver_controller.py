@@ -88,10 +88,14 @@ class Controller():
         ref_id, delta = self.projector._compute_projection(state_p)
         Vref = self.ref_df['speed_x'].values[ref_id]
         V = obs['speed_x']
+        r = np.array([self.ref_df['xCarWorld'].values[ref_id], self.ref_df['yCarWorld'].values[ref_id]])
+        r1 = np.array([self.ref_df['xCarWorld'].values[ref_id+1], self.ref_df['yCarWorld'].values[ref_id+1]])
+        ref_segment = (r1 - r) * delta
+        ref_proj = (r + ref_segment).reshape(1,2)
         
-        """
-        p = None    # position of the car wrt the reference
-        delta_O = None  # delta orientation of the car
+        
+        p = ref_proj - state_p    # position of the car wrt the reference
+        """delta_O = None  # delta orientation of the car
         # Compute actions
         throttle = self.sigmoid(self.alpha1 * (Vref - V) + self.k1 * np.power(V, 2))
         brake = self.sigmoid(self.beta1 * (V - Vref) + self.k2 * np.power(V, 2))
@@ -108,11 +112,11 @@ if __name__ == '__main__':
     
 #%%
 data = pd.read_csv('trajectory/dataset_human.csv')
-state_p = data.head(1)[['xCarWorld', 'yCarWorld']].values
+state_p = data.head(1)[['xCarWorld', 'yCarWorld', 'actualSpeedModule']].values
 C.projector._compute_projection(state_p)
 
 #%%
-obs  = {'xCarWorld': 654.799744, 'yCarWorld': 1169.202148}
+obs  = {'xCarWorld': 654.799744, 'yCarWorld': 1169.202148, 'speed_x': 315.11856326}
 C.act(obs)
 
 #%%
