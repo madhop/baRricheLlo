@@ -442,6 +442,7 @@ class TorcsEnv(gym.Env):
 
         state_features = {'xCarWorld': p['x'], 'yCarWorld': p['y'], 'nYawBody': p['yaw'], 'nEngine': p['rpm'],
                           'NGear': p['Gear'],
+                          'speed_x': p['speed_x'],
                           'positionRho': rho, 'positionTheta': theta, 'positionReferenceX': r['xCarWorld'],
                           'positionReferenceY': r['yCarWorld'],
                           'positionRelativeX': rel_p[0], 'positionRelativeY': rel_p[1], 'referenceCurvature': ref_c,
