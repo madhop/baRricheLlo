@@ -86,9 +86,8 @@ class Controller():
     
     
     def act(self, obs):
-        print('obs:', obs)
         # Find projection on reference trajectory
-        state_p = np.array([[obs['xCarWorld'], obs['yCarWorld']]])
+        state_p = np.array([[obs['x'], obs['y']]])
         ref_id, delta = self.projector._compute_projection(state_p)
         Vref = self.ref_df['speed_x'].values[ref_id]
         V = obs['speed_x']
@@ -100,7 +99,7 @@ class Controller():
         p = ref_proj - state_p
         p = -np.linalg.norm(p) if p[0][1] > 0 else np.linalg.norm(p)    # position of the car wrt the reference
         ref_O = self.ref_df['nYawBody'].values[ref_id]
-        delta_O = obs['nYawBody'] - ref_O # delta orientation of the car
+        delta_O = obs['yaw'] - ref_O # delta orientation of the car
         
         
         # Compute actions
@@ -121,18 +120,15 @@ class Controller():
                 
             for j in range(max_steps):
                 action = self.act(ob)
-                print(action)
+                #print(action)
                 ob, reward, done, _ = self.env.step(action)
                 
                 step += 1
                 if done:
                     break
                 
-            
-        
-    
-    
-    
+
+#%%
 
 if __name__ == '__main__':
     ref_df = pd.read_csv('trajectory/ref_traj.csv')
@@ -144,9 +140,24 @@ if __name__ == '__main__':
     reward_function = Temporal_projection(ref_df, penalty=penalty)
     env = TorcsEnv(reward_function,collision_penalty=-1000, state_cols=state_cols, ref_df=ref_df, vision=False, throttle=True,
                gear_change=False, brake=True, start_env=False, damage_th=0, slow=False, faster=False, graphic=True)
-    C = Controller(env, k1=0.000001, k2=0)
+    C = Controller(env, gamma1=0.1, gamma2=0.1, k1=0.000001, k2=0)
     C.playGame()
     
+    
+#%% define env
+ref_df = pd.read_csv('trajectory/ref_traj.csv')
+simulations = pd.read_csv('trajectory/dataset_offroad_human.csv')
+# Reward function
+penalty = LikelihoodPenalty(kernel='gaussian', bandwidth=1.0)
+right_laps = np.array([ 9., 14., 16., 17., 20., 47., 49., 55., 59., 60., 61., 62., 63., 65., 68.])
+penalty.fit(simulations[simulations.NLap.isin(right_laps)][penalty_cols].values)
+reward_function = Temporal_projection(ref_df, penalty=penalty)
+env = TorcsEnv(reward_function,collision_penalty=-1000, state_cols=state_cols, ref_df=ref_df, vision=False, throttle=True,
+           gear_change=False, brake=True, start_env=False, damage_th=0, slow=False, faster=False, graphic=True)
+
+#%% play game
+C = Controller(env, gamma1=0.001, gamma2=0.001, k1=0.000001, k2=0)
+C.playGame()
     
 #%%
 data = pd.read_csv('trajectory/dataset_human.csv')

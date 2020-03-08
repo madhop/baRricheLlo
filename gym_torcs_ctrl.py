@@ -258,7 +258,8 @@ class TorcsEnv(gym.Env):
         else:
             # Transform raw torcs data to state
             self.state = self.observation_to_state(self.observation, self.p1_observation, self.p2_observation, u)
-            return self.get_state(), reward, episode_terminate, info
+            #return self.get_state(), reward, episode_terminate, info
+            return self.get_obs(), reward, episode_terminate, info
 
     def reset(self, relaunch=False):
         # print("Reset")
@@ -309,11 +310,12 @@ class TorcsEnv(gym.Env):
             action = auto_driver.get_action(track_pos)
             self.observation, _, done, info = self.step(action, raw=True)
 
-            if ob_distFromStart < 100:
+            if ob_distFromStart > 10 and ob_distFromStart < 100:
                 # Start with agent driver and return the current state
 
                 print('Stopped auto driving')
-                return self.observation_to_state(self.observation, self.p1_observation, self.p2_observation, action)
+                return self.get_obs()
+                #return self.observation_to_state(self.observation, self.p1_observation, self.p2_observation, action)
 
             """if ob_distFromStart < 100 and not start_line:  # just passed start line
                 print('Start Line')
