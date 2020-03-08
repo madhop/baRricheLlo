@@ -64,17 +64,18 @@ class Projection(Reward_function):
         delta = np.column_stack((delta, delta_prev))[np.arange(delta.shape[0]), closest]  # select the one with minimum distance
         ref_id = np.column_stack((ref_id, prev_ref_id))[np.arange(1), closest]
         return ref_id, delta
-#%%
+#%% Define Controller
 class Controller():
-    def __init__(self):
+    def __init__(self, env, alpha1=1, k1=1, beta1=1, k2=1, gamma1=1, gamma2=1):
         # Init
-        self.alpha1 = None
-        self.k1 = None
-        self.beta1 = None
-        self.k2 = None
-        self.gamma1 = None
-        self.gamma2 = None
-        self.ref_df = pd.read_csv('trajectory/ref_traj.csv')
+        self.env = env
+        self.alpha1 = alpha1
+        self.k1 = k1
+        self.beta1 = beta1
+        self.k2 = k2
+        self.gamma1 = gamma1
+        self.gamma2 = gamma2
+        self.ref_df = pd.read_csv('trajectory/ref_traj_yaw.csv')
         self.projector = Projection(ref_t=self.ref_df, clip_range=None, ref_dt=1, sample_dt=10, penalty=None)
         
     
@@ -93,35 +94,59 @@ class Controller():
         ref_segment = (r1 - r) * delta
         ref_proj = (r + ref_segment).reshape(1,2)
         
+        p = ref_proj - state_p
+        p = -np.linalg.norm(p) if p[0][1] > 0 else np.linalg.norm(p)    # position of the car wrt the reference
+        ref_O = self.ref_df['nYawBody'].values[ref_id]
+        delta_O = obs['nYawBody'] - ref_O # delta orientation of the car
         
-        p = ref_proj - state_p    # position of the car wrt the reference
-        """delta_O = None  # delta orientation of the car
+        
         # Compute actions
-        throttle = self.sigmoid(self.alpha1 * (Vref - V) + self.k1 * np.power(V, 2))
-        brake = self.sigmoid(self.beta1 * (V - Vref) + self.k2 * np.power(V, 2))
         steer = np.tanh(self.gamma1 * p + self.gamma2 * delta_O)
-        return [steer, brake, throttle]"""
+        brake = self.sigmoid(self.beta1 * (V - Vref) + self.k2 * np.power(V, 2))
+        throttle = self.sigmoid(self.alpha1 * (Vref - V) + self.k1 * np.power(V, 2))
+        return [steer, brake, throttle]
+    
+    
+    def playGame(self, episode_count=10, max_steps=100000):
+        step = 0 
+        for i in range(episode_count):
+            if np.mod(i, 3) == 0:
+                # Sometimes you need to relaunch TORCS because of the memory leak error
+                ob = self.env.reset(relaunch=True)
+            else:
+                ob = self.env.reset()
+                
+            for j in range(max_steps):
+                action = self.act(ob)
+                print(action)
+                ob, reward, done, _ = self.env.step(action)
+                
+                step += 1
+                if done:
+                    break
+                
+            
         
     
     
     
 
 if __name__ == '__main__':
-    C = Controller()
+    C = Controller(k1=0.000001, k2=0)
     
     
 #%%
 data = pd.read_csv('trajectory/dataset_human.csv')
-state_p = data.head(1)[['xCarWorld', 'yCarWorld', 'actualSpeedModule']].values
-C.projector._compute_projection(state_p)
+state_p = data.head(1)[['xCarWorld', 'yCarWorld', 'actualSpeedModule', 'nYawBody']].values
+#C.projector._compute_projection(state_p)
 
 #%%
-obs  = {'xCarWorld': 654.799744, 'yCarWorld': 1169.202148, 'speed_x': 315.11856326}
-C.act(obs)
+obs  = {'xCarWorld': 654.799744, 'yCarWorld': 1169.202148, 'speed_x': 310.11856326, 'nYawBody': 0.013237}
+action = C.act(obs)
 
-#%%
-import matplotlib.pyplot as plt
+#%% plot
+"""import matplotlib.pyplot as plt
 ref_dt = pd.read_csv('trajectory/ref_traj.csv')
 plt.scatter(ref_dt[99:101].xCarWorld, ref_dt[99:101].yCarWorld)
 plt.scatter(data[8:9].xCarWorld, data[8:9].yCarWorld)
-plt.show()
+plt.show()"""
