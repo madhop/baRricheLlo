@@ -6,10 +6,12 @@ Created on Fri Mar  6 19:48:48 2020
 @author: umberto
 Driver controller
 """
+from fqi.reward_function import *
+from fqi.utils import *
+from gym_torcs_ctrl import TorcsEnv
 
 import numpy as np
 import pandas as pd
-from fqi.reward_function import Reward_function
 
 from sklearn.neighbors import KDTree
 from sklearn.model_selection import GridSearchCV
@@ -84,6 +86,7 @@ class Controller():
     
     
     def act(self, obs):
+        print('obs:', obs)
         # Find projection on reference trajectory
         state_p = np.array([[obs['xCarWorld'], obs['yCarWorld']]])
         ref_id, delta = self.projector._compute_projection(state_p)
@@ -132,7 +135,17 @@ class Controller():
     
 
 if __name__ == '__main__':
-    C = Controller(k1=0.000001, k2=0)
+    ref_df = pd.read_csv('trajectory/ref_traj.csv')
+    simulations = pd.read_csv('trajectory/dataset_offroad_human.csv')
+    # Reward function
+    penalty = LikelihoodPenalty(kernel='gaussian', bandwidth=1.0)
+    right_laps = np.array([ 9., 14., 16., 17., 20., 47., 49., 55., 59., 60., 61., 62., 63., 65., 68.])
+    penalty.fit(simulations[simulations.NLap.isin(right_laps)][penalty_cols].values)
+    reward_function = Temporal_projection(ref_df, penalty=penalty)
+    env = TorcsEnv(reward_function,collision_penalty=-1000, state_cols=state_cols, ref_df=ref_df, vision=False, throttle=True,
+               gear_change=False, brake=True, start_env=False, damage_th=0, slow=False, faster=False, graphic=True)
+    C = Controller(env, k1=0.000001, k2=0)
+    C.playGame()
     
     
 #%%
