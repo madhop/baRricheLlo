@@ -9,7 +9,7 @@ from stable_baselines.ddpg.policies import MlpPolicy
 from ddpg.ddpg_driver import DDPG
 from stable_baselines.common.noise import NormalActionNoise
 import tensorflow as tf
-
+import pickle
 
 out_dir = '../learning_200309/'
 if not os.path.exists(out_dir):
@@ -60,6 +60,7 @@ model = DDPG(MlpPolicy, env, verbose=1, action_noise=action_noise, normalize_obs
 # --- Pre-training with behavioural cloning
 model, log = model.pretrain(demonstrations, n_epochs=30000, val_interval=50, early_stopping=False, patience=2)
 model.save(os.path.join(out_dir, 'model_bc.zip'))
+pickle.dump(log, open(os.path.join(out_dir, 'log_bc_training.pkl'), 'wb'))
 
 # --- Online learning
 print('Online learning')
