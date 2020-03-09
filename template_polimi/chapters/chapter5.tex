@@ -3,3 +3,532 @@
 \thispagestyle{empty}
 
 TESTO CAPITOLO 5
+
+Machine learning (ML) is a process whereby a computer
+program learns from experience to improve its performance at
+a specified task [16]. ML algorithms are often classified under
+one of three broad categories: supervised learning, unsupervised learning and reinforcement learning (RL). Supervised
+learning algorithms are based on inductive inference where
+the model is typically trained using labelled data to perform
+classification or regression, whereas unsupervised learning encompasses techniques such as density estimation or clustering
+applied to unlabelled data. By contrast, in the RL paradigm
+an autonomous agent learns to improve its performance at
+an assigned task by interacting with its environment. Russel
+and Norvig define an agent as “anything that can be viewed
+as perceiving its environment through sensors and acting
+upon that environment through actuators” [17]. RL agents
+are not told explicitly how to act by an expert; rather an
+agent’s performance is evaluated by a reward function R.
+For each state experienced, the agent chooses an action and
+receives an occasional reward from its environment based on
+the usefulness of its decision. The goal for the agent is to
+maximize the cumulative rewards received over its lifetime.
+Gradually, the agent can increase its long-term reward by
+exploiting knowledge learned about the expected utility (i.e.
+discounted sum of expected future rewards) of different stateaction pairs. One of the main challenges in reinforcement
+learning is managing the trade-off between exploration and
+exploitation. To maximize the rewards it receives, an agent
+must exploit its knowledge by selecting actions which are
+known to result in high rewards. On the other hand, to
+discover such beneficial actions, it has to take the risk of
+trying new actions which may lead to higher rewards than
+the current best-valued actions for each system state. In other
+words, the learning agent has to exploit what it already knows
+in order to obtain rewards, but it also has to explore the
+unknown in order to make better action selections in the future.
+Examples of strategies which have been proposed to manage
+this trade-off include ²-greedy and softmax. When adopting
+the ubiquitous ²-greedy strategy, an agent either selects an
+action at random with probability 0 < ² < 1, or greedily
+selects the highest valued action for the current state with
+the remaining probability 1 − ². Intuitively, the agent should
+explore more at the beginning of the training process when
+little is known about the problem environment. As training
+progresses, the agent may gradually conduct more exploitation
+than exploration. The design of exploration strategies for RL
+agents is an area of active research (see e.g. [18]).
+Markov decision processes (MDPs) are considered the de
+facto standard when formalising sequential decision making
+problems involving a single RL agent [19]. An MDP consists
+of a set S of states, a set A of actions, a transition function
+T and a reward function R [20], i.e. a tuple < S, A,T,R >.
+When in any state s ∈ S, selecting an action a ∈ A will result
+in the environment entering a new state s
+0 ∈ S with a transition
+Vehicle/RL Agent
+State st ∈ S
+S either continuous
+or discrete
+Challenges
+Sample Complexity, Validation,
+Safe-exploration, Credit assignment,
+Simulator-Real Gap, Learning
+Function Approximators
+ot → st (SRL)
+CNNs
+RL methods
+Value/Policy-based
+Actor-Critic
+On/Off policy
+Model-based/Model-free
+π : S → A
+Driving Policy
+stochastic/deterministic
+Environment Real-world Simulator
+simulator-to-real gap
+action at
+discrete/continuous
+reward rt
+observation ot
+Fig. 2. A graphical decomposition of the different components of an RL
+algorithm. It also demonstrates the different challenges encountered while
+training a D(RL) algorithm.
+probability T(s,a, s
+0
+) ∈ (0,1), and give a reward R(s,a). This
+process is illustrated in Fig. 2. The stochastic policy π : S → D
+is a mapping from the state space to a probability over the set
+of actions, and π(a|s) represents the probability of choosing
+action a at state s. The goal is to find the optimal policy
+π
+∗
+, which results in the highest expected sum of discounted
+rewards [19]:
+π
+∗ = argmax
+π
+Eπ
+½ H
+X−1
+k=0
+γ
+k
+rk+1 | s0 = s
+¾
+| {z }
+:=Vπ(s)
+, (1)
+for all states s ∈ S, where rk = R(sk,ak) is the reward at time
+k and Vπ(s), the ‘value function’ at state s following a policy
+π, is the expected ‘return’ (or ‘utility’) when starting at s and
+following the policy π thereafter [1]. An important, related
+concept is the action-value function, a.k.a.‘Q-function’ defined
+as:
+Qπ(s,a) = Eπ
+½ H
+X−1
+k=0
+γ
+k
+rk+1 | s0 = s,a0 = a
+¾
+. (2)
+The discount factor γ ∈ [0,1] controls how an agent regards
+future rewards. Low values of γ encourage myopic behaviour
+where an agent will aim to maximise short term rewards,
+whereas high values of γ cause agents to be more forwardlooking and to maximise rewards over a longer time frame.
+The horizon H refers to the number of time steps in the
+MDP. In infinite-horizon problems H = ∞, whereas in episodic
+domains H has a finite value. Episodic domains may terminate
+after a fixed number of time steps, or when an agent reaches
+a specified goal state. The last state reached in an episodic
+domain is referred to as the terminal state. In finite-horizon
+or goal-oriented domains discount factors of (close to) 1 may
+be used to encourage agents to focus on achieving the goal,
+whereas in infinite-horizon domains lower discount factors
+may be used to strike a balance between short- and longterm rewards. If the optimal policy for a MDP is known,
+then Vπ∗ may be used to determine the maximum expected
+discounted sum of rewards available from any arbitrary initial
+4
+state. A rollout is a trajectory produced in the state space
+by sequentially applying a policy to an initial state. A MDP
+satisfies the Markov property, i.e. system state transitions are
+dependent only on the most recent state and action, not on
+the full history of states and actions in the decision process.
+Moreover, in many real-world application domains, it is not
+possible for an agent to observe all features of the environment
+state; in such cases the decision-making problem is formulated
+as a partially-observable Markov decision process (POMDP).
+Solving a reinforcement learning task means finding a policy
+π that maximises the expected discounted sum of rewards
+over trajectories in the state space. RL agents may learn
+value function estimates, policies and/or environment models
+directly. Dynamic programming (DP) refers to a collection of
+algorithms that can be used to compute optimal policies given
+a perfect model of the environment in terms of reward and
+transition functions. Unlike DP, in Monte Carlo methods there
+is no assumption of complete environment knowledge. Monte
+Carlo methods are incremental in an episode-by-episode sense.
+Upon the completion of an episode, the value estimates and
+policies are updated. Temporal Difference (TD) methods, on
+the other hand, are incremental in a step-by-step sense, making
+them applicable to non-episodic scenarios. Like Monte Carlo
+methods, TD methods can learn directly from raw experience
+without a model of the environment’s dynamics. Like DP, TD
+methods learn their estimates based on other estimates.
+A. Value-based methods
+Q-learning is one of the most commonly used RL algorithms. It is a model-free TD algorithm that learns estimates of
+the utility of individual state-action pairs (Q-functions defined
+in Eqn. 2). Q-learning has been shown to converge to the
+optimum state-action values for a MDP with probability 1,
+so long as all actions in all states are sampled infinitely
+often and the state-action values are represented discretely
+[21]. In practice, Q-learning will learn (near) optimal stateaction values provided a sufficient number of samples are
+obtained for each state-action pair. If a Q-learning agent has
+converged to the optimal Q values for a MDP and selects
+actions greedily thereafter, it will receive the same expected
+sum of discounted rewards as calculated by the value function
+with π
+∗
+(assuming that the same arbitrary initial starting state
+is used for both). Agents implementing Q-learning update their
+Q values according to the following update rule:
+Q(s,a) ← Q(s,a)+α[r +γmax
+a
+0∈A
+Q(s
+0
+,a
+0
+)−Q(s,a)], (3)
+where Q(s,a) is an estimate of the utility of selecting action
+a in state s, α ∈ [0,1] is the learning rate which controls the
+degree to which Q values are updated at each time step, and
+γ ∈ [0,1] is the same discount factor used in Eqn. 1. The
+theoretical guarantees of Q-learning hold with any arbitrary
+initial Q values [21]; therefore the optimal Q values for a MDP
+can be learned by starting with any initial action value function
+estimate. The initialisation can be optimistic (each Q(s,a)
+returns the maximum possible reward), pessimistic (minimum)
+or even using knowledge of the problem to ensure faster
+convergence. Deep Q-Networks (DQN) [22] incorporates a
+variant of the Q-learning algorithm [23], by using deep neural
+networks (DNNs) as a non-linear Q function approximator
+over high-dimensional state spaces (e.g. the pixels in a frame
+of an Atari game). Practically, the neural network predicts the
+value of all actions without the use of any explicit domainspecific information or hand-designed features. DQN applies
+experience replay technique to break the correlation between
+successive experience samples and also for better sample
+efficiency. For increased stability, two networks are used where
+the parameters of the target network for DQN are fixed for
+a number of iterations while updating the parameters of the
+online network. Readers are directed to sub-section III-E for
+a more detailed introduction to the use of DNNs in Deep RL.
+B. Policy-based methods
+The difference between value-based and policy-based methods is essentially a matter of where the burden of optimality
+resides. Both method types must propose actions and evaluate
+the resulting behaviour, but while value-based methods focus
+on evaluating the optimal cumulative reward and have a policy
+follows the recommendations, policy-based methods aim to
+estimate the optimal policy directly, and the value is a secondary if calculated at all. Typically, a policy is parameterised
+as a neural network πθ. Policy gradient methods use gradient
+descent to estimate the parameters of the policy that maximise
+the expected reward. The result can be a stochastic policy
+where actions are selected by sampling, or a deterministic
+policy. Many real-world applications have continuous action
+spaces. Deterministic policy gradient (DPG) algorithms [24]
+[1] allow reinforcement learning in domains with continuous
+actions. Silver et al. [24] proved that a deterministic policy
+gradient exists for MDPs satisfying certain conditions, and
+that deterministic policy gradients have a simple model-free
+form that follows the gradient of the action-value function.
+As a result, instead of integrating over both state and action
+spaces in stochastic policy gradients, DPG integrates over
+the state space only leading to fewer samples in problems
+with large action spaces. To ensure sufficient exploration,
+actions are chosen using a stochastic policy, while learning a
+deterministic target policy. The REINFORCE [25] algorithm
+is a straight forward policy-based method. The discounted
+cumulative reward gt =
+PH−1
+k=0
+γ
+k
+rk+t+1 at one time step is
+calculated by playing the entire episode, so no estimator is
+required for policy evaluation. The parameters are updated into
+the direction of the performance gradient:
+θ ← θ +αγt
+g∇logπθ(a|s), (4)
+where α is the learning rate for a stable incremental update.
+Intuitively, we want to encourage state-action pairs that result
+in the best possible returns. Trust Region Policy Optimization
+(TRPO) [26], works by preventing the updated policies from
+deviating too much from previous policies, thus reducing the
+chance of a bad update. TRPO optimises a surrogate objective
+function where the basic idea is to limit each policy gradient
+update as measured by the Kullback-Leibler (KL) divergence
+between the current and the new proposed policy. This method
+results in monotonic improvements in policy performance.
+5
+While Proximal Policy Optimization (PPO) [27] proposed a
+clipped surrogate objective function by adding a penalty for
+having a too large policy change. Accordingly, PPO policy
+optimisation is simpler to implement, and has better sample
+complexity while ensuring the deviation from the previous
+policy is relatively small.
+C. Actor-critic methods
+Actor-critic methods are hybrid methods that combine the
+benefits of policy-based and value-based algorithms. The
+policy structure that is responsible for selecting actions is
+known as the ‘actor’. The estimated value function criticises
+the actions made by the actor and is known as the ‘critic’.
+After each action selection, the critic evaluates the new state to
+determine whether the result of the selected action was better
+or worse than expected. Both networks need their gradient to
+learn. Let J(θ) := Eπθ
+[r] represent a policy objective function,
+where θ designates the parameters of a DNN. Policy gradient
+methods search for local maximum of J(θ). Since optimization
+in continuous action spaces could be costly and slow, the
+DPG (Direct Policy Gradient) algorithm represents actions
+as parameterised function µ(s|θ
+µ
+), where θ
+µ
+refers to the
+parameters of the actor network. Then the unbiased estimate
+of the policy gradient gradient step is given as:
+∇θJ = −Eπθ
+n
+(g − b) logπθ(a|s)
+o
+, (5)
+where b is the baseline. While using b ≡ 0 is the simplification
+that leads to the REINFORCE formulation. Williams [25]
+explains a well chosen baseline can reduce variance leading
+to a more stable learning. The baseline, b can be chosen
+as Vπ(s), Qπ(s,a) or ‘Advantage’ Aπ(s,a) based methods.
+Deep Deterministic Policy Gradient (DDPG) [28] is a modelfree, off-policy (please refer to subsection III-D for a detailed
+distinction), actor-critic algorithm that can learn policies for
+continuous action spaces using deep neural net based function
+approximation, extending prior work on DPG to large and
+high-dimensional state-action spaces. When selecting actions,
+exploration is performed by adding noise to the actor policy.
+Like DQN, to stabilise learning a replay buffer is used to
+minimize data correlation. A separate actor-critic specific
+target network is also used. Normal Q-learning is adapted with
+a restricted number of discrete actions, and DDPG also needs
+a straightforward way to choose an action. Starting from Qlearning, we extend Eqn. 2 to define the optimal Q-value and
+optimal action as Q
+∗
+and a
+∗
+.
+Q
+∗
+(s,a) = max
+π
+Qπ(s,a), (6)
+a
+∗ = argmax
+a
+Q
+∗
+(s,a). (7)
+In the case of Q-learning, the action is chosen according to
+the Q-function as in Eqn. 7. But DDPG chains the evaluation
+of Q after the action has already been chosen according to the
+policy. By correcting the Q-values towards the optimal values
+using the chosen action, we also update the policy towards the
+optimal action proposition. Thus two separate networks work
+at estimating Q
+∗
+and π
+∗
+.
+Asynchronous Advantage Actor Critic (A3C) [29] uses
+asynchronous gradient descent for optimization of deep neural
+network controllers. Deep reinforcement learning algorithms
+based on experience replay such as DQN and DDPG have
+demonstrated considerable success in difficult domains such
+as playing Atari games. However, experience replay uses a
+large amount of memory to store experience samples and
+requires off-policy learning algorithms. In A3C, instead of
+using an experience replay buffer, agents asynchronously
+execute on multiple parallel instances of the environment. In
+addition to the reducing correlation of the experiences, the
+parallel actor-learners have a stabilizing effect on training
+process. This simple setup enables a much larger spectrum
+of on-policy as well as off-policy reinforcement learning
+algorithms to be applied robustly using deep neural networks.
+A3C exceeded the performance of the previous state-of-theart at the time on the Atari domain while training for half
+the time on a single multi-core CPU instead of a GPU by
+combining several ideas. It also demonstrates how using an
+estimate of the value function as the previously explained
+baseline b reduces variance and improves convergence time.
+By defining the advantage as Aπ(a, s) = Qπ(s,a) − Vπ(s), the
+expression of the policy gradient from Eqn. 5 is rewritten
+as ∇θL = −Eπθ
+{Aπ(a, s) logπθ(a|s)}. The critic is trained to
+minimize 1
+2
+°
+°Aπθ
+(a, s)
+°
+°
+2
+. The intuition of using advantage
+estimates rather than just discounted returns is to allow the
+agent to determine not just how good its actions were, but also
+how much better they turned out to be than expected, leading
+to reduced variance and more stable training. The A3C model
+also demonstrated good performance in 3D environments such
+as labyrinth exploration. Advantage Actor Critic (A2C) is
+a synchronous version of the asynchronous advantage actor
+critic model, that waits for each agent to finish its experience
+before conducting an update. The performance of both A2C
+and A3C is comparable. Most greedy policies must alternate
+between exploration and exploitation, and good exploration
+visits the states where the value estimate is uncertain. This
+way, exploration focuses on trying to find the most uncertain
+state paths as they bring valuable information. In addition to
+advantage, explained earlier, some methods use the entropy as
+the uncertainty quantity. Most A3C implementations include
+this as well. Two methods with common authors are energybased policies [30] and more recent and with widespread use,
+the Soft Actor Critic (SAC) algorithm [31], both rely on adding
+an entropy term to the reward function, so we update the policy
+objective from Eqn. 1 to Eqn. 8. We refer readers to [31] for
+an in depth explanation of the expression
+π
+∗
+MaxEnt = argmax
+π
+Eπ
+©X
+t
+[r(st
+,at)+αH(π(.|st))]ª
+, (8)
+shown here for illustration of how the entropy H is added.
+D. Model-based (vs. Model-free) & On/Off Policy methods
+In practical situations, interacting with the real environment
+could be limited due to many reasons including safety and
+cost. Learning a model for environment dynamics may reduce
+the amount of interactions required with the real environment. Moreover, exploration can be performed on the learned
+6
+models. In the case of model-based approaches (e.g. DynaQ [32], R-max [33]), agents attempt to learn the transition
+function T and reward function R, which can be used when
+making action selections. Keeping a model approximation of
+the environment means storing knowledge of its dynamics, and
+allows for fewer, and sometimes, costly environment interactions. By contrast, in model-free approaches such knowledge
+is not a requirement. Instead, model-free learners sample the
+underlying MDP directly in order to gain knowledge about
+the unknown model, in the form of value function estimates
+for example. In Dyna-2 [34], the learning agent stores longterm and short-term memories, where a memory is defined
+as the set of features and corresponding parameters used by
+an agent to estimate the value function. Long-term memory
+is for general domain knowledge which is updated from real
+experience, while short-term memory is for specific local
+knowledge about the current situation, and the value function
+is a linear combination of long and short term memories.
+Learning algorithms can be on-policy or off-policy depending on whether the updates are conducted on fresh trajectories
+generated by the policy or by another policy, that could be
+generated by an older version of the policy or provided by an
+expert. On-policy methods such as SARSA [35], estimate the
+value of a policy while using the same policy for control.
+However, off-policy methods such as Q-learning [23], use
+two policies: the behavior policy, the policy used to generate
+behavior; and the target policy, the one being improved on. An
+advantage of this separation is that the target policy may be
+deterministic (greedy), while the behavior policy can continue
+to sample all possible actions, [1].
+E. Deep reinforcement learning
+Tabular representations are the simplest way to store learned
+estimates (of e.g. values, policies or models), where each stateaction pair has a discrete estimate associated with it. When
+estimates are represented discretely, each additional feature
+tracked in the state leads to an exponential growth in the
+number of state-action pair values that must be stored [36].
+This problem is commonly referred to in the literature as the
+“curse of dimensionality”, a term originally coined by Bellman
+[37]. In simple environments this is rarely an issue, but it
+may lead to an intractable problem in real-world applications,
+due to memory and/or computational constraints. Learning
+over a large state-action space is possible, but may take an
+unacceptably long time to learn useful policies. Many realworld domains feature continuous state and/or action spaces;
+these can be discretised in many cases. However, large discretisation steps may limit the achievable performance in a domain,
+whereas small discretisation steps may result in a large stateaction space where obtaining a sufficient number of samples
+for each state-action pair is impractical. Alternatively, function
+approximation may be used to generalise across states and/or
+actions, whereby a function approximator is used to store and
+retrieve estimates. Function approximation is an active area
+of research in RL, offering a way to handle continuous state
+and/or action spaces, mitigate against the state-action space
+explosion and generalise prior experience to previously unseen
+state-action pairs. Tile coding is one of the simplest forms
+of function approximation, where one tile represents multiple
+states or state-action pairs [36]. Neural networks are also
+commonly used to implement function approximation, one of
+the most famous examples being Tesuaro’s application of RL
+to backgammon [38]. Recent work has applied deep neural
+networks as a function approximation method; this emerging
+paradigm is known as deep reinforcement learning (DRL).
+DRL algorithms have achieved human level performance (or
+above) on complex tasks such as playing Atari games [22] and
+playing the board game Go [39].
+In DQN [22] it is demonstrated how a convolutional neural
+network can learn successful control policies from just raw
+video data for different Atari environments. The network
+was trained end-to-end and was not provided with any game
+specific information. The input to the convolutional neural
+network consists of an 84×84×4 where 4 consecutive frames
+are used to capture the temporal information. The first hidden
+layer consists of 32 filters of 8 × 8 with stride 4 and applies
+a rectifier non linearity. The second hidden layer consists of
+64 filters of 4 × 4 with stride 2, followed by a rectifier nonlinearity. This is followed by a third convolutional layer that
+of 64 filters of 3 × 3 with stride1 followed by a rectifier.
+The final hidden layer is fully connected and consists of 512
+rectifier units. The output layer is a fully-connected linear
+layer with a single output for each valid action. For DQN
+training stability, two networks are used while the parameters
+of the target network are fixed for a number of iterations while
+updating the online network parameters. For practical reasons,
+the Q(s,a) function is modeled as a deep neural network
+that predicts the value of all actions given the input state.
+Accordingly, deciding what action to take requires performing
+a single forward pass of the network. Moreover, in order
+to increase sample efficiency, experiences of the agent are
+stored in a replay memory (experience replay), where the Qlearning updates are conducted on randomly selected samples
+from the replay memory. This random selection breaks the
+correlation between successive samples. Experience replay
+enables reinforcement learning agents to remember and reuse
+experiences from the past where observed transitions are stored
+for some time, usually in a queue, and sampled uniformly from
+this memory to update the network. However, this approach
+simply replays transitions at the same frequency that they were
+originally experienced, regardless of their significance. An
+alternative method is to use two separate experience buckets,
+one for positive and one for negative rewards [40]. Then a fixed
+fraction from each bucket is selected to replay. This method
+is only applicable in domains that have a natural notion of
+binary experience. Experience replay has also been extended
+with a framework for prioritising experience [41], where
+important transitions, based on the TD error, are replayed
+more frequently, leading to improved performance and faster
+training when compared to the standard experience replay
+approach.
+The max operator in standard Q-learning and DQN uses the
+same values both to select and to evaluate an action resulting
+in over optimistic value estimates. In Double DQN (D-DQN)
+[42] the over estimation problem in DQN is tackled where the
+7
+greedy policy is evaluated according to the online network and
+uses the target network to estimate its value. It was shown that
+this algorithm not only yields more accurate value estimates,
+but leads to much higher scores on several games.
+In Dueling network architecture [43] the state value function
+and associated advantage function are estimated, and then
+combined together to estimate action value function. The
+advantage of the dueling architecture lies partly in its ability
+to learn the state-value function efficiently. In a single-stream
+architecture only the value for one of the actions is updated.
+However in dueling architecture, the value stream is updated
+with every update, allowing for better approximation of the
+state values, which in turn need to be accurate for temporal
+difference methods like Q-learning.
+DRQN [44] applied a modification to the DQN by combining a Long Short Term Memory (LSTM) with a Deep QNetwork. Accordingly, the DRQN is capable of integrating information across frames to detect information such as velocity
+of objects. DRQN showed to generalize its policies in case of
+complete observations and when trained on Atari games and
+evaluated against flickering games, it was shown that DRQN
+generalizes better than DQN.
