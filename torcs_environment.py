@@ -196,7 +196,7 @@ class TORCS(gym.Env):
 
         info = {'collision': collision, 'is_success': checkered_flag, 'low_speed': low_speed,
                 'running_backward': running_backward, 'out_of_track': out_of_track }
-        if self.verbose:
+        if self.verbose and not raw:
             print('T={} B={} S={} r={} d={}'.format(action_torcs['accel'], action_torcs['brake'], action_torcs['steer'],
                                                     reward, damage))
 
@@ -278,13 +278,10 @@ class TORCS(gym.Env):
             time.sleep(0.5)
 
     def agent_to_torcs(self, u):
+
         torcs_action = {'steer': u[0]}
-
-        if self.throttle is True:  # throttle action is enabled
-            torcs_action.update({'accel': u[2]})
-
-        if self.brake is True: # brake action is enabled
-            torcs_action.update({'brake': u[1]})
+        torcs_action.update({'accel': u[2]})
+        torcs_action.update({'brake': u[1]})
 
         if self.gear_change is True: # gear change action is enabled
             torcs_action.update({'gear': u[3]})

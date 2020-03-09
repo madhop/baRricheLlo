@@ -118,6 +118,7 @@ def bargraph(x,mn,mx,w,c='X'):
 class Client():
     def __init__(self,H=None,p=None,i=None,e=None,t=None,s=None,d=None,vision=False, graphic=True, practice_path=''):
         # If you don't like the option defaults,  change them here.
+        self.practice_path = practice_path
         self.vision = vision
         self.graphic = graphic
         self.host= 'localhost'
@@ -139,7 +140,6 @@ class Client():
         self.S= ServerState()
         self.R= DriverAction()
         self.setup_connection()
-        self.practice_path = practice_path
 
     def setup_connection(self):
         # == Set Up UDP Socket ==
