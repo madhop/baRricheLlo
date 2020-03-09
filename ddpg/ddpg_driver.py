@@ -1272,7 +1272,7 @@ class DDPG(OffPolicyRLModel):
         # number of steps in which the validation loss does not decrease
         increasing_steps = 0
         # best model is the one with lowest
-        best_model = copy.deepcopy(self)
+        # best_model = deepcopy.(self)
         best_val_loss = np.inf
 
         for epoch_idx in range(int(n_epochs)):

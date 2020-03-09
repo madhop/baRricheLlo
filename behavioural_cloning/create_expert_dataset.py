@@ -30,7 +30,7 @@ def create_expert_dataset(demonstrations_path, reward_function, state_cols, acti
     episode_returns = []
 
     for i in range(len(starts_index) - 1):
-        episode_returns.append(demos.loc[starts_index[i]:starts_index[i+1]]['r'].su())
+        episode_returns.append(demos.loc[starts_index[i]:starts_index[i+1]]['r'].sum())
     episode_returns.append(demos.loc[starts_index[-1]:]['r'].sum())
 
     demos_dict = dict()
