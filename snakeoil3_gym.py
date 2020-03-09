@@ -116,7 +116,7 @@ def bargraph(x,mn,mx,w,c='X'):
     return '[%s]' % (nnc+npc+ppc+pnc)
 
 class Client():
-    def __init__(self,H=None,p=None,i=None,e=None,t=None,s=None,d=None,vision=False, graphic=True):
+    def __init__(self,H=None,p=None,i=None,e=None,t=None,s=None,d=None,vision=False, graphic=True, practice_path=''):
         # If you don't like the option defaults,  change them here.
         self.vision = vision
         self.graphic = graphic
@@ -139,6 +139,7 @@ class Client():
         self.S= ServerState()
         self.R= DriverAction()
         self.setup_connection()
+        self.practice_path = practice_path
 
     def setup_connection(self):
         # == Set Up UDP Socket ==
@@ -177,7 +178,8 @@ class Client():
                     if self.graphic:
                         command_str = 'torcs -nofuel -nodamage -nolaptime'
                     else:
-                        command_str = 'torcs -r /home/driver/.torcs/config/raceman/practice.xml -nofuel -nodamage -nolaptime'
+                        command_str = 'torcs -r {} -nofuel -nodamage -nolaptime'.format(self.practice_path)
+
                     if self.vision is True:
                         command_str += ' -vision'
 

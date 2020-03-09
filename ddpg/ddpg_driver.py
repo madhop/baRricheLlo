@@ -5,7 +5,7 @@ from collections import deque
 import pickle
 import warnings
 import pandas as pd
-
+import copy
 import gym
 import numpy as np
 import tensorflow as tf
@@ -820,8 +820,9 @@ class DDPG(OffPolicyRLModel):
                 self.param_noise_stddev: self.param_noise.current_stddev,
             })
 
-    def learn(self, total_timesteps, callback=None, log_interval=100, tb_log_name="DDPG",
-              reset_num_timesteps=True, replay_wrapper=None, episode_count=5, save_buffer=False, save_model=False, output_name=None):
+    def learn(self, total_timesteps, callback=None, log_interval=100, tb_log_name="DDPG", reset_num_timesteps=True,
+              replay_wrapper=None, episode_count=5, save_buffer=False, save_model=False, output_name=None,
+              log_path='./'):
 
         new_tb_log = self._init_num_timesteps(reset_num_timesteps)
 
@@ -872,6 +873,7 @@ class DDPG(OffPolicyRLModel):
                 epoch_episodes = 0
                 epoch = 0
                 while True:
+                    save_id = 0
                     for log_i in range(log_interval):
                         print('log interval:', log_i)
                         # Perform rollouts.
@@ -924,8 +926,8 @@ class DDPG(OffPolicyRLModel):
                             # Book-keeping.
                             epoch_actions.append(action)
                             epoch_qs.append(q_value)
-                            #self._store_transition(obs, action, reward, new_obs, done)
-                            self._store_transition(obs, action, reward, new_obs, info['is_success'])
+                            self._store_transition(obs, action, reward, new_obs, done)
+                            #self._store_transition(obs, action, reward, new_obs, info['is_success'])
                             obs = new_obs
                             if callback is not None:
                                 # Only stop training if return value is False, not when it is None.
@@ -958,10 +960,6 @@ class DDPG(OffPolicyRLModel):
                                         obs = self.env.reset(relaunch=True)
                                     else:
                                         obs = self.env.reset()
-                                    
-                            
-                                    
-
 
                         if save_buffer:
                             print('append data to demonstrations_ddpg.csv')
@@ -1000,7 +998,6 @@ class DDPG(OffPolicyRLModel):
                             epoch_actor_losses.append(actor_loss)
                             self._update_target_net()
 
-
                         # Evaluate.
                         eval_episode_rewards = []
                         eval_qs = []
@@ -1025,9 +1022,13 @@ class DDPG(OffPolicyRLModel):
                                     eval_episode_rewards_history.append(eval_episode_reward)
                                     eval_episode_reward = 0.
 
-                        if output_name is not None and log_i % 100 == 0:
-                            print('Now we save the model')
-                            self.save('model_file/ddpg_um_' + output_name)
+                        #if output_name is not None and log_i % 100 == 0:
+                        #    print('Now we save the model')
+                        #    self.save('model_file/ddpg_um_' + output_name)
+
+                    print('Now we save the model')
+                    self.save(os.path.join(log_path, output_name + '_{}.zip'.format(save_id)))
+                    save_id += 1
 
                     mpi_size = MPI.COMM_WORLD.Get_size()
                     # Log stats.
@@ -1199,11 +1200,10 @@ class DDPG(OffPolicyRLModel):
 
         return model
 
-    def pretrain(self, dataset, n_epochs=10, learning_rate=1e-4,
-                 adam_epsilon=1e-8, val_interval=None, action_weights=None):
+    def pretrain(self, dataset, n_epochs=10, learning_rate=1e-4, adam_epsilon=1e-8, val_interval=None,
+                 action_weights=None, early_stopping=False, patience=100):
         """
-        Pretrain a model using behavior cloning:
-        supervised learning given an expert dataset.
+        Pretrain a model using behavior cloning: supervised learning given an expert dataset.
 
         NOTE: only Box and Discrete spaces are supported for now.
 
@@ -1213,6 +1213,10 @@ class DDPG(OffPolicyRLModel):
         :param adam_epsilon: (float) the epsilon value for the adam optimizer
         :param val_interval: (int) Report training and validation losses every n epochs.
             By default, every 10th of the maximum number of epochs.
+        :param action_weights:
+        :param early_stopping: (bool) stop training iterations when the validation error stop decreasing for 'patience'
+                               steps
+        :param patience: (int) number of val_interval steps to wait before stopping the training
         :return: (BaseRLModel) the pretrained model
         """
 
@@ -1262,6 +1266,15 @@ class DDPG(OffPolicyRLModel):
         if self.verbose > 0:
             print("Pretraining with Behavior Cloning...")
 
+        # Initialize variables for the early stopping
+        # validation loss of the previous validation step
+        prev_val_loss = np.inf
+        # number of steps in which the validation loss does not decrease
+        increasing_steps = 0
+        # best model is the one with lowest
+        best_model = copy.deepcopy(self)
+        best_val_loss = np.inf
+
         for epoch_idx in range(int(n_epochs)):
             train_loss = 0.0
             # Full pass on the training set
@@ -1291,6 +1304,27 @@ class DDPG(OffPolicyRLModel):
                     print('Epoch {}'.format(epoch_idx + 1))
                     print("Training loss: {:.6f}, Validation loss: {:.6f}".format(train_loss, val_loss))
                     print()
+
+                if early_stopping:
+                    # If the current validation loss is greater than the previous counts for patience
+                    if val_loss >= prev_val_loss:
+                        increasing_steps += 1
+                    else:
+                        # otherwise reset the counter
+                        increasing_steps = 0
+
+                    prev_val_loss = val_loss
+
+                    if val_loss <= best_val_loss:
+                        best_model = copy.deepcopy(self)
+                        best_val_loss = val_loss
+
+                    # stop training if the number of iterations reached the patience limit
+                    if increasing_steps == patience:
+                        # Save to the log
+                        log['train_loss'].append(train_loss)
+                        log['val_loss'].append(val_loss)
+                        return best_model, log
 
                 # Save to the log
                 log['train_loss'].append(train_loss)

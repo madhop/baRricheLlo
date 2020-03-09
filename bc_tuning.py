@@ -16,7 +16,6 @@ from ddpg.ddpg_driver import DDPG
 from gym_torcs import TorcsEnv
 
 import tensorflow as tf
-#tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 
 def run_experiment(state_id, policy_layers, policy_activation, batch_size, epochs, action_weights, demo_name, out_dir):
@@ -95,7 +94,7 @@ if __name__ == '__main__':
     parser.add_argument('--activation', nargs='+')
     parser.add_argument('--epochs', nargs='+', type=int)
     parser.add_argument('--state_type', nargs='+', type=int, default=0)
-    parser.add_argument('--action_weights', nargs='+', type=np.float32, action='append', default=[None])
+    parser.add_argument('--action_weights', nargs='+', type=np.float32, action='append')
     parser.add_argument('--out_dir', type=str, default='../ddpg_bc/')
     parser.add_argument('--n_jobs', type=int, default=-1)
     parser.add_argument('--demo_name', type=str, default='demonstrations', help='Name of the demonstrations file')

@@ -107,7 +107,7 @@ def nn_ahead(p, ref_df, last_ref = 0 ):
 
 def direction(p, p_1):
     direction = p - p_1
-    return direction
+    return direction / np.linalg.norm(direction)
 
 def nn_kdtree(p, ref_tree):
     _, nn = ref_tree.query([p[0], p[1]])
