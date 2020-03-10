@@ -100,19 +100,21 @@ class Controller():
         ref_segment = (r1 - r) * delta
         ref_proj = (r + ref_segment).reshape(1,2)
         
-        p = ref_proj - state_p
-        p = np.linalg.norm(p) if p[0][1] > 0 else -np.linalg.norm(p)    # position of the car wrt the reference
-        print('p norm:', p)
+        rho = ref_proj - state_p
+        rho = np.linalg.norm(rho) if rho[0][1] > 0 else -np.linalg.norm(rho)    # position of the car wrt the reference
+        #print('rho norm:', rho)
         ref_O = self.ref_df['nYawBody'].values[ref_id]
         ref_O1 = self.ref_df['nYawBody'].values[ref_id+1]
         delta_O = ref_O - obs['yaw'] # delta orientation of the car
         delta_ref_O = ref_O1 - ref_O
-        print('delta_O:', delta_O)
-        print('delta_ref_O:', delta_ref_O)
+        #print('delta_O:', delta_O)
+        #print('delta_ref_O:', delta_ref_O)
         
         
         # Compute actions
-        steer = 0.75 * np.tanh(self.gamma1 * p + self.gamma2 * delta_O + self.gamma3 * (ref_O1 - ref_O))
+        l = ['rho', 'delta_O', 'delta_ref_O']
+        print(rho, '-', l[np.argmax([self.gamma1 * rho , self.gamma2 * delta_O , self.gamma3 * (ref_O1 - ref_O)])])
+        steer = 0.75 * np.tanh(self.gamma1 * rho + self.gamma2 * delta_O + self.gamma3 * (ref_O1 - ref_O))
         brake = self.sigmoid(self.beta1 * (V - Vref) + self.k2 * np.power(V, 2))
         throttle = self.sigmoid(self.alpha1 * (Vref - V) + self.k1 * np.power(V, 2))
         return [steer, brake, throttle]
@@ -165,7 +167,7 @@ env = TorcsEnv(reward_function,collision_penalty=-1000, state_cols=state_cols, r
            gear_change=False, brake=True, start_env=False, damage_th=0, slow=False, faster=False, graphic=True)
 
 #%% play game
-C = Controller(env, gamma1=0.002, gamma2=0.265, gamma3=0.17, alpha1=-0.01, k1=0.000001, k2=0)
+C = Controller(env, gamma1=0.0015, gamma2=0.35, gamma3=0.5, alpha1=-0.01, k1=0.000001, k2=0)
 C.playGame()
 
 #%%
