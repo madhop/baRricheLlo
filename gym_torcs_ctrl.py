@@ -6,7 +6,7 @@ import pandas as pd
 import copy
 import compute_state_features as csf
 from scipy import spatial
-import auto_driver_ctrl
+import auto_driver_ctrl as auto_driver
 import os
 import time
 from utils_torcs import *

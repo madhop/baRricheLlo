@@ -68,15 +68,19 @@ class Projection(Reward_function):
         return ref_id, delta
 #%% Define Controller
 class Controller():
-    def __init__(self, env, alpha1=1, k1=1, beta1=1, k2=1, gamma1=1, gamma2=1):
+    def __init__(self, env, alpha1=1, k1=1, beta1=1, k2=1, gamma1=1, gamma2=1, gamma3=1):
         # Init
         self.env = env
+        # Throttle params
         self.alpha1 = alpha1
         self.k1 = k1
+        # Break params
         self.beta1 = beta1
         self.k2 = k2
-        self.gamma1 = gamma1
-        self.gamma2 = gamma2
+        # Steering params
+        self.gamma1 = gamma1  # rho param
+        self.gamma2 = gamma2  # orientation parma
+        self.gamma3 = gamma3  # steering maintenance
         self.ref_df = pd.read_csv('trajectory/ref_traj_yaw.csv')
         self.projector = Projection(ref_t=self.ref_df, clip_range=None, ref_dt=1, sample_dt=10, penalty=None)
         
@@ -100,12 +104,15 @@ class Controller():
         p = np.linalg.norm(p) if p[0][1] > 0 else -np.linalg.norm(p)    # position of the car wrt the reference
         print('p norm:', p)
         ref_O = self.ref_df['nYawBody'].values[ref_id]
+        ref_O1 = self.ref_df['nYawBody'].values[ref_id+1]
         delta_O = ref_O - obs['yaw'] # delta orientation of the car
+        delta_ref_O = ref_O1 - ref_O
         print('delta_O:', delta_O)
+        print('delta_ref_O:', delta_ref_O)
         
         
         # Compute actions
-        steer = np.tanh(self.gamma1 * p + self.gamma2 * delta_O)
+        steer = 0.75 * np.tanh(self.gamma1 * p + self.gamma2 * delta_O + self.gamma3 * (ref_O1 - ref_O))
         brake = self.sigmoid(self.beta1 * (V - Vref) + self.k2 * np.power(V, 2))
         throttle = self.sigmoid(self.alpha1 * (Vref - V) + self.k1 * np.power(V, 2))
         return [steer, brake, throttle]
@@ -158,7 +165,7 @@ env = TorcsEnv(reward_function,collision_penalty=-1000, state_cols=state_cols, r
            gear_change=False, brake=True, start_env=False, damage_th=0, slow=False, faster=False, graphic=True)
 
 #%% play game
-C = Controller(env, gamma1=0.002, gamma2=0.5, alpha1=-0.01, k1=0.000001, k2=0)
+C = Controller(env, gamma1=0.002, gamma2=0.265, gamma3=0.17, alpha1=-0.01, k1=0.000001, k2=0)
 C.playGame()
 
 #%%
