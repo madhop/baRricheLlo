@@ -87,7 +87,7 @@ Researches for autonomous driving traces back to the birth of the first computer
 That's how computer science branched into paths such as artificial intelligence and robotics.
 One of the main goal of the research of artificial intelligence has always been autonomous driving, that is the capability for an agent of perceiving the world and moving accordingly in order to reach a specific target.
 Autonomous cars consists in some piece of hardware capable of moving, such as a traditional car, or a drone, equipped with some sensors give insight on the environment, one or more computer units whith a decision making algorithm, which compute an action to perform by means of some actuators, such as a throttle, a break, a steering, or a transmission.
-One of the first experiments in embodying some intelligence in an artificial agent were William Grey Walter's Turtle Robots in the '50s. They were capable of moving in the sorroundings by sensing the environment in a simplified manner. They consisted in front wheel drive tricycle-like robots covered by a clear plastic shell, and were provided with a photocell and a bump detector as sensors, which resulted in the action of a motor. Despite their simple behaviors, the technique Walter used are reflected in today’s reactive and biologically-inspired robots such as those based on the B.E.A.M philosophy.
+One of the first experiments in embodying some intelligence in an artificial agent were William Grey Walter's Turtle Robots in the '50s. They were capable of moving in the sorroundings by sensing the environment in a simplified manner. They consisted in front wheel drive tricycle-like robots covered by a clear plastic shell, and were provided with a photocell and a bump detector as sensors, which resulted in the action of a motor. Despite their simple behaviors, the technique Walter used are reflected in today's reactive and biologically-inspired robots such as those based on the B.E.A.M philosophy.
 Later on, in 1989, a new tentative of building an autonomous car was ALVINN, which stands for Autonomous Land Vehicle In a Neural Network, developed for military research.
 At that time the technology was not sophisticated enough to provide the computation required to drive in real time, but in a sense the premise of the algorithm used nowadays was already there. In fact, neural networks are today the essential tools for building an autonomous car.
 Later on with the advent of more and more sophisticated electronic components, such as sensors (Lidars and Radars, which are capable of scanning the environment at 360 degree via electromagnetic waves), and with the continuous improvement of electronic components, such as GPUs, autonomous driving started being a hot topic in industry beside scientific research.
@@ -107,45 +107,42 @@ The reasons why today full autonomous driving has not being implemented yet are 
 Another approach, adopted by companies such as Google, is to perform computation on remote servers in their datacenters. However, current mobile connections such as 4G, makes impractical the transmission of data provided each second by the vast amount of sensors.
 In the future, the advent of 5G could be a game changer in this sense, which should provide a larger in bandwidth and more stable internet connection.
 That's why the scientific community is starting downstepping the complexity of the task, trying to build autonomous agents in a closed and controlled environment. This lead to a simplification of the problem, avoiding the need of a real time mapping of the environment, and excluding unattended events such as pedestrian coming across.
+Whether it's a matter of hardware or software, today such goal is still out of reach. Rather, some firms are focusing their attention on making a car which is autonomous in a specifing task. For example, good results have been achieved in keeping a lane on a highway, or stopping with a pedestrian coming across. 
+Alternatively, good or complete levels of autonomy could be achieved in , where the perception part could be performed by simple sensors such as gps and odometry sensors.
+An example could be --> agganciarsi con la notra tesi
 
 
 
-In the last decade, automotive and tech companies are struggling to develop full autonomous driving cars. However, wether it's a matter of hardware or software, today such goal is still out of reach. Rather, some firms are focusing their attention on making a car which is autonomous in a specifing context. For example, good results have been achieved in keeping a lane on a highway, or stopping with a pedestrian coming across. 
 In this paper we will tackle the problem of following a trajectory driven beforehand by a human driver on a race car and, if possible, to improve it.
 
 
-
-
-	- 5 su ambienti controllati: piste formula 1 per test, videogiochi
+	- 5 su ambienti controllati: piste formula 1 per test, videogiochi -> nostra tesi
 	
 	
 Come si fa la guida autonoma
 
 Automation to this level is a rather complex task: it requires a part of perception of the environment, a part of planning through an algorithm, and a part of control, to perform the actions by means of physical actuators.
-In our thesis we focused our attention on the planning part. In fact, by the help of a driving simulator, we could gather data with help of virtual sensors, and control the car by virtual actuators.
-
-
-
-	- paradigma sense, plan, act
-	- sistemi operativi: ros, apex.os
-	- architettura: 
-		- sense: 
-			- hardware: lidar, gps, odometry, radar
+- Perception:
+	
+	- image segmentation
+	- mapping
+	- odometry
+	- slam
+	- deep learning
+	- 3d object recostruction
+	- computer vision
+	- sensor fusion kalman filter
+	
+				- hardware: lidar, gps, odometry, radar
 			- software: vision, segmentation, deep learning, thresholding ecc
-		- plan:
-			- hardware: computer, gpu, 5G
+- Planning:
+	- reinforcement learning
+	- inverse reinforcement learning
+	- 			- hardware: computer, gpu, 5G
 			- software: 
-				- edge computing o local computing
 				- reinforcement learning: policy, reward ecc
 					- papers sul reinforcement learning applicati alle macchine
-				- pid non suitable perchè il mondo non è noto a priori
-		- act:
-			- steer, throttle, brake...
-
-Dove si fa la guida autonoma
-	- urban
-	- consegne
-	- formula 1: roborace, porsche, our project
+In our thesis we focused our attention on the planning part. In fact, by the help of a driving simulator, we could gather data with help of virtual sensors, and control the car by virtual actuators.
 
 
 
