@@ -6,7 +6,7 @@ import pandas as pd
 import copy
 import compute_state_features as csf
 from scipy import spatial
-import auto_driver
+import auto_driver_ctrl
 import os
 import time
 from utils_torcs import *
@@ -310,7 +310,7 @@ class TorcsEnv(gym.Env):
             action = auto_driver.get_action(track_pos)
             self.observation, _, done, info = self.step(action, raw=True)
 
-            if ob_distFromStart > 10 and ob_distFromStart < 100:
+            if ob_distFromStart > 50 and ob_distFromStart < 100:
                 # Start with agent driver and return the current state
 
                 print('Stopped auto driving')

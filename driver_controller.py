@@ -97,9 +97,11 @@ class Controller():
         ref_proj = (r + ref_segment).reshape(1,2)
         
         p = ref_proj - state_p
-        p = -np.linalg.norm(p) if p[0][1] > 0 else np.linalg.norm(p)    # position of the car wrt the reference
+        p = np.linalg.norm(p) if p[0][1] > 0 else -np.linalg.norm(p)    # position of the car wrt the reference
+        print('p norm:', p)
         ref_O = self.ref_df['nYawBody'].values[ref_id]
-        delta_O = obs['yaw'] - ref_O # delta orientation of the car
+        delta_O = ref_O - obs['yaw'] # delta orientation of the car
+        print('delta_O:', delta_O)
         
         
         # Compute actions
@@ -144,7 +146,7 @@ if __name__ == '__main__':
     C.playGame()
     
     
-#%% define env
+#%% Build env
 ref_df = pd.read_csv('trajectory/ref_traj.csv')
 simulations = pd.read_csv('trajectory/dataset_offroad_human.csv')
 # Reward function
@@ -156,9 +158,9 @@ env = TorcsEnv(reward_function,collision_penalty=-1000, state_cols=state_cols, r
            gear_change=False, brake=True, start_env=False, damage_th=0, slow=False, faster=False, graphic=True)
 
 #%% play game
-C = Controller(env, gamma1=0.001, gamma2=0.001, k1=0.000001, k2=0)
+C = Controller(env, gamma1=0.002, gamma2=0.5, alpha1=-0.01, k1=0.000001, k2=0)
 C.playGame()
-    
+
 #%%
 data = pd.read_csv('trajectory/dataset_human.csv')
 state_p = data.head(1)[['xCarWorld', 'yCarWorld', 'actualSpeedModule', 'nYawBody']].values
