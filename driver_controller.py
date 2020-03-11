@@ -113,7 +113,9 @@ class Controller():
         
         # Compute actions
         l = ['rho', 'delta_O', 'delta_ref_O']
-        print(rho, '-', l[np.argmax([self.gamma1 * rho , self.gamma2 * delta_O , self.gamma3 * (ref_O1 - ref_O)])])
+        print(rho, '-', l[np.argmax([np.abs(self.gamma1 * rho),
+                                     np.abs(self.gamma2 * delta_O),
+                                     np.abs(self.gamma3 * (ref_O1 - ref_O))])])
         steer = 0.75 * np.tanh(self.gamma1 * rho + self.gamma2 * delta_O + self.gamma3 * (ref_O1 - ref_O))
         brake = self.sigmoid(self.beta1 * (V - Vref) + self.k2 * np.power(V, 2))
         throttle = self.sigmoid(self.alpha1 * (Vref - V) + self.k1 * np.power(V, 2))
@@ -167,7 +169,7 @@ env = TorcsEnv(reward_function,collision_penalty=-1000, state_cols=state_cols, r
            gear_change=False, brake=True, start_env=False, damage_th=0, slow=False, faster=False, graphic=True)
 
 #%% play game
-C = Controller(env, gamma1=0.0015, gamma2=0.35, gamma3=0.5, alpha1=-0.01, k1=0.000001, k2=0)
+C = Controller(env, gamma1=0.002, gamma2=0.18, gamma3=50, alpha1=1, k1=0.000001, k2=0)
 C.playGame()
 
 #%%
