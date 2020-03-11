@@ -80,7 +80,7 @@ In the second part we provide an overview of the world of autonomous driving vid
 
 
 
-1. A brief intoduction to autonomous driving
+1. A brief history of autonomous driving
 
 In the last decade autonomous driving has been deeply studied in several fields of research: automotive, military, racing cars, and even fly$flight ?$. The goal is to disrupt the need of a human driver or pilot, resulting in a reduction in costs and an increase of safety, for instance by reducing the number of accidents per year due to human error. Moreover, they could learn from their errors, and transmit to each other autonomous vehicle instantaneously, so that each of them is constantly up to date.
 However, researches in the area of autonomous driving traces back to the birth of the first computers. In the '40, the scientific community were trying and gain insight about the human mind, in order to build artificial agents that could replicate -or even outperform- human in some specific tasks.
@@ -129,6 +129,11 @@ Starting from the 10's, machine leaning, and expecially reinforcement learning c
 	
 	
 Reinforcement learning:
+Machine learning (ML) is a process whereby a computer program learns from experience to improve its performance at a specified task [16]. ML algorithms are often classified under
+one of three broad categories: supervised learning, unsupervised learning and reinforcement learning (RL). Supervised learning algorithms are based on inductive inference where the model is typically trained using labelled data to perform classification or regression, whereas unsupervised learning encompasses techniques such as density estimation or clustering applied to unlabelled data. By contrast, in the RL paradigm an autonomous agent learns to improve its performance at an assigned task by interacting with its environment.
+RL agents are not told explicitly how to act by an expert; rather an agent’s performance is evaluated by a reward function R. For each state experienced, the agent chooses an action and receives an occasional reward from its environment based on the usefulness of its decision. The goal for the agent is to maximize the cumulative rewards received over its lifetime. Gradually, the agent can increase its long-term reward by exploiting knowledge learned about the expected utility (i.e.discounted sum of expected future rewards) of different state-action pairs. One of the main challenges in reinforcement learning is managing the trade-off between exploration and exploitation. To maximize the rewards it receives, an agent must exploit its knowledge by selecting actions which are
+known to result in high rewards. On the other hand, to discover such beneficial actions, it has to take the risk of trying new actions which may lead to higher rewards than
+the current best-valued actions for each system state. In other words, the learning agent has to exploit what it already knows in order to obtain rewards, but it also has to explore the unknown in order to make better action selections in the future. Examples of strategies which have been proposed to manage this trade-off include 2 -greedy and softmax. When adopting the ubiquitous 2 -greedy strategy, an agent either selects an action at random with probability 0 < 2 < 1 , or greedily selects the highest valued action for the current state with the remaining probability 1 − 2 . Intuitively, the agent should explore more at the beginning of the training process when little is known about the problem environment. As training progresses, the agent may gradually conduct more exploitation than exploration.
 
 
 
