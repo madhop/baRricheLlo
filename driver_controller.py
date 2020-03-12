@@ -119,10 +119,10 @@ class Controller():
         steer = 0.75 * np.tanh(self.gamma1 * rho + self.gamma2 * delta_O + self.gamma3 * (ref_O1 - ref_O))
         brake = self.sigmoid(self.beta1 * (V - Vref) + self.k2 * np.power(V, 2))
         throttle = self.sigmoid(self.alpha1 * (Vref - V) + self.k1 * np.power(V, 2))
-        return [steer, brake, throttle]
+        return [steer, brake, throttle], rho, delta_O, ref_O1 - ref_O
     
     
-    def playGame(self, episode_count=10, max_steps=100000):
+    def playGame(self, episode_count=10, max_steps=100000, save_data=False):
         step = 0 
         for i in range(episode_count):
             if np.mod(i, 3) == 0:
