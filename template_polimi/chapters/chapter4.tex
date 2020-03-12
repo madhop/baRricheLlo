@@ -134,15 +134,9 @@ RL agents are not told explicitly how to act by an expert; rather an agent's per
 
 2.1
 
-- Reinforcement learning applied to autonomous driving:
-.Reinforcement learning autonomous driving:
-	- cenni a rl e perchè è suitable a questa applicazione:
-			- mondo non noto a priori
-			- impara sempre
-			- impara ad adattarsi
-	- cosa è stato fatto
-
-- This paper https://arxiv.org/pdf/1909.12153.pdf shows an example of end-to-end reinforcement learning application to autonomous drive, using a proximal policy optimization algorithms by means of a neural network which maps the state to the controls. - It learns two different policies: the driver and the stopper, and the reward is the squared proximity to a target position.
+Reinforcement learning is particularly suitable in a context of autonomous driving. In fact, the world in which the agent lives is tipically unknown-a priori.
+Autonomous driving tasks where RL could be applied include: controller optimization, path planning and trajectory optimization, motion planning and dynamic path planning, development of high-level driving policies for complex navigation tasks, scenario-based policy learning for highways, intersections, merges and splits, reward learning with inverse reinforcement learning from expert data for intent prediction for traffic actors such as pedestrian, vehicles and finally learning of policies that ensures safety and perform risk estimation. Further, it turns out to be suitable in contexts of autonomous racing: the driverless racer could learn a policy that is able to outperform the performance of a human driver, or a policy taught by experts.
+- This paper https://arxiv.org/pdf/1909.12153.pdf shows an example of end-to-end reinforcement learning application to autonomous drive, using a proximal policy optimization algorithms by means of a neural network which maps the state to the controls. It learns two different policies: the driver and the stopper, and the reward is the squared proximity to a target position.
 In this paper $https://web.stanford.edu/~anayebi/projects/CS_239_Final_Project_Writeup.pdf$ they experiment different setups of Deep Neural Networks, such as CNN and RNN as functions approximator of a reinfocement learning agent.
 - Lane keeping rl https://www.sae.org/publications/technical-papers/content/2020-01-0728/
 
@@ -150,13 +144,20 @@ In this paper $https://web.stanford.edu/~anayebi/projects/CS_239_Final_Project_W
 3.
 
 - Autonomous driving in racing:
-- https://etd.adm.unipi.it/t/etd-04052019-162732/
+- Model predictive control Towards Time-Optimal Race Car Driving using Nonlinear MPC in
+Real-Time
+-Roborace
+
 
 
 4.
 
 .Videogiochi e simulation autonomous driving:
-	- ambienti di sviluppo:  Voyage Deep Drive, CARLA, AWS Deep Racer, Deep Traffic, TORCS	
+The aim of this project is to teach an autonomous agent the optimal trajectory in a formula 1 track starting from a baseline trajectory driven beforehand by a human driver. For safety reasons, we operated in a simulation setting.
+- Voyage Deep Drive, CARLA, AWS Deep Racer, Deep Traffic, TORCS
+	-ragioni per cui abbiamo usato torcs: già utilizzato in contesti di racing, presenta già piste formula 1
+
+	
 	- rl applicati a simulatori e videogiochi:
 		- https://deepsense.ai/wp-content/uploads/2019/06/Simulation-based-reinforcement-learning-for-autonomous-driving.pdf
 	

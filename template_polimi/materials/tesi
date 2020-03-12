@@ -1,0 +1,24 @@
+1 Introduzione:
+	le macchine sono belle se sono guidate da un computer sono ancora più belle
+2 Contesto:
+         Spiegazione ad alto livello con informazioni non tecniche che ti permettono di comprendere qual è il mondo nel quale tu hai lavorato, quindi una volta che sai cos'è torcs, sai cos'è una macchina, Collaudo di macchine
+3 Definizione del problema
+         A livello matematico si dice dato x che è questa cosa qui e y che è così si cerca di raggiungere questo obbiettivo, che non è la teoria ma è formalizzare il problema da risolvere
+4 Stato dell'arte
+	Gli algoritmi di guida autonoma esistono già, c'è questo quello quell'altro
+	Prima parte: 
+		guida autonoma
+	Seconda parte:
+		Reinforcement learning based self driving car
+		Videogiochi guida autonoma
+		ieee transaction on ai games
+		check evolutionary intelligent gaming
+		gameconf
+		papers su pagina di lanzi
+5 Theoretical background
+	Infarinatura dei concetti base che verranno usati nella tesi tipo anche che cos'è mdp, che cosa vuol dire reinforcement learning, cos'è ddpg, fqi
+6 Metodi
+	quali metodi e come io ho adattato i metodi al problema, magari anche tutta la spiegazione di torcs, perchè è stato usato questo, com'è stato modificato e perchè, abbiamo usato fqi e come, reward e features
+7 Esperimenti
+    Cosa abbiamo usato e che risultati abbiamo ottenuto
+8 Conclusioni
