@@ -82,7 +82,7 @@ In the second part we provide an overview of the world of autonomous driving vid
 
 1. A brief history of autonomous driving
 
-In the last decade autonomous driving has been deeply studied in several fields of research: automotive, military, racing cars, and even fly. The goal is to disrupt the need of a human driver or pilot, resulting in a reduction in costs and an increase of safety, for instance by reducing the number of accidents per year due to human error. Moreover, they could learn from their errors, and transmit to each other autonomous vehicle instantaneously, so that each of them is constantly up to date.
+In the last decade autonomous driving has been deeply studied in several fields of research: automotive, military, racing cars, and even flight. The goal is to disrupt the need of a human driver or pilot, resulting in a reduction in costs and an increase of safety, for instance by reducing the number of accidents per year due to human error. Moreover, they could learn from their errors, and transmit to each other autonomous vehicle instantaneously, so that each of them is constantly up to date.
 However, researches in the area of autonomous driving traces back to the birth of the first computers. In the '40, the scientific community were trying and gain insight about the human mind, in order to build artificial agents that could replicate -or even outperform- human in some specific tasks.
 That's how computer science branched into paths such as artificial intelligence and robotics.
 One of the main goal of the research of artificial intelligence has always been autonomous driving, that is the capability for an agent of perceiving the world and moving accordingly in order to reach a specific target.
@@ -118,7 +118,7 @@ Autonomous driving is a rather complex task: it requires a part of perception of
 Perception is usually achieved through exploiting some sensors with software techniques.
 Common sensors are: stereo-cameras, ultrasonic sensors, gps, speed encoders, radar and LiDars. The last one are the most accurate ones and the most expensive ones: they are capable of scanning the environment in 3D through lasers, and cost up to tens thousands dollars.
 The data provided by the sensors, once cleansed and filtered, are processed in order to extract information. The main ones are image segmentation, which tries to identify objects from a RGB image through computer vision techniques such as SIFT or HOG algorithms and machine learning techniques, or the usage of stochastic models for combining multiple data coming from laser or sonar measurements.
-After, estimation of the world and of the position of the robot are used to build a map of the environment, which is used as reference to move into.
+Then, estimation of the world and of the position of the robot are used to build a map of the environment, which is used as reference to move into.
 A powerful technique called SLAM enables to simultaneously localize the robot and build a map of the environment which it's moving into by combining data from internal and external sensors through algorithms such as Kalman Filters or Particle Filters.
 In order to navigate in the world, the robot needs one or some algorithms that takes in input the state of itself and the world and produces as output an action to take.
 Before machine learning and deep learning exploded, classical ai algorithms were used.
@@ -157,11 +157,16 @@ The aim of this project is to teach an autonomous agent the optimal trajectory i
 - Voyage Deep Drive, CARLA, AWS Deep Racer, Deep Traffic, TORCS
 	-ragioni per cui abbiamo usato torcs: già utilizzato in contesti di racing, presenta già piste formula 1
 
-	
+
+- controller: Ahura: A Heuristic-Based Racer for the Open Racing Car Simulator
+		controller fatto a mano, il nostro con reinforcement learning
+
 	- rl applicati a simulatori e videogiochi:
 		- https://deepsense.ai/wp-content/uploads/2019/06/Simulation-based-reinforcement-learning-for-autonomous-driving.pdf
 	
 	
+	
+
 	
 	
 	
