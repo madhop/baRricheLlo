@@ -11,7 +11,7 @@ from stable_baselines.common.noise import NormalActionNoise
 import tensorflow as tf
 import pickle
 
-out_dir = '../learning_200309/'
+out_dir = '../learning_200310/'
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 
@@ -21,10 +21,9 @@ state_cols = ['xCarWorld', 'yCarWorld', 'nYawBody', 'nEngine', 'positionRho', 'p
               'actualAccelerationX', 'actualAccelerationY', 'accelerationDiffX',
               'accelerationDiffY', 'direction_x', 'direction_y'] + prev_action_cols
 high = np.array(
-    [2500., 15000., np.pi, 21000., 2500., np.pi, np.pi, np.pi, 340., 340., 25., 85., 50., 70., 1., 1.,
-     1., 10., 10.])
+    [2500., 15000., np.pi, 21000., 2500., np.pi, np.pi, np.pi, 340., 340., 25., 85.,  80.,  160.,  1., 1., 1., 1., 1.])
 low = np.array(
-    [0., 0., -np.pi, 0., 0., -np.pi, -np.pi, -np.pi, 0., 0., -55., -75., -60., -90., -1., 0., 0., -10, -10])
+    [0.,    0.,     -np.pi, 0.,     0.,  -np.pi, -np.pi, -np.pi, 0., 0.,  -55., -75., -80., -160., -1., -1., 0., -1, -1])
 
 state_space = {'high': high,
                'low': low}
@@ -47,7 +46,8 @@ demonstrations = create_expert_dataset(demos_path, reward_function, state_cols, 
 
 # --- Environment
 practice_path = os.path.expanduser('~/.torcs/config/raceman/practice.xml')
-env = TORCS(reward_function, state_cols, state_space, ref_df, practice_path, gear_change=False, graphic=False)
+env = TORCS(reward_function, state_cols, state_space, ref_df, practice_path, gear_change=False, graphic=False,
+            verbose=False)
 
 # --- RL algorithm
 action_noise = NormalActionNoise(mean=np.array([0, 0, 0]), sigma=np.array([0.01, 0.05, 0.05]))
@@ -58,12 +58,12 @@ model = DDPG(MlpPolicy, env, verbose=1, action_noise=action_noise, normalize_obs
              batch_size=1000, n_cpu_tf_sess=None, seed=42, buffer_size=50000)
 
 # --- Pre-training with behavioural cloning
-model, log = model.pretrain(demonstrations, n_epochs=30000, val_interval=50, early_stopping=False, patience=2)
+model, log = model.pretrain(demonstrations, n_epochs=100, val_interval=50, early_stopping=False, patience=2)
 model.save(os.path.join(out_dir, 'model_bc.zip'))
 pickle.dump(log, open(os.path.join(out_dir, 'log_bc_training.pkl'), 'wb'))
 
 # --- Online learning
 print('Online learning')
-model.learn(5000, log_interval=200, output_name='model_int', log_path=out_dir)
+model.learn(1000, log_interval=10, output_name='model_int', log_path=out_dir)
 model.save(os.path.join(out_dir, 'model_final.zip'))
 print('Computation terminated')

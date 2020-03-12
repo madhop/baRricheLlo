@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import copy
 import compute_state_features as csf
-from scipy import spatial
+from sklearn.neighbors import KDTree
 import auto_driver
 import os
 import time
@@ -16,7 +16,7 @@ class TORCS(gym.Env):
 
     def __init__(self, reward_function, state_cols, state_space, ref_df, practice_path, gear_change=False,
                  track_length=5783.85, damage_th=4.0, graphic=True, speed_limit=5, verbose=True,
-                 collision_penalty=-1000, low_speed_penalty=-1000):
+                 collision_penalty=-1000, low_speed_penalty=-1000, obs_to_state_func=None):
 
         self.initial_reset = True
         self.gear_change = gear_change
@@ -34,7 +34,9 @@ class TORCS(gym.Env):
         # save variables used for feature extraction
         self.state_cols = state_cols
         self.ref_df = ref_df
-        self.tree = spatial.KDTree(list(zip(ref_df['xCarWorld'], ref_df['yCarWorld'])))
+        self.tree = KDTree(ref_df[['xCarWorld', 'yCarWorld']].values)
+
+        self.obs_to_state_func = obs_to_state_func
 
         # Create action space
         # order: steer, brake, throttle<, gear>
@@ -241,6 +243,7 @@ class TORCS(gym.Env):
         self.initial_reset = False
 
         auto_drive = True
+        # time.sleep(0.3)
         print('Started auto driving')
         while auto_drive:
             ob_distFromStart = self.observation['distFromStart']
@@ -321,41 +324,44 @@ class TORCS(gym.Env):
 
         :return obs: (list) state features in the order of the self.state_cols list
         """
-        p = ob
-        nn = csf.nn_kdtree(np.array([p['x'], p['y']]), self.tree)
-        # check if you are at the end of the lap
-        if nn >= self.ref_df.shape[0] - 1:
-            nn = self.ref_df.shape[0] - 2
-        r = self.ref_df.iloc[nn]
-        r1 = self.ref_df.iloc[nn + 1]
-        r_1 = self.ref_df.iloc[nn - 1]
+        if self.obs_to_state_func is not None:
+            return self.obs_to_state_func(ob, p_1, p_2, prev_action, self.state_cols, self.ref_df, self.tree)
+        else:
+            p = ob
+            nn = csf.nn_kdtree(np.array([p['x'], p['y']]), self.tree)
+            # check if you are at the end of the lap
+            if nn >= self.ref_df.shape[0] - 1:
+                nn = self.ref_df.shape[0] - 2
+            r = self.ref_df.iloc[nn]
+            r1 = self.ref_df.iloc[nn + 1]
+            r_1 = self.ref_df.iloc[nn - 1]
 
-        v_actual_module, v_ref_module, v_diff_module, v_diff_of_modules, v_angle = csf.velocity_acceleration(
-            np.array([p['speed_x'], p['speed_y']]), np.array([r['speed_x'], r['speed_y']]))
-        rel_p, rho, theta = csf.position(np.array([r['xCarWorld'], r['yCarWorld']]),
-                                         np.array([r1['xCarWorld'], r1['yCarWorld']]), np.array([p['x'], p['y']]))
-        actual_c = csf.curvature(np.array([p['x'], p['y']]), np.array([p_1['x'], p_1['y']]),
-                                 np.array([p_2['x'], p_2['y']]))
-        ref_c = csf.curvature(np.array([r1['xCarWorld'], r1['yCarWorld']]), np.array([r['xCarWorld'], r['yCarWorld']]),
-                              np.array([r_1['xCarWorld'], r_1['yCarWorld']]))
-        direction = csf.direction(np.array([p['x'], p['y']]), np.array([p_1['x'], p_1['y']]))
+            v_actual_module, v_ref_module, v_diff_module, v_diff_of_modules, v_angle = csf.velocity_acceleration(
+                np.array([p['speed_x'], p['speed_y']]), np.array([r['speed_x'], r['speed_y']]))
+            rel_p, rho, theta = csf.position(np.array([r['xCarWorld'], r['yCarWorld']]),
+                                             np.array([r1['xCarWorld'], r1['yCarWorld']]), np.array([p['x'], p['y']]))
+            actual_c = csf.curvature(np.array([p['x'], p['y']]), np.array([p_1['x'], p_1['y']]),
+                                     np.array([p_2['x'], p_2['y']]))
+            ref_c = csf.curvature(np.array([r1['xCarWorld'], r1['yCarWorld']]), np.array([r['xCarWorld'], r['yCarWorld']]),
+                                  np.array([r_1['xCarWorld'], r_1['yCarWorld']]))
+            direction = csf.direction(np.array([p['x'], p['y']]), np.array([p_1['x'], p_1['y']]))
 
-        state_features = {'xCarWorld': p['x'], 'yCarWorld': p['y'], 'nYawBody': p['yaw'], 'nEngine': p['rpm'],
-                          'NGear': p['Gear'],
-                          'speed_x': p['speed_x'],
-                          'positionRho': rho, 'positionTheta': theta, 'positionReferenceX': r['xCarWorld'],
-                          'positionReferenceY': r['yCarWorld'],
-                          'positionRelativeX': rel_p[0], 'positionRelativeY': rel_p[1], 'referenceCurvature': ref_c,
-                          'actualCurvature': actual_c,
-                          'actualSpeedModule': v_actual_module, 'speedDifferenceVectorModule': v_diff_module,
-                          'speedDifferenceOfModules': v_diff_of_modules,
-                          'actualAccelerationX': p['Acceleration_x'], 'actualAccelerationY': p['Acceleration_y'],
-                          'referenceAccelerationX': r['Acceleration_x'], 'referenceAccelerationY': r['Acceleration_y'],
-                          'accelerationDiffX': r['Acceleration_x'] - p['Acceleration_x'],
-                          'accelerationDiffY': r['Acceleration_y'] - p['Acceleration_y'],
-                          'direction_x': direction[0],
-                          'direction_y': direction[1],
-                          'prevaSteerWheel': prev_action[0], 'prevpBrakeF': prev_action[2],
-                          'prevrThrottlePedal': prev_action[1]}
+            state_features = {'xCarWorld': p['x'], 'yCarWorld': p['y'], 'nYawBody': p['yaw'], 'nEngine': p['rpm'],
+                              'NGear': p['Gear'],
+                              'speed_x': p['speed_x'],
+                              'positionRho': rho, 'positionTheta': theta, 'positionReferenceX': r['xCarWorld'],
+                              'positionReferenceY': r['yCarWorld'],
+                              'positionRelativeX': rel_p[0], 'positionRelativeY': rel_p[1], 'referenceCurvature': ref_c,
+                              'actualCurvature': actual_c,
+                              'actualSpeedModule': v_actual_module, 'speedDifferenceVectorModule': v_diff_module,
+                              'speedDifferenceOfModules': v_diff_of_modules,
+                              'actualAccelerationX': p['Acceleration_x'], 'actualAccelerationY': p['Acceleration_y'],
+                              'referenceAccelerationX': r['Acceleration_x'], 'referenceAccelerationY': r['Acceleration_y'],
+                              'accelerationDiffX': r['Acceleration_x'] - p['Acceleration_x'],
+                              'accelerationDiffY': r['Acceleration_y'] - p['Acceleration_y'],
+                              'direction_x': direction[0],
+                              'direction_y': direction[1],
+                              'prevaSteerWheel': prev_action[0], 'prevpBrakeF': prev_action[1],
+                              'prevrThrottlePedal': prev_action[2]}
 
-        return np.array([state_features[k] for k in self.state_cols])
+            return np.array([state_features[k] for k in self.state_cols])

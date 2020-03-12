@@ -31,6 +31,13 @@ def relative_features(p, r):
     rel_p = np.dot(rotation_matrix,p)
     return rel_p
 
+def vector_relative_features(p, r):
+    """
+        realtive position (x, y) with new reference system are needed
+    """
+    return np.array([relative_features(p[i, :], r[i, :]) for i in range(p.shape[0])])
+
+
 # Position Features
 def position(r, r1, p): # inputs must be np.array
     """
@@ -47,6 +54,18 @@ def position(r, r1, p): # inputs must be np.array
     else:
         theta = np.arccos(np.dot(np.array([1,0]),rel_p)/(1 * np.linalg.norm(rel_p)))
     return rel_p, rho, theta
+
+def vector_position(r, r1, p):
+    rel_p = []
+    rho = []
+    theta = []
+    for i in range(p.shape[0]):
+        rel_p_, rho_, theta_ = position(r[i, :], r1[i, :], p[i, :])
+        rel_p.append(rel_p_)
+        rho.append(rho_)
+        theta.append(theta_)
+
+    return np.array(rel_p), np.array(rho), np.array(theta)
 
 def curvature(p, p1, p2):   # p_t, p_t-1 and p_t-2
     rel_p2 = relative_features(p2-p1, p-p1)

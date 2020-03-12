@@ -879,7 +879,7 @@ class DDPG(OffPolicyRLModel):
                         # Perform rollouts.
 
                         # create empty dic to store raw data
-                        store_obs = { k : [] for k in torcs_features}
+                        store_obs = {k: [] for k in torcs_features}
                         for a in torcs_actions:
                             store_obs[a] = []
                         for roll_steps in range(self.nb_rollout_steps):
@@ -1026,9 +1026,10 @@ class DDPG(OffPolicyRLModel):
                         #    print('Now we save the model')
                         #    self.save('model_file/ddpg_um_' + output_name)
 
-                    print('Now we save the model')
-                    self.save(os.path.join(log_path, output_name + '_{}.zip'.format(save_id)))
-                    save_id += 1
+                    if output_name is not None:
+                        print('Now we save the model')
+                        self.save(os.path.join(log_path, output_name + '_{}.zip'.format(save_id)))
+                        save_id += 1
 
                     mpi_size = MPI.COMM_WORLD.Get_size()
                     # Log stats.
