@@ -11,30 +11,34 @@ from stable_baselines.common.noise import NormalActionNoise
 import tensorflow as tf
 import pickle
 
-out_dir = '../learning_200310/'
+out_dir = '../learning_200312/'
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 
 # --- State definition
-state_cols = ['xCarWorld', 'yCarWorld', 'nYawBody', 'nEngine', 'positionRho', 'positionTheta',
-              'referenceCurvature', 'actualCurvature', 'actualSpeedModule', 'speedDifferenceVectorModule',
-              'actualAccelerationX', 'actualAccelerationY', 'accelerationDiffX',
-              'accelerationDiffY', 'direction_x', 'direction_y'] + prev_action_cols
-high = np.array(
-    [2500., 15000., np.pi, 21000., 2500., np.pi, np.pi, np.pi, 340., 340., 25., 85.,  80.,  160.,  1., 1., 1., 1., 1.])
-low = np.array(
-    [0.,    0.,     -np.pi, 0.,     0.,  -np.pi, -np.pi, -np.pi, 0., 0.,  -55., -75., -80., -160., -1., -1., 0., -1, -1])
+state = {'xCarWorld': {'low': 0, 'high': 2500}, 'yCarWorld': {'low': 0, 'high': 1200},
+         'nYawBody': {'low': -np.pi, 'high': np.pi}, 'nEngine': {'low': 0, 'high': 21000},
+         'positionRho': {'low': 0, 'high': 50}, 'positionTheta': {'low': -np.pi, 'high': np.pi},
+         'speed_x': {'low': 0, 'high': 340}, 'speed_y': {'low': -90, 'high': 160},
+         'acceleration_x': {'low': -50, 'high': 50}, 'acceleration_y': {'low': -75, 'high': 85},
+         'direction_x': {'low': -1, 'high': 1}, 'direction_y': {'low': -1, 'high': 1},
+         'NGear': {'low': 0, 'high': 7}, 'prevaSteerWheel': {'low': -1, 'high': 1},
+         'prevpBrakeF': {'low': 0, 'high': 1}, 'prevrThrottlePedal': {'low': 0, 'high': 1},
+         'delta_speed_x': {'low': -340, 'high': 340}, 'delta_speed_y': {'low': -250, 'high': 250},
+         'delta_acc_x': {'low': -100, 'high': 100}, 'delta_acc_y': {'low': -160, 'high': 160},
+         'delta_direction_x': {'low': -1, 'high': 1}, 'delta_direction_y': {'low': -1, 'high': 1}}
 
-state_space = {'high': high,
-               'low': low}
+state_cols = list(state.keys())
+state_space = {'high': np.array([state[k]['high'] for k in state_cols]),
+               'low': np.array([state[k]['low'] for k in state_cols])}
 
 print('state_cols:', state_cols)
 
 # --- Reference trajectory and expert demonstrations
 # load reference trajectory
-ref_df = pd.read_csv('trajectory/ref_traj.csv')
+ref_df = pd.read_csv('../demonstrations/extracted_features/ref_traj.csv')
 
-demos_path = 'trajectory/demonstrations.csv'
+demos_path = '../demonstrations/extracted_features/top_demonstrations.csv'
 penalty = LikelihoodPenalty(kernel='gaussian', bandwidth=1.0)
 penalty.fit(pd.read_csv(demos_path)[penalty_cols].values)
 reward_function = Temporal_projection(ref_df, penalty=penalty)
@@ -54,16 +58,16 @@ action_noise = NormalActionNoise(mean=np.array([0, 0, 0]), sigma=np.array([0.01,
 policy_kwargs = {'layers': [64, 64], 'act_fun': tf.nn.tanh}
 
 model = DDPG(MlpPolicy, env, verbose=1, action_noise=action_noise, normalize_observations=True,
-             policy_kwargs=policy_kwargs, gamma=0.9999, nb_train_steps=100, nb_rollout_steps=200,
-             batch_size=1000, n_cpu_tf_sess=None, seed=42, buffer_size=50000)
+             policy_kwargs=policy_kwargs, gamma=0.9999, nb_train_steps=10, nb_rollout_steps=100,
+             batch_size=200, n_cpu_tf_sess=None, seed=42, buffer_size=2000)
 
 # --- Pre-training with behavioural cloning
-model, log = model.pretrain(demonstrations, n_epochs=100, val_interval=50, early_stopping=False, patience=2)
+model, log = model.pretrain(demonstrations, n_epochs=15000, val_interval=50, early_stopping=False, patience=2)
 model.save(os.path.join(out_dir, 'model_bc.zip'))
 pickle.dump(log, open(os.path.join(out_dir, 'log_bc_training.pkl'), 'wb'))
 
 # --- Online learning
 print('Online learning')
-model.learn(1000, log_interval=10, output_name='model_int', log_path=out_dir)
+model.learn(10000, log_interval=50, output_name='model_int', log_path=out_dir)
 model.save(os.path.join(out_dir, 'model_final.zip'))
 print('Computation terminated')
