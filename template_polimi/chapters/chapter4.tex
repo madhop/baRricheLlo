@@ -159,17 +159,18 @@ The aim of this project is to teach an autonomous agent the optimal trajectory i
 
 
 - controller: Ahura: A Heuristic-Based Racer for the Open Racing Car Simulator
-	-steer
-	-brake
-	-throttle
+	modules:
+	- 1) Steer controller: This module uses the estimated angle
+of the turn in front and the vacant distance in front to
 		controller fatto a mano, il nostro con reinforcement learning
 		
 
 	- rl applicati a simulatori e videogiochi:
-		- https://deepsense.ai/wp-content/uploads/2019/06/Simulation-based-reinforcement-learning-for-autonomous-driving.pdf
-	
-	
-	
+		- https://deepsense.ai/wp-content/uploads/2019/06/Simulation-based-reinforcement-learning-for-autonomous-driving.pdf:
+		The main training loop is described in Algorithm 1. As the reinforcement learning component we use Proximal Policy Optimization (PPO) (Schulman et al., 2017) with a contin-
+uous action space. A good alternative to PPO would be TRPO (Schulman et al., 2015) or V-trace (Espeholt et al., 2018), which we leave for future work. Supervised randomizations mentioned in line 5 of Algorithm 1 and described in Section 5.3 may be considered as a potentially more sample-efficient variant of general domain randomizations. We based our PPO implementation on OpenAI Baselines (Dhariwal et al., 2017) ppo2 5 . Policies provided by OpenAI Baselines work only for observations that consists of one tensor of some shape. In our case we operate on multiple tensors of multiple shapes — such us the front camera,
+a high-level navigation command, car speed, and car acceleration. We use a custom policy that operates on multiple input tensors coming from one observation (see Figure 4).	
+	Using CARLA
 
 	
 	
