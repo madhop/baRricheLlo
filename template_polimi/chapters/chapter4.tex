@@ -126,46 +126,70 @@ First, a discretization of the world was needed: it could be a graph or a grid m
 Other approaches involved taking into consideration the shape of the robot, which led to move in a C-space, that is configuration space, which resulted in the increase of dimensionality of the problem.
 Starting from the 10's, machine leaning, and expecially reinforcement learning came into play.
 	
-	
-Reinforcement learning:
-Machine learning (ML) is a process whereby a computer program learns from experience to improve its performance at a specified task [16]. ML algorithms are often classified under
-one of three broad categories: supervised learning, unsupervised learning and reinforcement learning (RL). Supervised learning algorithms are based on inductive inference where the model is typically trained using labelled data to perform classification or regression, whereas unsupervised learning encompasses techniques such as density estimation or clustering applied to unlabelled data. By contrast, in the RL paradigm an autonomous agent learns to improve its performance at an assigned task by interacting with its environment.
-RL agents are not told explicitly how to act by an expert; rather an agent's performance is evaluated by a reward function R. For each state experienced, the agent chooses an action and receives an occasional reward from its environment based on the usefulness of its decision. The goal for the agent is to maximize the cumulative rewards received over its lifetime. Gradually, the agent can increase its long-term reward by exploiting knowledge learned about the expected utility (i.e.discounted sum of expected future rewards) of different state-action pairs. One of the main challenges in reinforcement learning is managing the trade-off between exploration and exploitation. To maximize the rewards it receives, an agent must exploit its knowledge by selecting actions which are known to result in high rewards. On the other hand, to discover such beneficial actions, it has to take the risk of trying new actions which may lead to higher rewards than the current best-valued actions for each system state. In other words, the learning agent has to exploit what it already knows in order to obtain rewards, but it also has to explore the unknown in order to make better action selections in the future. Examples of strategies which have been proposed to manage this trade-off include 2 -greedy and softmax. When adopting the ubiquitous 2 -greedy strategy, an agent either selects an action at random with probability 0 < 2 < 1 , or greedily selects the highest valued action for the current state with the remaining probability 1 - 2 . Intuitively, the agent should explore more at the beginning of the training process when little is known about the problem environment. As training progresses, the agent may gradually conduct more exploitation than exploration.
 
-2.1
+	
+
+2.1 Reinforcement learning in autonomous driving
+
+-vantaggi rl: 
+While a Riccati-controller is comparably fast, however, it
+does not directly allow the consideration of constraints such
+as obstacles or more advanced objective functions within
+the optimization. Such requirements are met by a general
+nonlinear model predictive control (MPC) approach based
+on solving an optimal control problem in every time step.
+A combination of the advantages of both, the speed of
+the Riccati controller and the generality of MPC, can be
+achieved by finding a function that maps state values to
+control variables, e. g., by training a deep neural network.
+Such a model could, for example, be learned supervised, as
+done for P ILOT N ET , or by reinforcement learning. The latter
+in particular led to excellent results in the training of such
+agents for controlling real-world systems such as robots [12]
+or helicopters [13].
+Recent work also shows promising applications of re-
+inforcement learning for autonomous driving by making
+strategic decisions [14], [15] or by the computation of control
+commands [16], [17], [18]. Although these results show the
+success of this approach in simulated environments, there are
+very few examples of evaluations on real vehicles
+
 
 Reinforcement learning is particularly suitable in a context of autonomous driving. In fact, the world in which the agent lives is tipically unknown-a priori.
 Autonomous driving tasks where RL could be applied include: controller optimization, path planning and trajectory optimization, motion planning and dynamic path planning, development of high-level driving policies for complex navigation tasks, scenario-based policy learning for highways, intersections, merges and splits, reward learning with inverse reinforcement learning from expert data for intent prediction for traffic actors such as pedestrian, vehicles and finally learning of policies that ensures safety and perform risk estimation. Further, it turns out to be suitable in contexts of autonomous racing: the driverless racer could learn a policy that is able to outperform the performance of a human driver, or a policy taught by experts.
-- This paper https://arxiv.org/pdf/1909.12153.pdf shows an example of end-to-end reinforcement learning application to autonomous drive, using a proximal policy optimization algorithms by means of a neural network which maps the state to the controls. It learns two different policies: the driver and the stopper, and the reward is the squared proximity to a target position.
+
+
+Simulation: ad hoc simulator
+- Controlling an Autonomous Vehicle with Deep Reinforcement Learning
+This paper https://arxiv.org/pdf/1909.12153.pdf shows an example of end-to-end reinforcement learning application to autonomous drive, using a proximal policy optimization algorithms by means of a neural network which maps the state to the controls. It learns two different policies: the driver and the stopper, and the reward is the squared proximity to a target position.
+In this work, we show how to realize the autonomous
+exploration of a parking lot based on deep reinforcement
+learning. To this end, we
+describe how a policy is trained to compute sophisticated
+control commands which depend on an estimate of the
+current vehicle state. This is done by designing an appropri-
+ate Markov decision process and a corresponding proximal
+policy optimization learning algorithm. For that pur-
+pose a simulated environment is used for data generation.
+Performance of the resulting deep controller is evaluated in
+both, simulation and real-world experiments. To the best of
+our knowledge, this work extends the state of the art results
+for successfully driving an autonomous vehicle by a deep
+reinforcement learning policy.
+
+
+
+
+
+- CARMA: A Deep Reinforcement Learning Approach to Autonomous Driving
 In this paper $https://web.stanford.edu/~anayebi/projects/CS_239_Final_Project_Writeup.pdf$ they experiment different setups of Deep Neural Networks, such as CNN and RNN as functions approximator of a reinfocement learning agent.
 - Lane keeping rl https://www.sae.org/publications/technical-papers/content/2020-01-0728/
+- Multi-Vehicle Mixed Reality Reinforcement Learning for Autonomous Multi-Lane Driving
 
 
-3.
-
-- Autonomous driving in racing:
-- Model predictive control Towards Time-Optimal Race Car Driving using Nonlinear MPC in
-Real-Time
--Roborace
-
-
-
-4.
-
-.Videogiochi e simulation autonomous driving:
-The aim of this project is to teach an autonomous agent the optimal trajectory in a formula 1 track starting from a baseline trajectory driven beforehand by a human driver. For safety reasons, we operated in a simulation setting.
-- Voyage Deep Drive, CARLA, AWS Deep Racer, Deep Traffic, TORCS
-	-ragioni per cui abbiamo usato torcs: già utilizzato in contesti di racing, presenta già piste formula 1
-
-
-- controller: Ahura: A Heuristic-Based Racer for the Open Racing Car Simulator
-	modules:
-	- 1) Steer controller: This module uses the estimated angle
-of the turn in front and the vacant distance in front to
-		controller fatto a mano, il nostro con reinforcement learning
-		
-
-	- rl applicati a simulatori e videogiochi:
+Simulations:
+- Voyage Deep Drive, CARLA, Deep Traffic
+- Simulation-based reinforcement learning for autonomous driving:
 		- https://deepsense.ai/wp-content/uploads/2019/06/Simulation-based-reinforcement-learning-for-autonomous-driving.pdf:
 		The main training loop is described in Algorithm 1. As the reinforcement learning component we use Proximal Policy Optimization (PPO) (Schulman et al., 2017) with a contin-
 uous action space. A good alternative to PPO would be TRPO (Schulman et al., 2015) or V-trace (Espeholt et al., 2018), which we leave for future work. Supervised randomizations mentioned in line 5 of Algorithm 1 and described in Section 5.3 may be considered as a potentially more sample-efficient variant of general domain randomizations. We based our PPO implementation on OpenAI Baselines (Dhariwal et al., 2017) ppo2 5 . Policies provided by OpenAI Baselines work only for observations that consists of one tensor of some shape. In our case we operate on multiple tensors of multiple shapes — such us the front camera,
@@ -173,6 +197,45 @@ a high-level navigation command, car speed, and car acceleration. We use a custo
 	Using CARLA
 
 	
+3.
+
+- Autonomous driving in racing:
+
+- AWS Deep Racer (Paper: DeepRacer: Educational Autonomous Racing Platform for Experimentation with Sim2Real Reinforcement Learning), TORCS, Racer (Development of a Car Racing Simulator Game Using Artificial Intelligence Techniques), Roborace
+
+
+- Model predictive control Towards Time-Optimal Race Car Driving using Nonlinear MPC in
+Real-Time
+
 	
+- controller: Ahura: A Heuristic-Based Racer for the Open Racing Car Simulator
+	modules:
+	- 1) Steer controller: This module uses the estimated angle
+of the turn in front and the vacant distance in front to
+		controller fatto a mano, il nostro con reinforcement learning
+
 	
+.Videogiochi e simulation autonomous driving:
+The aim of this project is to teach an autonomous agent the optimal trajectory in a formula 1 track starting from a baseline trajectory driven beforehand by a human driver. For safety reasons, we operated in a simulation setting.
+
+
+
+
 	
+
+
+
+Introduzione autonomous driving
+Autonomous driving base
+Autonomous driving reinforcement learning
+Autonomous racing
+	- mpc
+	- rl
+
+
+
+Introduzione autonomous driving
+Autonomous driving base
+Autonomous driving reinforcement learning
+Videogiochi driving
+
