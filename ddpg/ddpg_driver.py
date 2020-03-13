@@ -872,8 +872,8 @@ class DDPG(OffPolicyRLModel):
                 epoch_qs = []
                 epoch_episodes = 0
                 epoch = 0
+                save_id = 0
                 while True:
-                    save_id = 0
                     for log_i in range(log_interval):
                         print('log interval:', log_i)
                         # Perform rollouts.

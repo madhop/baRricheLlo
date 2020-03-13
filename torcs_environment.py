@@ -114,13 +114,18 @@ class TORCS(gym.Env):
             # Reward computation
             # Compute the current state
             current_state = self.observation_to_state(self.observation, self.p1_observation, self.p2_observation,
-                                                      self.prev_u)
-            current_state_df = np.concatenate([current_state.reshape(1, -1), np.zeros((1, 1))], axis=1)
+                                                      self.prev_u).reshape(1, -1)
             # Compute the next state
-            next_state = self.observation_to_state(self.make_observation(obs), self.observation, self.p1_observation, u)
-            next_state_df = np.concatenate([next_state.reshape(1, -1), np.ones((1, 1)) * obs['trackPos']], axis=1)
-            data = pd.DataFrame(data=np.concatenate([current_state_df, next_state_df], axis=0),
-                                columns=self.state_cols + ['trackPos'])
+            next_state = (self.observation_to_state(self.make_observation(obs), self.observation, self.p1_observation, u)
+                          .reshape(1, -1))
+            if 'trackPos' not in self.state_cols:
+                current_state_df = np.concatenate([current_state.reshape(1, -1), np.zeros((1, 1))], axis=1)
+                next_state_df = np.concatenate([next_state.reshape(1, -1), np.ones((1, 1)) * obs['trackPos']], axis=1)
+                data = pd.DataFrame(data=np.concatenate([current_state_df, next_state_df], axis=0),
+                                    columns=self.state_cols + ['trackPos'])
+            else:
+                data = pd.DataFrame(data=np.concatenate([current_state, next_state], axis=0), columns=self.state_cols)
+
             reward = self.reward_function(data)
 
         # Save u as previous action for the next step

@@ -47,7 +47,7 @@ penalty = LikelihoodPenalty(kernel='gaussian', bandwidth=1.0)
 penalty.fit(demos_penalty[penalty_cols].values)
 reward_function = Temporal_projection(ref_df, penalty=penalty)
 
-batch_size = 3500
+batch_size = 5000
 train_fraction = 0.8
 demonstrations = create_expert_dataset(demos_path, reward_function, state_cols, action_cols, batch_size,
                                        train_fraction)
@@ -62,16 +62,16 @@ action_noise = NormalActionNoise(mean=np.array([0, 0, 0]), sigma=np.array([0.01,
 policy_kwargs = {'layers': [64, 64], 'act_fun': tf.nn.tanh}
 
 model = DDPG(MlpPolicy, env, verbose=1, action_noise=action_noise, normalize_observations=True,
-             policy_kwargs=policy_kwargs, gamma=0.9999, nb_train_steps=10, nb_rollout_steps=100,
-             batch_size=200, n_cpu_tf_sess=None, seed=42, buffer_size=2000)
+             policy_kwargs=policy_kwargs, gamma=0.9999, nb_train_steps=20, nb_rollout_steps=100,
+             batch_size=200, n_cpu_tf_sess=None, seed=42, buffer_size=5000)
 
 # --- Pre-training with behavioural cloning
-model, log = model.pretrain(demonstrations, n_epochs=15000, val_interval=50, early_stopping=False, patience=2)
+model, log = model.pretrain(demonstrations, n_epochs=30000, val_interval=50, early_stopping=False, patience=2)
 model.save(os.path.join(out_dir, 'model_bc.zip'))
 pickle.dump(log, open(os.path.join(out_dir, 'log_bc_training.pkl'), 'wb'))
 
 # --- Online learning
 print('Online learning')
-model.learn(10000, log_interval=50, output_name='model_int', log_path=out_dir)
+model.learn(50000, log_interval=5, output_name='model_int', log_path=out_dir)
 model.save(os.path.join(out_dir, 'model_final.zip'))
 print('Computation terminated')

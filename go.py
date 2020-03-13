@@ -38,7 +38,8 @@ state = {'xCarWorld': {'low': 0, 'high': 2500}, 'yCarWorld': {'low': 0, 'high': 
          'prevpBrakeF': {'low': 0, 'high': 1}, 'prevrThrottlePedal': {'low': 0, 'high': 1},
          'delta_speed_x': {'low': -340, 'high': 340}, 'delta_speed_y': {'low': -250, 'high': 250},
          'delta_acc_x': {'low': -100, 'high': 100}, 'delta_acc_y': {'low': -160, 'high': 160},
-         'delta_direction_x': {'low': -1, 'high': 1}, 'delta_direction_y': {'low': -1, 'high': 1}}
+         'delta_direction_x': {'low': -1, 'high': 1}, 'delta_direction_y': {'low': -1, 'high': 1},
+         'trackPos': {'low': -1.5, 'high': 1.5}}
 
 state_cols = list(state.keys())
 state_space = {'high': np.array([state[k]['high'] for k in state_cols]),
@@ -46,31 +47,24 @@ state_space = {'high': np.array([state[k]['high'] for k in state_cols]),
 
 practice_path = os.path.expanduser('~/.torcs/config/raceman/practice.xml')
 env = TORCS(reward_function, state_cols, state_space, ref_df, practice_path, gear_change=False, graphic=True,
-            verbose=False, obs_to_state_func=torcs_observation_to_state)
+            verbose=True, obs_to_state_func=torcs_observation_to_state)
 # model = DDPG(MlpPolicy, env, verbose=0, param_noise=None, action_noise=None, normalize_observations=True)
-#model = DDPG.load('../learning_200309/model_final.zip')
+model = DDPG.load('../learning_200312/model_bc.zip', env=env)
 #model.env = env
 episode = {'obs': list(), 'reward': list(), 'done': list()}
 reward_sum = 0.0
 done = False
 obs = env.reset()
-i = 0
+
 while not done:
-    if i == 0:
-        time.sleep(1.0)
-        i = 1
-    #action, _ = model.predict(obs)
-    if obs[1] >= 1172:
-        action = [-0.02, 0, 1]
-    elif obs[1] <= 1168:
-        action = [0.02, 0, 1]
-    else:
-        action = [0, 0, 1]
+
+    action, _ = model.predict(obs)
+
     obs, reward, done, _ = env.step(action)
     episode['obs'].append(obs)
     episode['reward'].append(reward)
     episode['done'].append(done)
     reward_sum += reward
 #pickle.dump(episode, open('../sync_tests/modifica_sleep.pkl', 'wb'))
-print('Saved')
+print('Terminated')
 # env.close()
