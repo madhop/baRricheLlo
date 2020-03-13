@@ -160,7 +160,7 @@ class TORCS(gym.Env):
 
         # 3) Low speed
         if self.observation['speed_x'] <= self.speed_limit:
-            if self.verbose:
+            if self.verbose and not raw:
                 print('Low speed')
             episode_terminate = True
             low_speed = True
@@ -283,8 +283,8 @@ class TORCS(gym.Env):
     def agent_to_torcs(self, u):
 
         torcs_action = {'steer': u[0]}
-        torcs_action.update({'accel': u[2]})
         torcs_action.update({'brake': u[1]})
+        torcs_action.update({'accel': u[2]})
 
         if self.gear_change is True: # gear change action is enabled
             torcs_action.update({'gear': u[3]})

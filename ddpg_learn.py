@@ -4,6 +4,7 @@ from fqi.utils import action_cols, prev_action_cols, penalty_cols
 import pandas as pd
 import numpy as np
 from behavioural_cloning.create_expert_dataset import create_expert_dataset
+from data_processing.torcs_preprocessing import torcs_observation_to_state
 import os
 from stable_baselines.ddpg.policies import MlpPolicy
 from ddpg.ddpg_driver import DDPG
@@ -11,7 +12,7 @@ from stable_baselines.common.noise import NormalActionNoise
 import tensorflow as tf
 import pickle
 
-out_dir = '../learning_200312/'
+out_dir = '../learning_200313/'
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 
@@ -26,7 +27,8 @@ state = {'xCarWorld': {'low': 0, 'high': 2500}, 'yCarWorld': {'low': 0, 'high': 
          'prevpBrakeF': {'low': 0, 'high': 1}, 'prevrThrottlePedal': {'low': 0, 'high': 1},
          'delta_speed_x': {'low': -340, 'high': 340}, 'delta_speed_y': {'low': -250, 'high': 250},
          'delta_acc_x': {'low': -100, 'high': 100}, 'delta_acc_y': {'low': -160, 'high': 160},
-         'delta_direction_x': {'low': -1, 'high': 1}, 'delta_direction_y': {'low': -1, 'high': 1}}
+         'delta_direction_x': {'low': -1, 'high': 1}, 'delta_direction_y': {'low': -1, 'high': 1},
+         'trackPos': {'low': -1.5, 'high': 1.5}}
 
 state_cols = list(state.keys())
 state_space = {'high': np.array([state[k]['high'] for k in state_cols]),
@@ -39,8 +41,10 @@ print('state_cols:', state_cols)
 ref_df = pd.read_csv('../demonstrations/extracted_features/ref_traj.csv')
 
 demos_path = '../demonstrations/extracted_features/top_demonstrations.csv'
+demos_penalty = pd.read_csv(demos_path)
+demos_penalty = demos_penalty[demos_penalty.time > 70]
 penalty = LikelihoodPenalty(kernel='gaussian', bandwidth=1.0)
-penalty.fit(pd.read_csv(demos_path)[penalty_cols].values)
+penalty.fit(demos_penalty[penalty_cols].values)
 reward_function = Temporal_projection(ref_df, penalty=penalty)
 
 batch_size = 3500
@@ -51,7 +55,7 @@ demonstrations = create_expert_dataset(demos_path, reward_function, state_cols, 
 # --- Environment
 practice_path = os.path.expanduser('~/.torcs/config/raceman/practice.xml')
 env = TORCS(reward_function, state_cols, state_space, ref_df, practice_path, gear_change=False, graphic=False,
-            verbose=False)
+            verbose=False,  obs_to_state_func=torcs_observation_to_state)
 
 # --- RL algorithm
 action_noise = NormalActionNoise(mean=np.array([0, 0, 0]), sigma=np.array([0.01, 0.05, 0.05]))
