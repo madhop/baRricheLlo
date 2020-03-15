@@ -123,59 +123,22 @@ A powerful technique called SLAM enables to simultaneously localize the robot an
 In order to navigate in the world, the robot needs one or some algorithms that takes in input the state of itself and the world and produces as output an action to take.
 Before machine learning and deep learning exploded, classical ai algorithms were used.
 First, a discretization of the world was needed: it could be a graph or a grid map. Then, some search algorithms, which could be A*, Dijkstra were adopted to find the shortest path for reaching a certain goal.
-Other approaches involved taking into consideration the shape of the robot, which led to move in a C-space, that is configuration space, which resulted in the increase of dimensionality of the problem.
-Starting from the 10's, machine leaning, and expecially reinforcement learning came into play.
-	
-
-	
+Advanced controlling techniques which takes into account the dynamics of the vehicle can be exploited, one method being the linear quadratic controller, also known as Riccati controller. It minimizes a quadratic objective function in the state deviation and control energy while taking into account a linear model of the underlying system.
+While a Riccati-controller is comparably fast, however, it does not directly allow the consideration of constraints such as obstacles or more advanced objective functions within
+the optimization. Such requirements are met by a general nonlinear model predictive control (MPC) approach based on solving an optimal control problem in every time step.	
 
 2.1 Reinforcement learning in autonomous driving
 
--vantaggi rl: 
-While a Riccati-controller is comparably fast, however, it
-does not directly allow the consideration of constraints such
-as obstacles or more advanced objective functions within
-the optimization. Such requirements are met by a general
-nonlinear model predictive control (MPC) approach based
-on solving an optimal control problem in every time step.
-A combination of the advantages of both, the speed of
-the Riccati controller and the generality of MPC, can be
-achieved by finding a function that maps state values to
-control variables, e. g., by training a deep neural network.
-Such a model could, for example, be learned supervised, as
-done for P ILOT N ET , or by reinforcement learning. The latter
-in particular led to excellent results in the training of such
-agents for controlling real-world systems such as robots [12]
-or helicopters [13].
-Recent work also shows promising applications of re-
-inforcement learning for autonomous driving by making
-strategic decisions [14], [15] or by the computation of control
-commands [16], [17], [18]. Although these results show the
-success of this approach in simulated environments, there are
-very few examples of evaluations on real vehicles
 
-
-Reinforcement learning is particularly suitable in a context of autonomous driving. In fact, the world in which the agent lives is tipically unknown-a priori.
+A combination of the advantages of both, the speed of the Riccati controller and the generality of MPC, can be achieved by finding a function that maps state values to
+control variables, e. g., by training a deep neural network. Such a model could, for example, be learned supervised, as done for PILOTNET, or by reinforcement learning. The latter in particular led to excellent results in the training of such agents for controlling real-world systems such as robots or helicopters.
+Recent work also shows promising applications of reinforcement learning for autonomous driving by making strategic decisions. 
 Autonomous driving tasks where RL could be applied include: controller optimization, path planning and trajectory optimization, motion planning and dynamic path planning, development of high-level driving policies for complex navigation tasks, scenario-based policy learning for highways, intersections, merges and splits, reward learning with inverse reinforcement learning from expert data for intent prediction for traffic actors such as pedestrian, vehicles and finally learning of policies that ensures safety and perform risk estimation. Further, it turns out to be suitable in contexts of autonomous racing: the driverless racer could learn a policy that is able to outperform the performance of a human driver, or a policy taught by experts.
 
 
 Simulation: ad hoc simulator
 - Controlling an Autonomous Vehicle with Deep Reinforcement Learning
-This paper https://arxiv.org/pdf/1909.12153.pdf shows an example of end-to-end reinforcement learning application to autonomous drive, using a proximal policy optimization algorithms by means of a neural network which maps the state to the controls. It learns two different policies: the driver and the stopper, and the reward is the squared proximity to a target position.
-In this work, we show how to realize the autonomous
-exploration of a parking lot based on deep reinforcement
-learning. To this end, we
-describe how a policy is trained to compute sophisticated
-control commands which depend on an estimate of the
-current vehicle state. This is done by designing an appropri-
-ate Markov decision process and a corresponding proximal
-policy optimization learning algorithm. For that pur-
-pose a simulated environment is used for data generation.
-Performance of the resulting deep controller is evaluated in
-both, simulation and real-world experiments. To the best of
-our knowledge, this work extends the state of the art results
-for successfully driving an autonomous vehicle by a deep
-reinforcement learning policy.
+This paper https://arxiv.org/pdf/1909.12153.pdf shows an example of end-to-end reinforcement learning application to autonomous drive, using a proximal policy optimization algorithms by means of a neural network which maps the state to the controls. It learns two different policies: the driver and the stopper, and the reward is the squared proximity to a target position. The work aims at realizing the autonomous exploration of a parking lot based on deep reinforcement learning. It describes how a policy is trained to compute sophisticated control commands which depend on an estimate of the current vehicle state. This is done by designing an appropriate Markov decision process and a corresponding proximal policy optimization learning algorithm. For that purpose a simulated environment is used for data generation. Performance of the resulting deep controller is evaluated in both, simulation and real-world experiments.
 
 
 
@@ -192,7 +155,7 @@ Simulations:
 - Simulation-based reinforcement learning for autonomous driving:
 		- https://deepsense.ai/wp-content/uploads/2019/06/Simulation-based-reinforcement-learning-for-autonomous-driving.pdf:
 		The main training loop is described in Algorithm 1. As the reinforcement learning component we use Proximal Policy Optimization (PPO) (Schulman et al., 2017) with a contin-
-uous action space. A good alternative to PPO would be TRPO (Schulman et al., 2015) or V-trace (Espeholt et al., 2018), which we leave for future work. Supervised randomizations mentioned in line 5 of Algorithm 1 and described in Section 5.3 may be considered as a potentially more sample-efficient variant of general domain randomizations. We based our PPO implementation on OpenAI Baselines (Dhariwal et al., 2017) ppo2 5 . Policies provided by OpenAI Baselines work only for observations that consists of one tensor of some shape. In our case we operate on multiple tensors of multiple shapes — such us the front camera,
+uous action space. A good alternative to PPO would be TRPO (Schulman et al., 2015) or V-trace (Espeholt et al., 2018), which we leave for future work. Supervised randomizations mentioned in line 5 of Algorithm 1 and described in Section 5.3 may be considered as a potentially more sample-efficient variant of general domain randomizations. We based our PPO implementation on OpenAI Baselines (Dhariwal et al., 2017) ppo2 5 . Policies provided by OpenAI Baselines work only for observations that consists of one tensor of some shape. In our case we operate on multiple tensors of multiple shapes - such us the front camera,
 a high-level navigation command, car speed, and car acceleration. We use a custom policy that operates on multiple input tensors coming from one observation (see Figure 4).	
 	Using CARLA
 
