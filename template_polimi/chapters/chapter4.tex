@@ -134,18 +134,17 @@ A combination of the advantages of both, the speed of the Riccati controller and
 control variables, e. g., by training a deep neural network. Such a model could, for example, be learned supervised, as done for PILOTNET, or by reinforcement learning. The latter in particular led to excellent results in the training of such agents for controlling real-world systems such as robots or helicopters.
 Recent work also shows promising applications of reinforcement learning for autonomous driving by making strategic decisions. 
 Autonomous driving tasks where RL could be applied include: controller optimization, path planning and trajectory optimization, motion planning and dynamic path planning, development of high-level driving policies for complex navigation tasks, scenario-based policy learning for highways, intersections, merges and splits, reward learning with inverse reinforcement learning from expert data for intent prediction for traffic actors such as pedestrian, vehicles and finally learning of policies that ensures safety and perform risk estimation. Further, it turns out to be suitable in contexts of autonomous racing: the driverless racer could learn a policy that is able to outperform the performance of a human driver, or a policy taught by experts.
-
-
-Simulation: ad hoc simulator
 - Controlling an Autonomous Vehicle with Deep Reinforcement Learning
-This paper https://arxiv.org/pdf/1909.12153.pdf shows an example of end-to-end reinforcement learning application to autonomous drive, using a proximal policy optimization algorithms by means of a neural network which maps the state to the controls. It learns two different policies: the driver and the stopper, and the reward is the squared proximity to a target position. The work aims at realizing the autonomous exploration of a parking lot based on deep reinforcement learning. It describes how a policy is trained to compute sophisticated control commands which depend on an estimate of the current vehicle state. This is done by designing an appropriate Markov decision process and a corresponding proximal policy optimization learning algorithm. For that purpose a simulated environment is used for data generation. Performance of the resulting deep controller is evaluated in both, simulation and real-world experiments.
-
-
-
+This paper https://arxiv.org/pdf/1909.12153.pdf shows an example of end-to-end reinforcement learning application to autonomous drive, using a proximal policy optimization algorithms by means of a neural network which maps the state to the controls. It learns two different policies: the driver and the stopper, and the reward is the squared proximity to a target position. The work aims at realizing the autonomous exploration of a parking lot based on deep reinforcement learning. It describes how a policy is trained to compute sophisticated control commands which depend on an estimate of the current vehicle state. This is done by designing an appropriate Markov decision process and a corresponding proximal policy optimization learning algorithm. For that purpose a simulated environment is used for data generation. Here, information about the vehicle’s surrounding are measured by, e. g., laser scanners and are further extended by a rough knowledge about the geometry of the drivable area.
+State: steering wheel angle and longitudinal acceleration.
+state transition: single-track-models. The vehicle is assumed to have only one wheel at the front and back respectively, each centered between the real ones.
+Reward function: two different trainings for driver and stopper.
 
 
 - CARMA: A Deep Reinforcement Learning Approach to Autonomous Driving
 In this paper $https://web.stanford.edu/~anayebi/projects/CS_239_Final_Project_Writeup.pdf$ they experiment different setups of Deep Neural Networks, such as CNN and RNN as functions approximator of a reinfocement learning agent.
+
+
 - Lane keeping rl https://www.sae.org/publications/technical-papers/content/2020-01-0728/
 - Multi-Vehicle Mixed Reality Reinforcement Learning for Autonomous Multi-Lane Driving
 
