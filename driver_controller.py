@@ -16,6 +16,7 @@ import pandas as pd
 from sklearn.neighbors import KDTree
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
+import matplotlib.pyplot as plt
 
 
 class Projection(Reward_function):
@@ -122,7 +123,7 @@ class Controller():
         return [steer, brake, throttle], rho, delta_O, delta_ref_O
     
     
-    def playGame(self, episode_count=10, max_steps=100000, save_data=False):
+    def playGame(self, episode_count=1, max_steps=100000, save_data=False):
         step = 0 
         for i in range(episode_count):
             if np.mod(i, 3) == 0:
@@ -172,6 +173,44 @@ env = TorcsEnv(reward_function,collision_penalty=-1000, state_cols=state_cols, r
 C = Controller(env, gamma1=0.002, gamma2=0.18, gamma3=50, alpha1=1, k1=0.000001, k2=0)
 C.playGame()
 
+#%% play game and store data
+gamma1=0.002    #rho
+gamma2=0.155     #delta_O
+gamma3=30      #delta_ref_O
+alpha1=1
+k1=0.000001
+k2=0
+max_steps=100000
+C = Controller(env, gamma1=gamma1, gamma2=gamma2, gamma3=gamma3, alpha1=alpha1, k1=k1, k2=k2)
+step=0
+action_vars = {'rho':[], 'delta_O':[], 'delta_ref_O':[], 'action':[]}
+ob = C.env.reset(relaunch=True)    
+for _ in range(max_steps):
+    action, rho, delta_O, delta_ref_O = C.act(ob)
+    action_vars['action'].append(action)
+    action_vars['rho'].append(rho)
+    action_vars['delta_O'].append(delta_O)
+    action_vars['delta_ref_O'].append(delta_ref_O)
+    #print(action)
+    ob, reward, done, _ = C.env.step(action)
+    
+    step += 1
+    if done:
+        break
+        
+C.env.end()
+
+#%% plot vars and steering action
+fig, axs = plt.subplots(2, 1)
+axs[0].plot(list(map(lambda x: x*gamma1, action_vars['rho'])), label='rho')
+axs[0].plot(list(map(lambda x: x*gamma2, action_vars['delta_O'])), label='delta_O')
+axs[0].plot(list(map(lambda x: x*gamma3, action_vars['delta_ref_O'])), label='delta_ref_O')
+axs[0].grid(True)
+axs[0].legend()
+
+axs[1].plot([x[0][0] for x in action_vars['action']])
+axs[1].grid(True)
+plt.show()
 #%%
 data = pd.read_csv('trajectory/dataset_human.csv')
 state_p = data.head(1)[['xCarWorld', 'yCarWorld', 'actualSpeedModule', 'nYawBody']].values
