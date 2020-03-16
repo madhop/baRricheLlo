@@ -115,11 +115,11 @@ class Controller():
         l = ['rho', 'delta_O', 'delta_ref_O']
         print(rho, '-', l[np.argmax([np.abs(self.gamma1 * rho),
                                      np.abs(self.gamma2 * delta_O),
-                                     np.abs(self.gamma3 * (ref_O1 - ref_O))])])
-        steer = 0.75 * np.tanh(self.gamma1 * rho + self.gamma2 * delta_O + self.gamma3 * (ref_O1 - ref_O))
+                                     np.abs(self.gamma3 * delta_ref_O)])])
+        steer = 0.75 * np.tanh(self.gamma1 * rho + self.gamma2 * delta_O + self.gamma3 * delta_ref_O)
         brake = self.sigmoid(self.beta1 * (V - Vref) + self.k2 * np.power(V, 2))
         throttle = self.sigmoid(self.alpha1 * (Vref - V) + self.k1 * np.power(V, 2))
-        return [steer, brake, throttle], rho, delta_O, ref_O1 - ref_O
+        return [steer, brake, throttle], rho, delta_O, delta_ref_O
     
     
     def playGame(self, episode_count=10, max_steps=100000, save_data=False):
@@ -132,7 +132,7 @@ class Controller():
                 ob = self.env.reset()
                 
             for j in range(max_steps):
-                action = self.act(ob)
+                action, rho, delta_O, delta_ref_O = self.act(ob)
                 #print(action)
                 ob, reward, done, _ = self.env.step(action)
                 
