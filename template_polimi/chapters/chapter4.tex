@@ -67,7 +67,6 @@ the optimization. Such requirements are met by a general nonlinear model predict
 
 2.1 Reinforcement learning in autonomous driving
 
-
 A combination of the advantages of both, the speed of the Riccati controller and the generality of MPC, can be achieved by finding a function that maps state values to
 control variables, e. g., by training a deep neural network. Such a model could, for example, be learned supervised, as done for PILOTNET, or by reinforcement learning. The latter in particular led to excellent results in the training of such agents for controlling real-world systems such as robots or helicopters.
 Recent work also shows promising applications of reinforcement learning for autonomous driving by making strategic decisions. 
@@ -78,20 +77,15 @@ Here, the state is composed by: steering wheel angle and longitudinal accelerati
 
 
 - CARMA: A Deep Reinforcement Learning Approach to Autonomous Driving
-In this paper $https://web.stanford.edu/~anayebi/projects/CS_239_Final_Project_Writeup.pdf$ they experiment different setups of Deep Neural Networks, such as CNN and RNN as functions approximator of a reinfocement learning agent.
+In this paper they experiment different setups of Deep Neural Networks, such as CNN and RNN as functions approximator of a reinfocement learning agent.
+They formulate the state-space as follows: At each timestep, the agent receives an image I t of the environment, an estimate of the agent’s speed, an estimate of the agent’s distance to the center of the road, and an estimate of the angle between the agent’s forward vector and the center of the road. At each timestep t, the agent can perform a discrete action: acceleration a = (Brake, DoNothing, Accelerate) and steer t = (TurnLef, DoNothing, TurnRight). Thus,there are a total of 9 possible actions the car can take at each timestep.
+Then, they experimented different modeling approaches based on Q-Learning, involving CNN and RNN agents.
 
-
-- Lane keeping rl https://www.sae.org/publications/technical-papers/content/2020-01-0728/
-
-
-Simulators:
-- Voyage Deep Drive, CARLA, Deep Traffic
 
 - Simulation-based reinforcement learning for autonomous driving:
-The main training loop is described in Algorithm 1. As the reinforcement learning component we use Proximal Policy Optimization (PPO) (Schulman et al., 2017) with a contin-
-uous action space. A good alternative to PPO would be TRPO (Schulman et al., 2015) or V-trace (Espeholt et al., 2018), which we leave for future work. Supervised randomizations mentioned in line 5 of Algorithm 1 and described in Section 5.3 may be considered as a potentially more sample-efficient variant of general domain randomizations. We based our PPO implementation on OpenAI Baselines (Dhariwal et al., 2017) ppo2 5 . Policies provided by OpenAI Baselines work only for observations that consists of one tensor of some shape. In our case we operate on multiple tensors of multiple shapes - such us the front camera,
-a high-level navigation command, car speed, and car acceleration. We use a custom policy that operates on multiple input tensors coming from one observation (see Figure 4).	
-	Using CARLA
+This paper applies via reinforcement throughe Proximal Policy Optimization (PPO) with a contin-ous action space operating on multiple tensors of multiple shapes: a front camera, a high-level navigation command, car speed, and car acceleration. Thus, they adopted a custom policy that operates on multiple input tensors coming from one observation. They operated within the CARLA simulator. Their policy controls only the steering, while throttle is controlled via a PID controller with the speed set to a constant.
+They modeled continuous actions with the Gaussian distribution.
+The agent receives as its observation an RGB image from a single front camera from which extract semantic segmentation and car metrics such as speed and acceleration. The agent is also provided with high-level navigation command. 
 
 	
 3.
@@ -101,10 +95,14 @@ Finding a racing line that allows to achieve a competitive lap-time is a key pro
 The optimal racing line is defined as the line to follow to achieve the best lap-time possible on a given track with a given car. In general, finding the optimal racing line is
 a common problem in real-world car racing as well as in the development of commercial racing games. The optimal racing line is the path that a driver should follow to complete a lap on a given track in the smallest amount of time possible. As the lap-time depends both on the distance raced and on the average racing speed, finding the optimal racing involves two different sub-problems: racing the shortest distance possible and racing as fast
 as possible along the track.
-- mettere una parte di videogiochi come funzionano
-- Simulatori e ambienti di sviluppo:
-AWS Deep Racer (Paper: DeepRacer: Educational Autonomous Racing Platform for Experimentation with Sim2Real Reinforcement Learning), TORCS, Racer (Development of a Car Racing Simulator Game Using Artificial Intelligence Techniques).
-During the years, different attempts to achieve this goal, and different techniques have been exploited along with the evolution of technology.
+
+
+Today there exist several racing-oriented driving simulators, along with developing environment. Some examples are AWS Deep Racer (Paper: DeepRacer: Educational Autonomous Racing Platform for Experimentation with Sim2Real Reinforcement Learning), TORCS, Racer (Development of a Car Racing Simulator Game Using Artificial Intelligence Techniques).
+
+During the years, different attempts to achieve time-optimal racing, according with different technologies. 
+
+- mettere una parte di come funziona l'intelligenza artificiale nei videogiochi
+
 
 - Evolving the Optimal Racing Line in a High-End Racing Game
 This paper shows how to encode a racing line by a set of connected Bézier curves, such that each gene defines a small portion of the racing line. Therefore, the evolution is responsible of the entire design of the racing line. In addition, the authors compare two different methods to evaluate the evolved racing line; the first one is based on testing the evolved racing lines in a racing simulator; the second one consists of estimating the performance of a racing line through a computational model.
@@ -120,10 +118,18 @@ They were determined by using the optimization algorithm CMA-ES: it has a good p
 
 - Model predictive control Towards Time-Optimal Race Car Driving using Nonlinear MPC in
 Real-Time
-
+Model Predictive Control (MPC) is a multivariable control algorithm that uses:
+an internal dynamic model of the process
+a cost function J over the receding horizon
+an optimization algorithm minimizing the cost function J using the control input u
+Existing advanced control based attempts to minimum-time driving usually provide only offline open-loop solutions. . In this paper, instead, we directly use a one-level approach, solving the nonlinear MPC problem with an economic cost function in real-time. The tight real-time bounds imposed on computational times make it necessary to
+reformulate the problem so as to allow for the use of efficient algorithms.
+It provides real-world experimental results of the proposed nonlinear MPC scheme from a miniature race-car setup that is detailed in the paper. 
 
 
 - Learning Drivers for TORCS through Imitation Using Supervised Methods	
 In this work, Cardamone, Loiacono and Lanzi applied supervised learning to develop car controllers for The Open Car Race Simulator from the logs collected from other drivers. 
 They considered two representations of the current state of the car: the set of rangefinder inputs usually employed in simulated car racing competitions, and a high-level, qualitative, representation involving basic lookahead information about the track in front of the car. Instead of predicting the typical low-level actions on the car actuators available in TORCS (namely, the steering wheel, the gas pedal, the brake pedal and the gear change), their approach predicts a target speed and the car position with respect to the track axis.
 They considered two supervised learning methods, multi-layer neural networks and k-nearest neighbor classifiers, and applied them to compute a model mapping input sensors to actions which could imitate the behavior of an observed driver.
+
+- Our work proposed different approaches to solve time-optimal racing problem in the framework of reinforcement learning. 
