@@ -4,68 +4,6 @@
 
 
 
-Gli algoritmi di guida autonoma esistono già, c'è questo quello quell'altro
-	Prima parte: 
-		guida autonoma
-	Seconda parte:
-		Reinforcement learning based self driving car
-		Videogiochi guida autonoma
-		ieee transaction on ai games
-		check evolutionary intelligent gaming
-		gameconf
-		papers su pagina di lanzi
-		
-- Introduzione intelligenza artificiale:
-	cos'è l'intelligenza artificiale
-	perchè l'intelligenza artificiale
-	robots
-	autonomous vehicles
-	
-- Autonomous vehicles
-	taxonomy
-	albori
-		rules
-	oggi
-		machine learning
-			reinforcement learning
-				fisico (tesla, google..)
-				virtuale (videogiochi)
-				 
-	
-	
-
-
-
-
-
-
-
-
-
-
-
-Simulators: Voyage Deep Drive, CARLA, AWS Deep Racer, Deep Traffic
-
-
-
-
-
-			
-
-
-with the dramatic improvement in hardware and the availability of a huge amount of data machine learning and deep learning techniques could have been applied to this scenario. 
-In particular, reinforcement learning has been demonstrated to be quite promising for this context.
-
-
-
-
-
-
-
-\cite{playingforbenchmarks}
-
-
-
 
 
 
@@ -135,10 +73,8 @@ control variables, e. g., by training a deep neural network. Such a model could,
 Recent work also shows promising applications of reinforcement learning for autonomous driving by making strategic decisions. 
 Autonomous driving tasks where RL could be applied include: controller optimization, path planning and trajectory optimization, motion planning and dynamic path planning, development of high-level driving policies for complex navigation tasks, scenario-based policy learning for highways, intersections, merges and splits, reward learning with inverse reinforcement learning from expert data for intent prediction for traffic actors such as pedestrian, vehicles and finally learning of policies that ensures safety and perform risk estimation. Further, it turns out to be suitable in contexts of autonomous racing: the driverless racer could learn a policy that is able to outperform the performance of a human driver, or a policy taught by experts.
 - Controlling an Autonomous Vehicle with Deep Reinforcement Learning
-This paper https://arxiv.org/pdf/1909.12153.pdf shows an example of end-to-end reinforcement learning application to autonomous drive, using a proximal policy optimization algorithms by means of a neural network which maps the state to the controls. It learns two different policies: the driver and the stopper, and the reward is the squared proximity to a target position. The work aims at realizing the autonomous exploration of a parking lot based on deep reinforcement learning. It describes how a policy is trained to compute sophisticated control commands which depend on an estimate of the current vehicle state. This is done by designing an appropriate Markov decision process and a corresponding proximal policy optimization learning algorithm. For that purpose a simulated environment is used for data generation. Here, information about the vehicle’s surrounding are measured by, e. g., laser scanners and are further extended by a rough knowledge about the geometry of the drivable area.
-State: steering wheel angle and longitudinal acceleration.
-state transition: single-track-models. The vehicle is assumed to have only one wheel at the front and back respectively, each centered between the real ones.
-Reward function: two different trainings for driver and stopper.
+This paper https://arxiv.org/pdf/1909.12153.pdf shows an example of end-to-end reinforcement learning application to autonomous drive, using a proximal policy optimization algorithms by means of a neural network which maps the state to the controls. It learns two different policies: the driver and the stopper, and the reward is the squared proximity to a target position. The work aims at realizing the autonomous exploration of a parking lot based on deep reinforcement learning. It describes how a policy is trained to compute sophisticated control commands which depend on an estimate of the current vehicle state. This is done by designing an appropriate Markov decision process and a corresponding proximal policy optimization learning algorithm. For that purpose a simulated environment is used for data generation. Here, information about the vehicle's surrounding are measured by, e. g., laser scanners and are further extended by a rough knowledge about the geometry of the drivable area.
+Here, the state is composed by: steering wheel angle and longitudinal acceleration; the state transition is made by single-track-models. The vehicle is assumed to have only one wheel at the front and back respectively, each centered between the real ones. Finally, two reward function are used in order to train a driver and a stopper function.
 
 
 - CARMA: A Deep Reinforcement Learning Approach to Autonomous Driving
@@ -162,6 +98,19 @@ a high-level navigation command, car speed, and car acceleration. We use a custo
 3.
 
 - Autonomous driving in racing:
+Finding a racing line that allows to achieve a competitive lap-time is a key problem in real-world car racing as well as in the development of non-player characters for a commercial racing game.
+The optimal racing line is defined as the line to follow
+to achieve the best lap-time possible on a given track with
+a given car. In general, finding the optimal racing line is
+a common problem in real-world car racing [6] as well
+as in the development of commercial racing games [12]
+The optimal racing line is the path that a driver should
+follow to complete a lap on a given track in the smallest
+amount of time possible. As the lap-time depends both on
+the distance raced and on the average racing speed, finding
+the optimal racing involves two different sub-problems [3]:
+(i) racing the shortest distance possible and (ii) racing as fast
+as possible along the track.
 
 - AWS Deep Racer (Paper: DeepRacer: Educational Autonomous Racing Platform for Experimentation with Sim2Real Reinforcement Learning), TORCS, Racer (Development of a Car Racing Simulator Game Using Artificial Intelligence Techniques), Roborace
 
@@ -176,6 +125,14 @@ Real-Time
 of the turn in front and the vacant distance in front to
 		controller fatto a mano, il nostro con reinforcement learning
 
+
+- Evolving the Optimal Racing Line in a High-End Racing Game
+This paper shows how to encode a racing line by a set of connected Bézier curves, such that each gene defines a small portion of the racing line. Therefore, the evolution is responsible of the entire design of the racing line. In addition, the authors compare two different methods to evaluate the evolved racing line; the first one is based on testing the evolved racing lines in a racing simulator; the second one consists of estimating the performance of a racing line through a computational model.
+	
+	
+	
+	
+	
 	
 .Videogiochi e simulation autonomous driving:
 The aim of this project is to teach an autonomous agent the optimal trajectory in a formula 1 track starting from a baseline trajectory driven beforehand by a human driver. For safety reasons, we operated in a simulation setting.
