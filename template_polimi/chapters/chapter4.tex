@@ -34,7 +34,7 @@ Tesla, one of the companies founded by Elon Musk, is also making big steps forwa
 Waymo, the newborn firm from Google's Alfabet, has been carrying out successful trials of autonomous taxis in California, transporting over 6,200 people in the first month and many thousands since. They're proving a practical business case for autonomous vehicles.
 Also in the U.S., Walmart is using autonomous cargo vans to deliver groceries in Arizona, while Pizza Hut is working with Toyota on a driverless electric delivery vehicle that even has a mobile kitchen in it to cook pizzas en route to your house.
 Parallely, in the military field, DARPA (Defense Advanced Research Projects Agency) has been proposing every year since 2007 a challenge called DARPA Grand Challenge, in which scientist teams dare each other to reach some targets as fast as possible.
-The reasons for this race to the autonomous driving are millions of possible accidents avoided per year, and a reduction of pollution and costs by sharing cars which are capable of transporting people without human intervention needed.
+The reasons for this race to the autonomous driving are millions of possible accidents avoided per year, and a reduction of pollution and costs by sharing cars which are capable of transporting people without human intervention needed. %nel caso si può ampliare% 
 This growth in the reaserach on autonomous cars led to a formalization of the levels of automation: Society of Automotive Engineers (SAE) introduced six levels of automation: level 0 is no automation, that is traditional cars we are accustomed to. With Level 1, driver assistance, relating to computer assistance of simple driving functions like the cruise control or automated braking systems. Cruise control consists in the capability of mantaining a certain target speed, whatever the slope of the road, weather condition, asphalt roughness. It can be accomplished via some speed sensors and a PID controller, there is no need of complex artificial intelligence. Automated braking systems involves stopping the car or reducing the speed whenever an object come across, be it a vehicle or a pedestrian. It requires proximity and distance sensors (ultrasonic or laser sensors) and may follow some manual rules based on thresholds. Lane Crossing Alert makes the car capable of notify whenever it crosses another lane, and can be achieved with camera sensors.
 Level 2 refers to partial automation, where the vehicle assists drivers with steering or acceleration, allowing drivers to disengage from some tasks.  For example instance , Adaptive Cruise Control, Lane Keeping, or self-parking.
 Level 3 concerns conditional automation, where the vehicle takes over some of the monitoring of the environment from the driver, using sensor technology like LiDAR. That's what the company Tesla is currently developing: their cars are able of moving in the surroundings but the human intervention is still required in dangerous situations.
@@ -84,11 +84,11 @@ In this paper $https://web.stanford.edu/~anayebi/projects/CS_239_Final_Project_W
 - Lane keeping rl https://www.sae.org/publications/technical-papers/content/2020-01-0728/
 
 
-Simulations:
+Simulators:
 - Voyage Deep Drive, CARLA, Deep Traffic
+
 - Simulation-based reinforcement learning for autonomous driving:
-		- https://deepsense.ai/wp-content/uploads/2019/06/Simulation-based-reinforcement-learning-for-autonomous-driving.pdf:
-		The main training loop is described in Algorithm 1. As the reinforcement learning component we use Proximal Policy Optimization (PPO) (Schulman et al., 2017) with a contin-
+The main training loop is described in Algorithm 1. As the reinforcement learning component we use Proximal Policy Optimization (PPO) (Schulman et al., 2017) with a contin-
 uous action space. A good alternative to PPO would be TRPO (Schulman et al., 2015) or V-trace (Espeholt et al., 2018), which we leave for future work. Supervised randomizations mentioned in line 5 of Algorithm 1 and described in Section 5.3 may be considered as a potentially more sample-efficient variant of general domain randomizations. We based our PPO implementation on OpenAI Baselines (Dhariwal et al., 2017) ppo2 5 . Policies provided by OpenAI Baselines work only for observations that consists of one tensor of some shape. In our case we operate on multiple tensors of multiple shapes - such us the front camera,
 a high-level navigation command, car speed, and car acceleration. We use a custom policy that operates on multiple input tensors coming from one observation (see Figure 4).	
 	Using CARLA
@@ -102,31 +102,28 @@ The optimal racing line is defined as the line to follow to achieve the best lap
 a common problem in real-world car racing as well as in the development of commercial racing games. The optimal racing line is the path that a driver should follow to complete a lap on a given track in the smallest amount of time possible. As the lap-time depends both on the distance raced and on the average racing speed, finding the optimal racing involves two different sub-problems: racing the shortest distance possible and racing as fast
 as possible along the track.
 - mettere una parte di videogiochi come funzionano
-
-
-
-	
-
-
-- AWS Deep Racer (Paper: DeepRacer: Educational Autonomous Racing Platform for Experimentation with Sim2Real Reinforcement Learning), TORCS, Racer (Development of a Car Racing Simulator Game Using Artificial Intelligence Techniques).
-
+- Simulatori e ambienti di sviluppo:
+AWS Deep Racer (Paper: DeepRacer: Educational Autonomous Racing Platform for Experimentation with Sim2Real Reinforcement Learning), TORCS, Racer (Development of a Car Racing Simulator Game Using Artificial Intelligence Techniques).
+During the years, different attempts to achieve this goal, and different techniques have been exploited along with the evolution of technology.
 
 - Evolving the Optimal Racing Line in a High-End Racing Game
 This paper shows how to encode a racing line by a set of connected Bézier curves, such that each gene defines a small portion of the racing line. Therefore, the evolution is responsible of the entire design of the racing line. In addition, the authors compare two different methods to evaluate the evolved racing line; the first one is based on testing the evolved racing lines in a racing simulator; the second one consists of estimating the performance of a racing line through a computational model.
 	
-- controller: Ahura: A Heuristic-Based Racer for the Open Racing Car Simulator
-	modules:
-	- 1) Steer controller: This module uses the estimated angle
-of the turn in front and the vacant distance in front to
-		controller fatto a mano, il nostro con reinforcement learning
-	
+- Ahura: A Heuristic-Based Racer for the Open Racing Car Simulator
+This work proposes a controller called Ahura for TORCS. The controller uses five modules: steer controller, speed controller, opponent manager (it creates a map of opponents around  and finds the vacant slot to overtake), dynamic adjuster (friction, bumps), stuck manager (uses the idea proposed in to control the vehicle when it is out of the track or it has stuck somewhere.).
+There are 23 parameters in Ahura that need to be determined:
+1) eight parameters for the steer controller 
+2) ten parameters for the speed controller 
+3) five parameters for the opponent manager
+They were determined by using the optimization algorithm CMA-ES: it has a good performance in continuous space, works with nonlinear systems, no constraint handling technique is required, and it is appropriate for nonseparable search spaces.
+
+
 - Model predictive control Towards Time-Optimal Race Car Driving using Nonlinear MPC in
 Real-Time
-	
+
 
 
 - Learning Drivers for TORCS through Imitation Using Supervised Methods	
-
 In this work, Cardamone, Loiacono and Lanzi applied supervised learning to develop car controllers for The Open Car Race Simulator from the logs collected from other drivers. 
 They considered two representations of the current state of the car: the set of rangefinder inputs usually employed in simulated car racing competitions, and a high-level, qualitative, representation involving basic lookahead information about the track in front of the car. Instead of predicting the typical low-level actions on the car actuators available in TORCS (namely, the steering wheel, the gas pedal, the brake pedal and the gear change), their approach predicts a target speed and the car position with respect to the track axis.
 They considered two supervised learning methods, multi-layer neural networks and k-nearest neighbor classifiers, and applied them to compute a model mapping input sensors to actions which could imitate the behavior of an observed driver.
