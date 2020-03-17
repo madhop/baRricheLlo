@@ -94,15 +94,20 @@ class Controller():
         # Find projection on reference trajectory
         state_p = np.array([[obs['x'], obs['y']]])
         ref_id, delta = self.projector._compute_projection(state_p)
-        Vref = self.ref_df['speed_x'].values[ref_id]
-        V = obs['speed_x']
-        r = np.array([self.ref_df['xCarWorld'].values[ref_id], self.ref_df['yCarWorld'].values[ref_id]])
+        # compute rho as delta_trackPos
+        """r = np.array([self.ref_df['xCarWorld'].values[ref_id], self.ref_df['yCarWorld'].values[ref_id]])
         r1 = np.array([self.ref_df['xCarWorld'].values[ref_id+1], self.ref_df['yCarWorld'].values[ref_id+1]])
         ref_segment = (r1 - r) * delta
         ref_proj = (r + ref_segment).reshape(1,2)
-        
         rho = ref_proj - state_p
-        rho = np.linalg.norm(rho) if rho[0][1] > 0 else -np.linalg.norm(rho)    # position of the car wrt the reference
+        rho = np.linalg.norm(rho) if rho[0][1] > 0 else -np.linalg.norm(rho)    # position of the car wrt the reference"""
+        trackPoss_proj = (1-delta)*self.ref_df['trackPos'].values[ref_id]+delta*self.ref_df['trackPos'].values[ref_id+1]
+        rho = (trackPoss_proj - obs['trackPos'])*11/2
+        #
+        Vref = self.ref_df['speed_x'].values[ref_id]
+        V = obs['speed_x']
+        
+        
         #print('rho norm:', rho)
         ref_O = self.ref_df['nYawBody'].values[ref_id]
         ref_O1 = self.ref_df['nYawBody'].values[ref_id+1]
@@ -175,7 +180,7 @@ C.playGame()
 
 #%% play game and store data
 gamma1=0.002    #rho
-gamma2=0.155     #delta_O
+gamma2=0.1     #delta_O
 gamma3=30      #delta_ref_O
 alpha1=1
 k1=0.000001
@@ -216,7 +221,7 @@ data = pd.read_csv('trajectory/dataset_human.csv')
 state_p = data.head(1)[['xCarWorld', 'yCarWorld', 'actualSpeedModule', 'nYawBody']].values
 #C.projector._compute_projection(state_p)
 
-#%%
+#%% check act function
 obs  = {'xCarWorld': 654.799744, 'yCarWorld': 1169.202148, 'speed_x': 310.11856326, 'nYawBody': 0.013237}
 action = C.act(obs)
 
@@ -226,3 +231,18 @@ ref_dt = pd.read_csv('trajectory/ref_traj.csv')
 plt.scatter(ref_dt[99:101].xCarWorld, ref_dt[99:101].yCarWorld)
 plt.scatter(data[8:9].xCarWorld, data[8:9].yCarWorld)
 plt.show()"""
+#%% check projection
+trackPoss = [0.721191, 0.708962, 0.695912]
+p = [np.array([[836.23, 1173.43]]), np.array([[840.138, 1173.37]]), np.array([[844.053, 1173.29]])]
+state_p = p[0]
+ref_id, delta = C.projector._compute_projection(state_p)
+r = np.array([C.ref_df['xCarWorld'].values[ref_id], C.ref_df['yCarWorld'].values[ref_id]])
+r1 = np.array([C.ref_df['xCarWorld'].values[ref_id+1], C.ref_df['yCarWorld'].values[ref_id+1]])
+ref_segment = (r1 - r) * delta
+ref_proj = (r + ref_segment).reshape(1,2)
+
+#%%
+plt.scatter(state_p[0][0], state_p[0][1])
+plt.scatter([r[0],r1[0]], [r[1],r1[1]])
+plt.scatter(ref_proj[0][0], ref_proj[0][1])
+plt.show()
