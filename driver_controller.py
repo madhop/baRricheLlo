@@ -91,6 +91,8 @@ class Controller():
     
     
     def act(self, obs):
+        th_rho = 0#0.3
+        th_O = 0.01
         # Find projection on reference trajectory
         state_p = np.array([[obs['x'], obs['y']]])
         ref_id, delta = self.projector._compute_projection(state_p)
@@ -103,8 +105,9 @@ class Controller():
         rho = np.linalg.norm(rho) if rho[0][1] > 0 else -np.linalg.norm(rho)    # position of the car wrt the reference"""
         trackPoss_proj = (1-delta)*self.ref_df['trackPos'].values[ref_id]+delta*self.ref_df['trackPos'].values[ref_id+1]
         rho = (trackPoss_proj - obs['trackPos'])*11/2
-        #
-        Vref = self.ref_df['speed_x'].values[ref_id]
+        rho = rho if np.absolute(rho) > th_rho else 0
+        # comute velocity
+        Vref_proj = (1-delta)*self.ref_df['speed_x'].values[ref_id]+delta*self.ref_df['speed_x'].values[ref_id+1]
         V = obs['speed_x']
         
         
@@ -123,9 +126,9 @@ class Controller():
                                      np.abs(self.gamma2 * delta_O),
                                      np.abs(self.gamma3 * delta_ref_O)])])
         steer = 0.75 * np.tanh(self.gamma1 * rho + self.gamma2 * delta_O + self.gamma3 * delta_ref_O)
-        brake = self.sigmoid(self.beta1 * (V - Vref) + self.k2 * np.power(V, 2))
-        throttle = self.sigmoid(self.alpha1 * (Vref - V) + self.k1 * np.power(V, 2))
-        return [steer, brake, throttle], rho, delta_O, delta_ref_O
+        brake = self.sigmoid(self.beta1 * (V - Vref_proj) + self.k2 * np.power(V, 2))
+        throttle = self.sigmoid(self.alpha1 * (Vref_proj - V) + self.k1 * np.power(V, 2))
+        return [steer, brake, throttle], rho, delta_O, delta_ref_O, self.ref_df['Steer'].values[ref_id], obs['x'], obs['y'], self.ref_df['xCarWorld'].values[ref_id], self.ref_df['yCarWorld'].values[ref_id]
     
     
     def playGame(self, episode_count=1, max_steps=100000, save_data=False):
@@ -147,8 +150,7 @@ class Controller():
                     break
                 
 
-#%%
-
+#%% main
 if __name__ == '__main__':
     ref_df = pd.read_csv('trajectory/ref_traj.csv')
     simulations = pd.read_csv('trajectory/dataset_offroad_human.csv')
@@ -159,7 +161,14 @@ if __name__ == '__main__':
     reward_function = Temporal_projection(ref_df, penalty=penalty)
     env = TorcsEnv(reward_function,collision_penalty=-1000, state_cols=state_cols, ref_df=ref_df, vision=False, throttle=True,
                gear_change=False, brake=True, start_env=False, damage_th=0, slow=False, faster=False, graphic=True)
-    C = Controller(env, gamma1=0.1, gamma2=0.1, k1=0.000001, k2=0)
+    gamma1=0.0025    #rho
+    gamma2=0.1     #delta_O
+    gamma3=24      #delta_ref_O
+    alpha1=1
+    k1=0.000001
+    k2=0
+    max_steps=100000
+    C = Controller(env, gamma1=gamma1, gamma2=gamma2, gamma3=gamma3, alpha1=alpha1, k1=k1, k2=k2)
     C.playGame()
     
     
@@ -174,29 +183,30 @@ reward_function = Temporal_projection(ref_df, penalty=penalty)
 env = TorcsEnv(reward_function,collision_penalty=-1000, state_cols=state_cols, ref_df=ref_df, vision=False, throttle=True,
            gear_change=False, brake=True, start_env=False, damage_th=0, slow=False, faster=False, graphic=True)
 
-#%% play game
-C = Controller(env, gamma1=0.002, gamma2=0.18, gamma3=50, alpha1=1, k1=0.000001, k2=0)
-C.playGame()
 
 #%% play game and store data
-gamma1=0.002    #rho
-gamma2=0.1     #delta_O
-gamma3=30      #delta_ref_O
+gamma1=0.003    #rho
+gamma2=0.2     #delta_O
+gamma3=24      #delta_ref_O
 alpha1=1
 k1=0.000001
 k2=0
 max_steps=100000
 C = Controller(env, gamma1=gamma1, gamma2=gamma2, gamma3=gamma3, alpha1=alpha1, k1=k1, k2=k2)
 step=0
-action_vars = {'rho':[], 'delta_O':[], 'delta_ref_O':[], 'action':[]}
-ob = C.env.reset(relaunch=True)    
+action_vars = {'rho':[], 'delta_O':[], 'delta_ref_O':[], 'ref_action':[], 'action':[], 'x':[], 'y':[], 'ref_x':[], 'ref_y':[]}
+ob = C.env.reset(relaunch=True)
 for _ in range(max_steps):
-    action, rho, delta_O, delta_ref_O = C.act(ob)
+    action, rho, delta_O, delta_ref_O, ref_action, x, y, ref_x, ref_y = C.act(ob)
     action_vars['action'].append(action)
     action_vars['rho'].append(rho)
     action_vars['delta_O'].append(delta_O)
     action_vars['delta_ref_O'].append(delta_ref_O)
-    #print(action)
+    action_vars['ref_action'].append(ref_action)
+    action_vars['x'].append(x)
+    action_vars['y'].append(y)
+    action_vars['ref_x'].append(ref_x)
+    action_vars['ref_y'].append(ref_y)
     ob, reward, done, _ = C.env.step(action)
     
     step += 1
@@ -206,15 +216,21 @@ for _ in range(max_steps):
 C.env.end()
 
 #%% plot vars and steering action
-fig, axs = plt.subplots(2, 1)
-axs[0].plot(list(map(lambda x: x*gamma1, action_vars['rho'])), label='rho')
+fig, axs = plt.subplots(3, 1)
+axs[0].plot(list(map(lambda x: -x*gamma1, action_vars['rho'])), label='rho')
 axs[0].plot(list(map(lambda x: x*gamma2, action_vars['delta_O'])), label='delta_O')
 axs[0].plot(list(map(lambda x: x*gamma3, action_vars['delta_ref_O'])), label='delta_ref_O')
 axs[0].grid(True)
 axs[0].legend()
 
-axs[1].plot([x[0][0] for x in action_vars['action']])
+axs[1].plot([x[0][0] for x in action_vars['action']], label='action')
+axs[1].plot(action_vars['ref_action'], label='ref action')
 axs[1].grid(True)
+axs[1].legend()
+
+axs[2].scatter(action_vars['x'], action_vars['y'], label='car', s=0.5)
+axs[2].scatter(action_vars['ref_x'], action_vars['ref_y'], label='ref', s=0.5)
+axs[2].legend()
 plt.show()
 #%%
 data = pd.read_csv('trajectory/dataset_human.csv')

@@ -310,7 +310,8 @@ class TorcsEnv(gym.Env):
             action = auto_driver.get_action(track_pos)
             self.observation, _, done, info = self.step(action, raw=True)
 
-            if ob_distFromStart > 200 and ob_distFromStart < 300:
+            if ob_distFromStart < 100:
+            #if ob_distFromStart > 200 and ob_distFromStart < 300:
                 # Start with agent driver and return the current state
 
                 print('Stopped auto driving')
