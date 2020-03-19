@@ -69,7 +69,7 @@ class Projection(Reward_function):
         return ref_id, delta
 #%% Define Controller
 class Controller():
-    def __init__(self, env, alpha1=1, k1=1, beta1=1, k2=1, gamma1=1, gamma2=1, gamma3=1):
+    def __init__(self, env, alpha1=1, k1=1, beta1=1, k2=1, gamma1=1, gamma2=1, gamma3=1, Kp=1, Ki=1, Kd=1):
         # Init
         self.env = env
         # Throttle params
@@ -85,9 +85,26 @@ class Controller():
         self.ref_df = pd.read_csv('trajectory/ref_traj_yaw.csv')
         self.projector = Projection(ref_t=self.ref_df, clip_range=None, ref_dt=1, sample_dt=10, penalty=None)
         
+        # steering PID 
+        self.previous_error = 0
+        self.integral = 0
+        self.dt = 0.05
+        self.Kp = Kp
+        self.Ki = Ki
+        self.Kd = Kd
     
     def sigmoid(self, x):
         return 1 / (1 + np.exp(-x))
+    
+    def steer_rho_PID(self, rho):
+        #loop:
+        error = rho#setpoint − measured_value
+        self.integral = self.integral + error * self.dt
+        derivative = (error - self.previous_error)/self.dt
+        output = self.Kp * error + self.Ki * self.integral + self.Kd * derivative
+        self.previous_error = error
+            
+        return output
     
     
     def act(self, obs):
@@ -104,21 +121,19 @@ class Controller():
         rho = ref_proj - state_p
         rho = np.linalg.norm(rho) if rho[0][1] > 0 else -np.linalg.norm(rho)    # position of the car wrt the reference"""
         trackPoss_proj = (1-delta)*self.ref_df['trackPos'].values[ref_id]+delta*self.ref_df['trackPos'].values[ref_id+1]
-        rho = (trackPoss_proj - obs['trackPos'])*11/2
-        rho = rho if np.absolute(rho) > th_rho else 0
-        # comute velocity
+        rho = (trackPoss_proj - obs['trackPos'])/2  # scale from -1 to 1
+        rho = rho if np.absolute(rho) > th_rho else 0   # tollerance near the ref traj
+        #rho = self.steer_rho_PID(rho)
+        # compute velocity
         Vref_proj = (1-delta)*self.ref_df['speed_x'].values[ref_id]+delta*self.ref_df['speed_x'].values[ref_id+1]
         V = obs['speed_x']
         
-        
-        #print('rho norm:', rho)
         ref_O = self.ref_df['nYawBody'].values[ref_id]
         ref_O1 = self.ref_df['nYawBody'].values[ref_id+1]
         delta_O = ref_O - obs['yaw'] # delta orientation of the car
+        delta_O = delta_O/(2*np.pi) # scale from -1 to 1
         delta_ref_O = ref_O1 - ref_O
-        #print('delta_O:', delta_O)
-        #print('delta_ref_O:', delta_ref_O)
-        
+        delta_ref_O = delta_ref_O/(2*np.pi) # scale from -1 to 1
         
         # Compute actions
         l = ['rho', 'delta_O', 'delta_ref_O']
@@ -185,14 +200,17 @@ env = TorcsEnv(reward_function,collision_penalty=-1000, state_cols=state_cols, r
 
 
 #%% play game and store data
-gamma1=0.003    #rho
-gamma2=0.2     #delta_O
-gamma3=24      #delta_ref_O
+gamma1=0.002    #rho
+gamma2=(2*np.pi) * 0.1     #delta_O
+gamma3=(2*np.pi) * 24      #delta_ref_O
+Kp = 0.2
+Ki = 0.2
+Kd = 0.2
 alpha1=1
-k1=0.000001
+k1=0.000001 
 k2=0
 max_steps=100000
-C = Controller(env, gamma1=gamma1, gamma2=gamma2, gamma3=gamma3, alpha1=alpha1, k1=k1, k2=k2)
+C = Controller(env, gamma1=gamma1, gamma2=gamma2, gamma3=gamma3, alpha1=alpha1, k1=k1, k2=k2, Kp=Kp,Ki=Ki,Kd=Kd)
 step=0
 action_vars = {'rho':[], 'delta_O':[], 'delta_ref_O':[], 'ref_action':[], 'action':[], 'x':[], 'y':[], 'ref_x':[], 'ref_y':[]}
 ob = C.env.reset(relaunch=True)
@@ -217,7 +235,7 @@ C.env.end()
 
 #%% plot vars and steering action
 fig, axs = plt.subplots(3, 1)
-axs[0].plot(list(map(lambda x: -x*gamma1, action_vars['rho'])), label='rho')
+axs[0].plot(list(map(lambda x: x*gamma1, action_vars['rho'])), label='rho')
 axs[0].plot(list(map(lambda x: x*gamma2, action_vars['delta_O'])), label='delta_O')
 axs[0].plot(list(map(lambda x: x*gamma3, action_vars['delta_ref_O'])), label='delta_ref_O')
 axs[0].grid(True)
