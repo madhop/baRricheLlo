@@ -3,34 +3,7 @@
 \thispagestyle{empty}
 
 
-The objective of this chapter is to give an overview about what has been done in the field of autonomous driving putting its focus expecially on reinforcement-learning-based algorithms.
-In particular, the chapter is divided in two sections. First, it describes the theoretical background in reinforcement learning.
-In the second part we give insight about successful applications of reinforcement learning to autonomous driving.
 
-\section{Theoretical Background}
-
-
-
-\section{Related Works}
-
-
-
-
-
-2. Insight on autonomous driving techniques
-
-Autonomous driving is a rather complex task: it requires a part of perception of the environment, a part of planning through an algorithm, and a part of control, to perform the actions by means of physical actuators. In our thesis we focused our attention on the planning part. In fact, by the help of a driving simulator, we could gather data with help of virtual sensors, and control the car by virtual actuators.
-Perception is usually achieved through exploiting some sensors with software techniques.
-Common sensors are: stereo-cameras, ultrasonic sensors, gps, speed encoders, radar and LiDars. The last one are the most accurate ones and the most expensive ones: they are capable of scanning the environment in 3D through lasers, and cost up to tens thousands dollars.
-The data provided by the sensors, once cleansed and filtered, are processed in order to extract information. The main ones are image segmentation, which tries to identify objects from a RGB image through computer vision techniques such as SIFT or HOG algorithms and machine learning techniques, or the usage of stochastic models for combining multiple data coming from laser or sonar measurements.
-Then, estimation of the world and of the position of the robot are used to build a map of the environment, which is used as reference to move into.
-A powerful technique called SLAM enables to simultaneously localize the robot and build a map of the environment which it's moving into by combining data from internal and external sensors through algorithms such as Kalman Filters or Particle Filters.
-In order to navigate in the world, the robot needs one or some algorithms that takes in input the state of itself and the world and produces as output an action to take.
-Before machine learning and deep learning exploded, classical ai algorithms were used.
-First, a discretization of the world was needed: it could be a graph or a grid map. Then, some search algorithms, which could be A*, Dijkstra were adopted to find the shortest path for reaching a certain goal.
-Advanced controlling techniques which takes into account the dynamics of the vehicle can be exploited, one method being the linear quadratic controller, also known as Riccati controller. It minimizes a quadratic objective function in the state deviation and control energy while taking into account a linear model of the underlying system.
-While a Riccati-controller is comparably fast, however, it does not directly allow the consideration of constraints such as obstacles or more advanced objective functions within
-the optimization. Such requirements are met by a general nonlinear model predictive control (MPC) approach based on solving an optimal control problem in every time step.	
 
 2.1 Reinforcement learning in autonomous driving
 
@@ -103,3 +76,76 @@ They considered two supervised learning methods, multi-layer neural networks and
 
 
 - Our work proposed different approaches to solve time-optimal racing problem in the framework of reinforcement learning. 
+
+
+
+
+
+
+
+
+
+
+
+The objective of this chapter is to give an overview about what has been done in the field of autonomous driving putting its focus expecially on reinforcement-learning-based algorithms.
+In particular, the chapter is divided in two sections. First, it describes the theoretical background in reinforcement learning.
+In the second part we give insight about successful applications of reinforcement learning to autonomous driving.
+
+\section{Theoretical Background}
+
+
+
+\section{Related Works}
+
+
+
+- parlare di alphago e atari
+
+By learning a deep convolutional neural network
+to approximate the Q-function, Mnih et al. successfully
+construct a DRL framework called Deep Q-Network (DQN)
+which plays Atari games in human level
+
+Finn et al. proposed the Inverse Reinforcement
+Learning (IRL), which automatically learns reward functions
+from human demonstrations for robotic control [11].
+
+Presented in [16], Deep Q-learning from Demonstrations
+(DQfD) vastly accelerates DQN by pretraining an initial
+behavior network, and also introducing a supervised loss and
+a L2 regularization loss when training the target network.
+
+
+
+
+
+- background:
+pag 3-4 cinesi
+
+
+
+
+
+
+
+
+
+
+
+
+
+- \cite{cinesi} Integrating
+RL with human expertise is technically an interesting way
+to accelerate the exploration and increase the stability. In
+this work, we propose a continuous reinforcement learning
+method which integrates Deep Deterministic Policy Gradient
+(DDPG) with human demonstrations.
+In this paper, we want the agent to learn both from the
+demonstrator and the environment, which means that, if
+the agent is currently at a certain state of demonstration
+buffer, the action it takes should be consistent with the
+corresponding demonstrator’s action. So, we evaluate the
+similarity between these two actions by the following
+formulation: combined loss
+
+
