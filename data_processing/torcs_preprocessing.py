@@ -32,14 +32,15 @@ def preproc_raw_torcs(data_dir, out_dir, out_ref, track_length=5780, subsampling
     lap_time = raw_data['curLapTime'][lap_end].values - raw_data['curLapTime'][lap_beginning].values
     lap_steps = raw_data.index[lap_end] - raw_data.index[lap_beginning] + 1
     # add NLap column
-    NLap = np.concatenate([np.matlib.repmat(i, lap_steps[i], 1).ravel() for i in range(len(lap_steps))])
+    lap_list = np.array(list(range(len(lap_steps))))
+    NLap = np.concatenate([np.matlib.repmat(i, lap_steps[i], 1).ravel() for i in lap_list])
 
     raw_data['NLap'] = NLap
 
     # Remove laps with time greater than 90
     time_limit = 90.0
     good_lap_mask = lap_time <= time_limit
-    good_laps = np.unique(NLap)[good_lap_mask]
+    good_laps = lap_list[good_lap_mask]
     raw_data = raw_data[raw_data['NLap'].isin(good_laps)]
 
     # filter all the structures
@@ -58,7 +59,7 @@ def preproc_raw_torcs(data_dir, out_dir, out_ref, track_length=5780, subsampling
     # find the reference trajectory
     times_to_search = lap_time.copy()
     times_to_search[partial] = np.inf
-    best_lap = np.argmin(times_to_search)
+    best_lap = good_laps[np.argmin(times_to_search)]
 
     is_reference = np.zeros(raw_data.shape[0], dtype=bool)
     is_reference[raw_data.NLap == best_lap] = True
