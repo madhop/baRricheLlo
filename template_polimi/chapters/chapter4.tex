@@ -14,24 +14,34 @@ Then, in the following section, we will show some successful application on rein
 Together with Supervised Learning and Unsupervised Learning, Reinforcement Learning is a branch of Machine Learning, the discipline which studies the way a computer program can learn from experience and improve its performance at a specified task. Whereas Supervised Learning algorithms are based on inductiove inference where the model is tipically trained using labelled data to perform classification or regression, and Unsupervised Learning exploits techniques of density estimation and clustering applied to unlabelled data, in the Reinforcement Learning paradigm an autonomous agent learns to improve its performance at an assigned task by interacting with its environment.
 Tipically, Reinforcement Learning agents are not explicitly taught how to act by an expert. Instead, the agent is free to explore the environment in which it lives, and its performance is evaluated by a reward function. Its goal is to maximize the reward by acting accordingly. The resulting reward results from the sum of the reward gained at every single step in its exploration process: for each state, the agent chooses an action to take and receives a reward based on the usefulness of its decision. Eventually, the agent learns the way to obtain the highest reward by exploting knowledge learned about the expected utility of different state-action pairs. The challenge of Reinforcement Learning is to design the best tradeoff between exploration and exploitation, that is the capability of an agent of use its knowledge to obtain high rewards and, by contrast, being capable of exploring new possibilities in such a way not to remain stuck in a local optimum. Intuitively, the exploration process is high at the first iterations of the learning process, while it should decrease with accumulating knowledge.
 
-\subsection{Markov Decision Process}
-
-
+\subsubsection{Markov Decision Process}
 The Reinforcement Learning problem can be formalized as a Markov Decision Process. A MDP is a tuple composed by:
 \begin{itemize}
   \item A finite set of states \(D\): it encompasses every possible state of the process
   \item A finite set of actions \(A\): it represents the possible action the agent can take at any moment
   	\item A reward function \(r = \psi(s_t,a_t,s_{t+1})\), which represents the reward given to the agent at state \(s_t\) taking the action \(a_t\) landing in the state \(s_{t+1}\)
-  	\item A transition probability model \(T(s_t,a_t,s_{t+1}) = p(s_{t+1}|s_t,a_t)\) 
+  	\item A transition probability model \(T(s_t,a_t,s_{t+1}) = p(s_{t+1}|s_t,a_t)\), which indicates the probability of landing in a state \(s_{t+1}\) being in a state \(s_t\) taking an action \(a_t\)
 \end{itemize}
 
-
-
-
-
+This provides the framework in which Reinforcement Learning operates: its goal is to find a policy \(\pi\) which specifies the actions to take in each state in order to maximize the reward over time i.e. fulfill the task.
 Reinforcement learning can solve Markov decision processes without explicit specification of the transition probabilities; the values of the transition probabilities are needed in value and policy iteration. In reinforcement learning, instead of explicit specification of the transition probabilities, the transition probabilities are accessed through a simulator that is typically restarted many times from a uniformly random initial state. Reinforcement learning can also be combined with function approximation to address problems with a very large number of states.
+Reinforcement Learning operates under the Markov Assumption, under which the current state represents all the information needed to take an action, regardless from the past states and actions.
+In other words: "The future is independent of the past given the present"
 
+\subsubsection{Environment}
+The environment is the mathematical representation of the world in which the agent operates. It reflects the set of features of a machine learning problem, which could be numerical (such as e.g. coordinates, velocities, acceleration) or raw (such as images or signals). On the representation of the environment depends the choice of the algorithm suitable to perform a learning process.
 
+\subsubsection{Reward}
+At each timestep, the agent receives a reward by the reinforcement learning algorithm, accordingly to the usefulness of action taken.
+At the end of an episode (a finite sequence of states) the return is tipically computed as \[R_t = \sum^{T}_{k=0}\gamma^k r_t + k +1\] where \(\gamma\) represents a discount factor comprised between 0 and 1, which stands for a learning paramenter that influences how the agent considers furutre or present reward. A small \(\gamma\) results in a higher consideration of present rewards than the future (often caled "myopic" evaluation), while with a \(\gamma\) near to 1, the agent will consider equally the reward coming from the present either from the future (also called "far-sighted" evaluation). The role of the discount factor resides in the fact that, besides being mathematically convenient, it avoids infinite returns in cyclic Markov Process, and it's capable of addressing a non-fully represented uncertainty about the future.
+
+\subsubsection{Policy}ì
+
+\subsection{Deep Reinforcement Learning}
+
+\subsubsection{Fitted Q-Iteration}
+
+\subsubsection{Deep Deterministic Policy Gradient}
 
 
 

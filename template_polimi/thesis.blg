@@ -8,7 +8,6 @@ A level-1 auxiliary file: chapters/chapter1.aux
 A level-1 auxiliary file: chapters/chapter2.aux
 A level-1 auxiliary file: chapters/chapter3.aux
 A level-1 auxiliary file: chapters/chapter4.aux
-A level-1 auxiliary file: chapters/chapter5.aux
 A level-1 auxiliary file: chapters/chapter6.aux
 A level-1 auxiliary file: chapters/chapter7.aux
 A level-1 auxiliary file: chapters/chapter8.aux
@@ -16,7 +15,7 @@ The style file: plain.bst
 Database file #1: bibl_thesis.bib
 You've used 2 entries,
             2118 wiz_defined-function locations,
-            518 strings with 4577 characters,
+            517 strings with 4556 characters,
 and the built_in function-call counts, 428 in all, are:
 = -- 40
 > -- 14
