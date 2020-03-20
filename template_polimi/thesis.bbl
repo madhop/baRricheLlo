@@ -1,5 +1,11 @@
 \begin{thebibliography}{1}
 
+\bibitem{inverse}
+Abbeel Finn, Levine.
+\newblock Guided cost learning: Deep inverse optimal control via policy
+  optimization.
+\newblock {\em International Conference on Machine Learning (ICML}, 2016.
+
 \bibitem{cinesi}
 Zhu Zuo, Wang.
 \newblock Continuous reinforcement learning from human demonstrations with
