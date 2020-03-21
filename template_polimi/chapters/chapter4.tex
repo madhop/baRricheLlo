@@ -35,8 +35,17 @@ The environment is the mathematical representation of the world in which the age
 At each timestep, the agent receives a reward by the reinforcement learning algorithm, accordingly to the usefulness of action taken.
 At the end of an episode (a finite sequence of states) the return is tipically computed as \[R_t = \sum^{T}_{k=0}\gamma^k r_t + k +1\] where \(\gamma\) represents a discount factor comprised between 0 and 1, which stands for a learning paramenter that influences how the agent considers furutre or present reward. A small \(\gamma\) results in a higher consideration of present rewards than the future (often caled "myopic" evaluation), while with a \(\gamma\) near to 1, the agent will consider equally the reward coming from the present either from the future (also called "far-sighted" evaluation). The role of the discount factor resides in the fact that, besides being mathematically convenient, it avoids infinite returns in cyclic Markov Process, and it's capable of addressing a non-fully represented uncertainty about the future.
 
-\subsubsection{Policy}ì
+\subsubsection{Policy}
+The goal of reinforcement learning is finding a policy \(\pi\), i.e. a set of state-action pairs, which maximizes the return. This policy is called optimal policy \(\pi^*\).
+If from a state \(s_t\) the agent takes always the same action \(a_t\), the policy is deterministic:
+\(\pi(s_t) = a_t\)
+Otherwise, if the taking of an action rather than another is due to a probability distribution, the policy is called stochastic:
+\(\pi(a_t|s_t) = p_i, 0<=p_i<=1\)
 
+\subsection{Policy Evaluation}
+In order to evaluate the usefulness of a policy, we now introduce the concept of Value Function, which is computed as the discounted sum of rewards as discussed before in the return.
+
+\[V^\pi(s) = \mathbb{E}_\pi{\left[R_t|s_t=s\right]}= \mathbb{E}_\pi\left[\sum^{\infty}_{i=0}\gamma^ir_{t+i+1|s_t=s}\right]\]
 \subsection{Deep Reinforcement Learning}
 
 \subsubsection{Fitted Q-Iteration}
