@@ -130,7 +130,8 @@ class Controller():
         
         ref_O = self.ref_df['nYawBody'].values[ref_id]
         ref_O1 = self.ref_df['nYawBody'].values[ref_id+1]
-        delta_O = ref_O - obs['yaw'] # delta orientation of the car
+        delta_O = ((1-delta)*self.ref_df['nYawBody'].values[ref_id]+delta*self.ref_df['nYawBody'].values[ref_id+1]) - obs['yaw']
+        #delta_O = ref_O - obs['yaw'] # delta orientation of the car
         delta_O = delta_O/(2*np.pi) # scale from -1 to 1
         delta_ref_O = ref_O1 - ref_O
         delta_ref_O = delta_ref_O/(2*np.pi) # scale from -1 to 1
@@ -140,7 +141,8 @@ class Controller():
         print(rho, '-', l[np.argmax([np.abs(self.gamma1 * rho),
                                      np.abs(self.gamma2 * delta_O),
                                      np.abs(self.gamma3 * delta_ref_O)])])
-        steer = 0.75 * np.tanh(self.gamma1 * rho + self.gamma2 * delta_O + self.gamma3 * delta_ref_O)
+        #steer = 0.75 * np.tanh(self.gamma1 * rho + self.gamma2 * delta_O + self.gamma3 * delta_ref_O)
+        steer = self.steer_rho_PID(rho)
         brake = self.sigmoid(self.beta1 * (V - Vref_proj) + self.k2 * np.power(V, 2))
         throttle = self.sigmoid(self.alpha1 * (Vref_proj - V) + self.k1 * np.power(V, 2))
         return [steer, brake, throttle], rho, delta_O, delta_ref_O, self.ref_df['Steer'].values[ref_id], obs['x'], obs['y'], self.ref_df['xCarWorld'].values[ref_id], self.ref_df['yCarWorld'].values[ref_id]
@@ -203,9 +205,9 @@ env = TorcsEnv(reward_function,collision_penalty=-1000, state_cols=state_cols, r
 gamma1=0.002    #rho
 gamma2=(2*np.pi) * 0.1     #delta_O
 gamma3=(2*np.pi) * 24      #delta_ref_O
-Kp = 0.2
-Ki = 0.2
-Kd = 0.2
+Kp = 0.0001
+Ki = 0#0.01
+Kd = 0.02
 alpha1=1
 k1=0.000001 
 k2=0
@@ -233,6 +235,21 @@ for _ in range(max_steps):
         
 C.env.end()
 
+#%% plot PID staff
+fig, axs = plt.subplots(3, 1)
+axs[0].plot(list(map(lambda x: -x, action_vars['rho'])), label='rho')
+axs[0].grid(True)
+axs[0].legend()
+
+axs[1].plot([x[0][0] for x in action_vars['action']], label='action')
+axs[1].plot(action_vars['ref_action'], label='ref action')
+axs[1].grid(True)
+axs[1].legend()
+
+axs[2].scatter(action_vars['x'], action_vars['y'], label='car', s=0.5)
+axs[2].scatter(action_vars['ref_x'], action_vars['ref_y'], label='ref', s=0.5)
+axs[2].legend()
+plt.show()
 #%% plot vars and steering action
 fig, axs = plt.subplots(3, 1)
 axs[0].plot(list(map(lambda x: x*gamma1, action_vars['rho'])), label='rho')
