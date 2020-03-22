@@ -86,7 +86,7 @@ class Controller():
         self.projector = Projection(ref_t=self.ref_df, clip_range=None, ref_dt=1, sample_dt=10, penalty=None)
         
         # steering PID 
-        self.previous_error = 0
+        self.previous_error = None
         self.integral = 0
         self.dt = 0.05
         self.Kp = Kp
@@ -100,11 +100,14 @@ class Controller():
         #loop:
         error = rho#setpoint − measured_value
         self.integral = self.integral + error * self.dt
-        derivative = (error - self.previous_error)/self.dt
-        output = self.Kp * error + self.Ki * self.integral + self.Kd * derivative
+        if self.previous_error is not None:
+            self.derivative = (error - self.previous_error)/self.dt
+        else:
+            self.derivative = 0
+        output = self.Kp * error + self.Ki * self.integral + self.Kd * self.derivative
         self.previous_error = error
             
-        return output
+        return np.clip(output, -1,1)
     
     
     def act(self, obs):
@@ -205,16 +208,17 @@ env = TorcsEnv(reward_function,collision_penalty=-1000, state_cols=state_cols, r
 gamma1=0.002    #rho
 gamma2=(2*np.pi) * 0.1     #delta_O
 gamma3=(2*np.pi) * 24      #delta_ref_O
-Kp = 0.0001
-Ki = 0#0.01
-Kd = 0.02
+Tu = 3.
+Kp = 0.2
+Ki = 0.07#1.2*(Kp/0.45)/Tu #0.2    
+Kd = 0.4#(3*(Kp/0.45)*Tu)/40
 alpha1=1
 k1=0.000001 
 k2=0
 max_steps=100000
 C = Controller(env, gamma1=gamma1, gamma2=gamma2, gamma3=gamma3, alpha1=alpha1, k1=k1, k2=k2, Kp=Kp,Ki=Ki,Kd=Kd)
 step=0
-action_vars = {'rho':[], 'delta_O':[], 'delta_ref_O':[], 'ref_action':[], 'action':[], 'x':[], 'y':[], 'ref_x':[], 'ref_y':[]}
+action_vars = {'rho':[], 'delta_O':[], 'delta_ref_O':[], 'ref_action':[], 'action':[], 'x':[], 'y':[], 'ref_x':[], 'ref_y':[], 'integral':[], 'derivative':[]}
 ob = C.env.reset(relaunch=True)
 for _ in range(max_steps):
     action, rho, delta_O, delta_ref_O, ref_action, x, y, ref_x, ref_y = C.act(ob)
@@ -227,6 +231,8 @@ for _ in range(max_steps):
     action_vars['y'].append(y)
     action_vars['ref_x'].append(ref_x)
     action_vars['ref_y'].append(ref_y)
+    action_vars['integral'].append(C.integral)
+    action_vars['derivative'].append(C.derivative)
     ob, reward, done, _ = C.env.step(action)
     
     step += 1
@@ -237,7 +243,9 @@ C.env.end()
 
 #%% plot PID staff
 fig, axs = plt.subplots(3, 1)
-axs[0].plot(list(map(lambda x: -x, action_vars['rho'])), label='rho')
+axs[0].plot(list(map(lambda x: x, action_vars['rho'])), label='rho')
+axs[0].plot(list(map(lambda x: x, action_vars['integral'])), label='integral')
+axs[0].plot(list(map(lambda x: x, action_vars['derivative'])), label='derivative')
 axs[0].grid(True)
 axs[0].legend()
 
@@ -297,3 +305,4 @@ plt.scatter(state_p[0][0], state_p[0][1])
 plt.scatter([r[0],r1[0]], [r[1],r1[1]])
 plt.scatter(ref_proj[0][0], ref_proj[0][1])
 plt.show()
+
