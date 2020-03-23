@@ -36,7 +36,7 @@ At each timestep, the agent receives a reward by the reinforcement learning algo
 At the end of an episode (a finite sequence of states) the return is tipically computed as \[R_t = \sum^{T}_{k=0}\gamma^k r_t + k +1\] where \(\gamma\) represents a discount factor comprised between 0 and 1, which stands for a learning paramenter that influences how the agent considers furutre or present reward. A small \(\gamma\) results in a higher consideration of present rewards than the future (often caled "myopic" evaluation), while with a \(\gamma\) near to 1, the agent will consider equally the reward coming from the present either from the future (also called "far-sighted" evaluation). The role of the discount factor resides in the fact that, besides being mathematically convenient, it avoids infinite returns in cyclic Markov Process, and it's capable of addressing a non-fully represented uncertainty about the future.
 
 \subsubsection{Policy}
-The goal of reinforcement learning is finding a policy \(\pi\), i.e. a set of state-action pairs, which maximizes the return. This policy is called optimal policy \(\pi^*\).
+The goal of reinforcement learning is finding a policy \(\pi\), which maps states to a probability distribution over the actions, in order to maximize the return. This policy is called optimal policy \(\pi^*\).
 If from a state \(s_t\) the agent takes always the same action \(a_t\), the policy is deterministic:
 \(\pi(s_t) = a_t\)
 Otherwise, if the taking of an action rather than another is due to a probability distribution, the policy is called stochastic:
@@ -45,12 +45,35 @@ Otherwise, if the taking of an action rather than another is due to a probabilit
 \subsection{Policy Evaluation}
 In order to evaluate the usefulness of a policy, we now introduce the concept of Value Function, which is computed as the discounted sum of rewards as discussed before in the return.
 
-\[V^\pi(s) = \mathbb{E}_\pi{\left[R_t|s_t=s\right]}= \mathbb{E}_\pi\left[\sum^{\infty}_{i=0}\gamma^ir_{t+i+1|s_t=s}\right]\]
+
+\[V^\pi(s) = \mathbb{E}_\pi{\left[R_t|s_t=s\right]}= \mathbb{E}_\pi\left[\sum^{\infty}_{i=0}\gamma^ir_{t+i+1|s_t=s}\right] = \mathbb{E}_\pi\left[r_{t+1} + \sum^{\infty}_{i=0}\gamma^ir_{t+i+2|s_t=s}\right]\]
+. . . finire
+
+
+Parallel to the value functions is the concept of action-value function, or Q-value, which is the expected return after taking an action \(a_t\) in state \(s_t\) and thereafter following policy \(\pi\):
+\[Q^\pi(s_t,a_t)=\mathbb{E}_{r_{i \geq t},s_{i>t} \sim ,a_{i>t} \sim \pi}[R_t|s_t,a_t]\]
+from which can be derived the recursive form called Bellman Equation:
+\[Q^\pi(s_t,a_t)=\mathbb{E}_{r_t,s_{t+1} \sim E }\left[ r(s_t,a_t) + \gamma \mathbb{E}_{a_{t+1} \sim \pi}\left[Q^\pi (s_{t+1},a_{t+1})\right]\right]\]
+
+
+\subsection{Temporal Difference Learning}
+\subsubsection{SARSA}
+
+\subsubsection{Q-Learning}
+\subsubsection{Issues with Temporal Difference Learning}
 \subsection{Deep Reinforcement Learning}
 
+\subsubsection{Actor-Critic Methods}
+The "Critic" estimates the value function. This could be the action-value (the Q value) or state-value (the V value).
+The "Actor" updates the policy distribution in the direction suggested by the Critic (such as with policy gradients).
+and both the Critic and Actor functions are parameterized with neural networks. In the derivation above, the Critic neural network parameterizes the Q value - so, it is called Q Actor Critic.
 \subsubsection{Fitted Q-Iteration}
 
 \subsubsection{Deep Deterministic Policy Gradient}
+It is not possible to straightforwardly apply Q-learning to continuous action spaces, because in con-
+tinuous spaces finding the greedy policy requires an optimization of a t at every timestep; this opti-
+mization is too slow to be practical with large, unconstrained function approximators and nontrivial
+action spaces. Instead, here we used an actor-critic approach based on the DPG algorithm.
 
 
 
