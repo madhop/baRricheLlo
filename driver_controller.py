@@ -159,8 +159,9 @@ class Controller():
         rho = (trackPoss_proj - obs['trackPos'])/2  # scale from -1 to 1
         rho = rho if np.absolute(rho) > th_rho else 0   # tollerance near the ref traj
         # compute velocity
+        #V = obs['speed_x']
         Vref_proj = (1-delta)*self.ref_df['speed_x'].values[ref_id]+delta*self.ref_df['speed_x'].values[ref_id+1]
-        V = obs['speed_x']
+        speed_error = Vref_proj - obs['speed_x']
         
         ref_O = self.ref_df['nYawBody'].values[ref_id]
         ref_O1 = self.ref_df['nYawBody'].values[ref_id+1]
@@ -174,10 +175,13 @@ class Controller():
         l = ['rho', 'delta_O', 'delta_ref_O']
         #print(rho, '-', l[np.argmax([np.abs(self.gamma1 * rho), np.abs(self.gamma2 * delta_O), np.abs(self.gamma3 * delta_ref_O)])])
         #steer = 0.75 * np.tanh(self.gamma1 * rho + self.gamma2 * delta_O + self.gamma3 * delta_ref_O)
+        #brake = self.sigmoid(self.beta1 * (V - Vref_proj) + self.k2 * np.power(V, 2))
+        #throttle = self.sigmoid(self.alpha1 * (Vref_proj - V) + self.k1 * np.power(V, 2))
         steer = self.steer_rho_PID(rho)
-        brake = self.sigmoid(self.beta1 * (V - Vref_proj) + self.k2 * np.power(V, 2))
-        throttle = self.sigmoid(self.alpha1 * (Vref_proj - V) + self.k1 * np.power(V, 2))
-        return [steer, brake, throttle], rho, delta_O, delta_ref_O, self.ref_df['Steer'].values[ref_id], obs['x'], obs['y'], self.ref_df['xCarWorld'].values[ref_id], self.ref_df['yCarWorld'].values[ref_id]
+        brake = self.brake_PID(-speed_error)
+        throttle = self.throttle_PID(speed_error)
+        #return [steer, brake, throttle], rho, delta_O, delta_ref_O, self.ref_df['Steer'].values[ref_id], obs['x'], obs['y'], self.ref_df['xCarWorld'].values[ref_id], self.ref_df['yCarWorld'].values[ref_id]
+        return [steer, brake, throttle], rho, speed_error, ref_id, obs['x'], obs['y']
     
     
     def playGame(self, episode_count=1, max_steps=100000, save_data=False):

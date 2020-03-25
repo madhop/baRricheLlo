@@ -31,35 +31,49 @@ env = TorcsEnv(reward_function,collision_penalty=-1000, state_cols=state_cols, r
            gear_change=False, brake=True, start_env=False, damage_th=5, slow=False, faster=False, graphic=True)
 
 #%% play game and store data
-gamma1=0.002    #rho
-gamma2=(2*np.pi) * 0.1     #delta_O
-gamma3=(2*np.pi) * 24      #delta_ref_O
-Tu = 3.
-Kp = 0.05
-Ki = 0.001#1.2*(Kp/0.45)/Tu #0.2    
-Kd = 0.5#(3*(Kp/0.45)*Tu)/40
-alpha1=1
-k1=0.000001
-k2=0
+#Tu = 3.
+s_Kp = 0.05
+s_Ki = 0.001#1.2*(Kp/0.45)/Tu #0.2    
+s_Kd = 0.5#(3*(Kp/0.45)*Tu)/40
+t_Kp=1
+t_Ki=0
+t_Kd=0
+
+b_Kp=1
+b_Ki=0
+b_Kd=0
+
 max_steps=100000
-C = Controller(env, gamma1=gamma1, gamma2=gamma2, gamma3=gamma3, alpha1=alpha1, k1=k1, k2=k2, s_Kp=Kp,s_Ki=Ki,s_Kd=Kd)
+C = Controller(env, s_Kp=s_Kp,s_Ki=s_Ki,s_Kd=s_Kd, t_Kp=t_Kp,t_Ki=t_Ki,t_Kd=t_Kd, b_Kp=b_Kp,b_Ki=b_Ki,b_Kd=b_Kd)
 step=0
-action_vars = {'rho':[], 'delta_O':[], 'delta_ref_O':[], 'ref_action':[], 'action':[], 'x':[], 'y':[], 'ref_x':[], 'ref_y':[], 'integral':[], 'derivative':[]}
+action_vars = {'action':[],'rho':[],'speed_error':[], 'ref_steer':[],'ref_throttle':[],'ref_brake':[],
+               'x':[], 'y':[], 'ref_x':[], 'ref_y':[], 
+               's_integral':[], 's_derivative':[],
+               't_integral':[], 't_derivative':[],
+               'b_integral':[], 'b_derivative':[],}
 ob = C.env.reset(relaunch=True)
 for _ in range(max_steps):
-    action, rho, delta_O, delta_ref_O, ref_action, x, y, ref_x, ref_y = C.act(ob)
+    action, rho, speed_error, ref_id, x, y = C.act(ob)
+    print(action)
+    # applay action
+    ob, reward, done, _ = C.env.step(action)
+    # save data
     action_vars['action'].append(action)
     action_vars['rho'].append(rho)
-    action_vars['delta_O'].append(delta_O)
-    action_vars['delta_ref_O'].append(delta_ref_O)
-    action_vars['ref_action'].append(ref_action)
+    action_vars['speed_error'].append(speed_error)
+    action_vars['ref_steer'].append(C.ref_df['Steer'].values[ref_id])
+    action_vars['ref_throttle'].append(C.ref_df['Throttle'].values[ref_id])
+    action_vars['ref_brake'].append(C.ref_df['Brake'].values[ref_id])
     action_vars['x'].append(x)
     action_vars['y'].append(y)
-    action_vars['ref_x'].append(ref_x)
-    action_vars['ref_y'].append(ref_y)
-    action_vars['integral'].append(C.s_integral)
-    action_vars['derivative'].append(C.s_derivative)
-    ob, reward, done, _ = C.env.step(action)
+    action_vars['ref_x'].append(C.ref_df['xCarWorld'].values[ref_id])
+    action_vars['ref_y'].append(C.ref_df['yCarWorld'].values[ref_id])
+    action_vars['s_integral'].append(C.s_integral)
+    action_vars['s_derivative'].append(C.s_derivative)
+    action_vars['t_integral'].append(C.t_integral)
+    action_vars['t_derivative'].append(C.t_derivative)
+    action_vars['b_integral'].append(C.b_integral)
+    action_vars['b_derivative'].append(C.b_derivative)    
     
     step += 1
     if done:
@@ -67,18 +81,64 @@ for _ in range(max_steps):
         
 C.env.end()
 
-#%% plot PID staff
+#%% plot steering PID staff
 fig, axs = plt.subplots(3, 1)
-axs[0].set_title('Kp:'+str(Kp)+ ' Ki:'+str(Ki)+ ' Kd:'+str(Kd))
-axs[0].plot(list(map(lambda x: x*Kp, action_vars['rho'])), label='rho')
-axs[0].plot(list(map(lambda x: x*Ki, action_vars['integral'])), label='integral')
-axs[0].plot(list(map(lambda x: x*Kd, action_vars['derivative'])), label='derivative')
-#axs[0].plot(list(map(lambda x: x*gamma3, action_vars['delta_ref_O'])), label='delta_ref_O')
+axs[0].set_title('Steering - Kp:'+str(s_Kp)+ ' Ki:'+str(s_Ki)+ ' Kd:'+str(s_Kd))
+axs[0].plot(list(map(lambda x: x*s_Kp, action_vars['rho'])), label='rho')
+axs[0].plot(list(map(lambda x: x*s_Ki, action_vars['s_integral'])), label='integral')
+axs[0].plot(list(map(lambda x: x*s_Kd, action_vars['s_derivative'])), label='derivative')
 axs[0].grid(True)
 axs[0].legend()
 
 axs[1].plot([x[0][0] for x in action_vars['action']], label='action')
-axs[1].plot(action_vars['ref_action'], label='ref action')
+axs[1].plot(action_vars['ref_steer'], label='ref steer')
+axs[1].grid(True)
+axs[1].legend()
+
+axs[2].scatter(action_vars['ref_x'], action_vars['ref_y'], label='ref', s=0.5)
+axs[2].scatter(action_vars['x'], action_vars['y'], label='car', s=0.5)
+axs[2].legend()
+plt.show()
+
+#%% plot throttle PID staff
+fig, axs = plt.subplots(3, 1)
+axs[0].set_title('Throttle - Kp:'+str(t_Kp)+ ' Ki:'+str(t_Ki)+ ' Kd:'+str(t_Kd))
+axs[0].plot(list(map(lambda x: x*t_Kp, action_vars['speed_error'])), label='error')
+axs[0].plot(list(map(lambda x: x*t_Ki, action_vars['t_integral'])), label='integral')
+axs[0].plot(list(map(lambda x: x*t_Kd, action_vars['t_derivative'])), label='derivative')
+axs[0].grid(True)
+axs[0].legend()
+
+axs[1].plot([x[2][0] for x in action_vars['action']], label='action')
+axs[1].plot(action_vars['ref_throttle'], label='ref throttle')
+axs[1].grid(True)
+axs[1].legend()
+
+axs[2].scatter(action_vars['ref_x'], action_vars['ref_y'], label='ref', s=0.5)
+axs[2].scatter(action_vars['x'], action_vars['y'], label='car', s=0.5)
+axs[2].legend()
+plt.show()
+
+#%%
+plt.title('Throttle - Kp:'+str(t_Kp)+ ' Ki:'+str(t_Ki)+ ' Kd:'+str(t_Kd))
+plt.plot(list(map(lambda x: x*t_Kp, action_vars['speed_error'])), label='error')
+plt.plot(list(map(lambda x: x*t_Ki, action_vars['t_integral'])), label='integral')
+plt.plot(list(map(lambda x: x*t_Kd, action_vars['t_derivative'])), label='derivative')
+plt.grid(True)
+plt.legend()
+
+
+#%% plot brake PID staff
+fig, axs = plt.subplots(3, 1)
+axs[0].set_title('Brake - Kp:'+str(b_Kp)+ ' Ki:'+str(b_Ki)+ ' Kd:'+str(b_Kd))
+axs[0].plot(list(map(lambda x: -x*b_Kp, action_vars['speed_error'])), label='error')
+axs[0].plot(list(map(lambda x: -x*b_Ki, action_vars['b_integral'])), label='integral')
+axs[0].plot(list(map(lambda x: -x*b_Kd, action_vars['b_derivative'])), label='derivative')
+axs[0].grid(True)
+axs[0].legend()
+
+axs[1].plot([x[1][0] for x in action_vars['action']], label='action')
+axs[1].plot(action_vars['ref_brake'], label='ref brake')
 axs[1].grid(True)
 axs[1].legend()
 
