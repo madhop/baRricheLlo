@@ -12,7 +12,7 @@ Then, in the following section, we will show some successful application on rein
 
 \subsection{Reinforcement Learning}
 Together with Supervised Learning and Unsupervised Learning, Reinforcement Learning is a branch of Machine Learning, the discipline which studies the way a computer program can learn from experience and improve its performance at a specified task. Whereas Supervised Learning algorithms are based on inductiove inference where the model is tipically trained using labelled data to perform classification or regression, and Unsupervised Learning exploits techniques of density estimation and clustering applied to unlabelled data, in the Reinforcement Learning paradigm an autonomous agent learns to improve its performance at an assigned task by interacting with its environment.
-Tipically, Reinforcement Learning agents are not explicitly taught how to act by an expert. Instead, the agent is free to explore the environment in which it lives, and its performance is evaluated by a reward function. Its goal is to maximize the reward by acting accordingly. The resulting reward results from the sum of the reward gained at every single step in its exploration process: for each state, the agent chooses an action to take and receives a reward based on the usefulness of its decision. Eventually, the agent learns the way to obtain the highest reward by exploting knowledge learned about the expected utility of different state-action pairs. The challenge of Reinforcement Learning is to design the best tradeoff between exploration and exploitation, that is the capability of an agent of use its knowledge to obtain high rewards and, by contrast, being capable of exploring new possibilities in such a way not to remain stuck in a local optimum. Intuitively, the exploration process is high at the first iterations of the learning process, while it should decrease with accumulating knowledge.
+Tipically, Reinforcement Learning agents are not explicitly taught how to act by an expert. Instead, the agent is free to explore the environment in which it lives, and its performance is evaluated by a reward function. Its goal is to maximize the reward by acting accordingly. The resulting reward results from the sum of the reward gained at every single step in its exploration process: for each state, the agent chooses an action to take and receives a reward based on the usefulness of its decision. Eventually, the agent learns the way to obtain the highest reward by exploiting knowledge learned about the expected utility of different state-action pairs. The challenge of Reinforcement Learning is to design the best tradeoff between exploration and exploitation, that is the capability of an agent of use its knowledge to obtain high rewards and, by contrast, being capable of exploring new possibilities in such a way not to remain stuck in a local optimum. Intuitively, the exploration process is high at the first iterations of the learning process, while it should decrease with accumulating knowledge.
 
 \subsubsection{Markov Decision Process}
 The Reinforcement Learning problem can be formalized as a Markov Decision Process. A MDP is a tuple composed by:
@@ -33,7 +33,7 @@ The environment is the mathematical representation of the world in which the age
 
 \subsubsection{Reward}
 At each timestep, the agent receives a reward by the reinforcement learning algorithm, accordingly to the usefulness of action taken.
-At the end of an episode (a finite sequence of states) the return is tipically computed as \[R_t = \sum^{T}_{k=0}\gamma^k r_t + k +1\] where \(\gamma\) represents a discount factor comprised between 0 and 1, which stands for a learning paramenter that influences how the agent considers furutre or present reward. A small \(\gamma\) results in a higher consideration of present rewards than the future (often caled "myopic" evaluation), while with a \(\gamma\) near to 1, the agent will consider equally the reward coming from the present either from the future (also called "far-sighted" evaluation). The role of the discount factor resides in the fact that, besides being mathematically convenient, it avoids infinite returns in cyclic Markov Process, and it's capable of addressing a non-fully represented uncertainty about the future.
+At the end of an episode (a finite sequence of states) the return is tipically computed as \[R_t = \sum^{T}_{k=0}\gamma^k r_t + k +1\] where \(\gamma\) represents a discount factor comprised between 0 and 1, which stands for a learning paramenter that influences how the agent considers future                              or present reward. A small \(\gamma\) results in a higher consideration of present rewards than the future (often caled "myopic" evaluation), while with a \(\gamma\) near to 1, the agent will consider equally the reward coming from the present either from the future (also called "far-sighted" evaluation). The role of the discount factor resides in the fact that, besides being mathematically convenient, it avoids infinite returns in cyclic Markov Process, and it's capable of addressing a non-fully represented uncertainty about the future.
 
 \subsubsection{Policy}
 The goal of reinforcement learning is finding a policy \(\pi\), which maps states to a probability distribution over the actions, in order to maximize the return. This policy is called optimal policy \(\pi^*\).
@@ -74,7 +74,7 @@ It is not possible to straightforwardly apply Q-learning to continuous action sp
 tinuous spaces finding the greedy policy requires an optimization of a t at every timestep; this opti-
 mization is too slow to be practical with large, unconstrained function approximators and nontrivial
 action spaces. Instead, here we used an actor-critic approach based on the DPG algorithm.
-
+23
 
 
 
@@ -139,50 +139,30 @@ Autonomous driving tasks where RL could be applied include: controller optimizat
 
 
 
-
-
-
-
-
-
-In this section we'll explore some of the applications of Reinforcement Learning made by the scientific community focusing on Reinforcement Learning from demonstrations, which aims at integrating automatic learning with human experience.
-
+In this section we'll describe some of the applications of Reinforcement Learning to videogames, autonomous driving and racing. 
 
 
 \subsection{Reinforcement Learning in Videogames}
-- atari
--alphago
+
+Due to the flexibility of the reinforcement learning algorithms, which enable an agent to learn a behavior from its experience, by giving a representation of the world a which don't require an apriori knowledge of its dynamics, reinforcement learning is particularly suitable to the contexts which permit to perform many tries of a particular task. For this reason, videogames and computer simulator are adapt to run a reinforcement learning algorithm on.
+A notorius videogame played by a rl autonomous agent is Atari \cite{atari} by Google's Deepmind. By learning a deep convolutional neural network to approximate the Q-function, Mnih et al. successfully construct a Deep Reinforcement Learning framework called Deep Q-Network (DQN) which plays Atari games in human level. It takes as representation of the world the raw pixels and learns and learns an end-to-end policy which maximizes the q-values.
+Another famous example is Alphago also by Deepmind \cite{alphago}, which beated for several years consecutively the human champion at Go game. This is not a videogame but a board game, but the case is noteworthy, because such game is known for being one of the most complex  for his huge set of rules, which makes brute-force approaches infeasible. To achieve this result, it has been trained with a supervised learning neural network from past experience, and then, a reinforcement learning algorithms has been applied to try and beat itself's own play. 
+In racing games, which is the scope of our thesis, different solutions has been proposed over the years. In the next section we'll introduce the concept of autonomous driving and in particular in the racing context. We'll expose the problem of finding the optimal trajectory and explore some of the state-of-the-art-techniques which tackle this issue.
 
 
-By learning a deep convolutional neural network
-to approximate the Q-function, Mnih et al. successfully
-construct a DRL framework called Deep Q-Network (DQN)
-which plays Atari games in human level
-
-\subsubsection{Reinforcement Learning in Racing Games}
-
-
-
-- introduzione al problema della traiettoria
+\subsection{Autonomous Driving}
 Finding a racing line that allows to achieve a competitive lap-time is a key problem in real-world car racing as well as in the development of non-player characters for a commercial racing game.
-The optimal racing line is defined as the line to follow to achieve the best lap-time possible on a given track with a given car. In general, finding the optimal racing line is
-a common problem in real-world car racing as well as in the development of commercial racing games. The optimal racing line is the path that a driver should follow to complete a lap on a given track in the smallest amount of time possible. As the lap-time depends both on the distance raced and on the average racing speed, finding the optimal racing involves two different sub-problems: racing the shortest distance possible and racing as fast
+The optimal racing line is defined as the line to follow to achieve the best lap-time possible on a given track with a given car. The optimal racing line is the path that a driver should follow to complete a lap on a given track in the smallest amount of time possible. As the lap-time depends both on the distance raced and on the average racing speed, finding the optimal racing involves two different sub-problems: racing the shortest distance possible and racing as fast
 as possible along the track.
 
-- giochi commerciali: 
-	colin mcrae
-
-- papers:
-
-- tecniche classiche
-During the years, different attempts to achieve time-optimal racing, evolving together with technology. Controlling a self-driving car can be done with a planner, if the optimal trajectory is a priori computed, or by a controller, such as a PID, or a MPC, or with Machine Learning. In this section, we provide an overview of such techniques. 
+Over the years, different attempts to achieve time-optimal racing, evolving together with technology. Besides Reinforcement Learning, controlling a self-driving car can be done with a planner, if the optimal trajectory is a priori computed, or by a controller. In this section, we provide an overview of such techniques. 
 
 
-- Evolving the Optimal Racing Line in a High-End Racing Game
-This paper shows how to encode a racing line by a set of connected Bézier curves, such that each gene defines a small portion of the racing line. Therefore, the evolution is responsible of the entire design of the racing line. In addition, the authors compare two different methods to evaluate the evolved racing line; the first one is based on testing the evolved racing lines in a racing simulator; the second one consists of estimating the performance of a racing line through a computational model.
+This paper \cite{botta} shows how to encode a racing line by a set of connected Bézier curves, such that each gene defines a small portion of the racing line. Therefore, the evolution is responsible of the entire design of the racing line. In addition, the authors compare two different methods to evaluate the evolved racing line; the first one is based on testing the evolved racing lines in a racing simulator; the second one consists of estimating the performance of a racing line through a computational model.
 	
-- Ahura: A Heuristic-Based Racer for the Open Racing Car Simulator
-This work proposes a controller called Ahura for TORCS. The controller uses five modules: steer controller, speed controller, opponent manager (it creates a map of opponents around  and finds the vacant slot to overtake), dynamic adjuster (friction, bumps), stuck manager (uses the idea proposed in to control the vehicle when it is out of the track or it has stuck somewhere.).
+This work \cite{ahura} proposes a controller called Ahura for TORCS. 
+TORCS is the state-of-the-art simuator for racing. Later on we will describe more in detail the architecture.
+The controller uses five modules: steer controller, speed controller, opponent manager (it creates a map of opponents around  and finds the vacant slot to overtake), dynamic adjuster (friction, bumps), stuck manager (uses the idea proposed in to control the vehicle when it is out of the track or it has stuck somewhere.).
 There are 23 parameters in Ahura that need to be determined:
 1) eight parameters for the steer controller 
 2) ten parameters for the speed controller 
@@ -190,43 +170,16 @@ There are 23 parameters in Ahura that need to be determined:
 They were determined by using the optimization algorithm CMA-ES: it has a good performance in continuous space, works with nonlinear systems, no constraint handling technique is required, and it is appropriate for nonseparable search spaces.
 
 
-- Model predictive control Towards Time-Optimal Race Car Driving using Nonlinear MPC in
-Real-Time
-Model Predictive Control (MPC) is a multivariable control algorithm that uses:
-an internal dynamic model of the process
-a cost function J over the receding horizon
-an optimization algorithm minimizing the cost function J using the control input u
-Existing advanced control based attempts to minimum-time driving usually provide only offline open-loop solutions. . In this paper, instead, we directly use a one-level approach, solving the nonlinear MPC problem with an economic cost function in real-time. The tight real-time bounds imposed on computational times make it necessary to
-reformulate the problem so as to allow for the use of efficient algorithms.
+Model Predictive Control (MPC) is a multivariable control algorithm that uses an internal dynamic model of the process, a cost function over the receding horizon and an optimization algorithm minimizing the cost function using the control input. Existing advanced control based attempts to minimum-time driving usually provide only offline open-loop solutions. In this paper \cite{mpc} the authors directly use a one-level approach, solving the nonlinear MPC problem with an economic cost function in real-time. The tight real-time bounds imposed on computational times make it necessary to reformulate the problem so as to allow for the use of efficient algorithms.
 It provides real-world experimental results of the proposed nonlinear MPC scheme from a miniature race-car setup that is detailed in the paper. 
 
-- machine learning
-Machine learning allows an agent to learn in an automatic fashion. This avoids the need to know apriori different aspects of the problem, such as the dynamic model of the vehicle, or the map of the environment. Moreover, 
+\subsubsection{Reinforcement Learning in Autonomous Driving}
 
-The following two papers give an idea of application of reinforcement learning to autonomous driving, without posing the attention about racing, while the next ones are focused specifically about racing.
+With the evolving of technologies and algorithms, the focus has been shifting towards reinforcement learning and in general data-driven algorithms, that has been proven to outperform classical algorithms in a variety of applications, including autonomous driving and racing.
 
-- Controlling an Autonomous Vehicle with Deep Reinforcement Learning
-This paper https://arxiv.org/pdf/1909.12153.pdf shows an example of end-to-end reinforcement learning application to autonomous drive, using a proximal policy optimization algorithms by means of a neural network which maps the state to the controls. It learns two different policies: the driver and the stopper, and the reward is the squared proximity to a target position. The work aims at realizing the autonomous exploration of a parking lot based on deep reinforcement learning. It describes how a policy is trained to compute sophisticated control commands which depend on an estimate of the current vehicle state. This is done by designing an appropriate Markov decision process and a corresponding proximal policy optimization learning algorithm. For that purpose a simulated environment is used for data generation. Here, information about the vehicle's surrounding are measured by, e. g., laser scanners and are further extended by a rough knowledge about the geometry of the drivable area.
-Here, the state is composed by: steering wheel angle and longitudinal acceleration; the state transition is made by single-track-models. The vehicle is assumed to have only one wheel at the front and back respectively, each centered between the real ones. Finally, two reward function are used in order to train a driver and a stopper function.
+Due to the complexity of the problem, the most successful approaches has been proved to be the ones that incorporate an automatic learning process with human expertise.
 
-
-
-
-- CARMA: A Deep Reinforcement Learning Approach to Autonomous Driving
-In this paper they experiment different setups of Deep Neural Networks, such as CNN and RNN as functions approximator of a reinfocement learning agent.
-They formulate the state-space as follows: At each timestep, the agent receives an image I t of the environment, an estimate of the agent's speed, an estimate of the agent's distance to the center of the road, and an estimate of the angle between the agent's forward vector and the center of the road. At each timestep t, the agent can perform a discrete action: acceleration a = (Brake, DoNothing, Accelerate) and steer t = (TurnLef, DoNothing, TurnRight). Thus,there are a total of 9 possible actions the car can take at each timestep.
-Then, they experimented different modeling approaches based on Q-Learning, involving CNN and RNN agents.
-
-
-- Simulation-based reinforcement learning for autonomous driving:
-This paper applies via reinforcement throughe Proximal Policy Optimization (PPO) with a contin-ous action space operating on multiple tensors of multiple shapes: a front camera, a high-level navigation command, car speed, and car acceleration. Thus, they adopted a custom policy that operates on multiple input tensors coming from one observation. They operated within the CARLA simulator. Their policy controls only the steering, while throttle is controlled via a PID controller with the speed set to a constant.
-They modeled continuous actions with the Gaussian distribution.
-The agent receives as its observation an RGB image from a single front camera from which extract semantic segmentation and car metrics such as speed and acceleration. The agent is also provided with high-level navigation command. 
-
-In racing tasks, due to the complexity of the problem, the most successful approaches has been proved to be the ones that incorporate an automatic learning process with human expertise.
-
-- Learning Drivers for TORCS through Imitation Using Supervised Methods	
-In this work, Cardamone, Loiacono and Lanzi applied supervised learning to develop car controllers for The Open Car Race Simulator from the logs collected from other drivers. 
+In this work \cite{cardamone} Cardamone, Loiacono and Lanzi applied supervised learning to develop car controllers for The Open Car Race Simulator from the logs collected from other drivers. 
 They considered two representations of the current state of the car: the set of rangefinder inputs usually employed in simulated car racing competitions, and a high-level, qualitative, representation involving basic lookahead information about the track in front of the car. Instead of predicting the typical low-level actions on the car actuators available in TORCS (namely, the steering wheel, the gas pedal, the brake pedal and the gear change), their approach predicts a target speed and the car position with respect to the track axis.
 They considered two supervised learning methods, multi-layer neural networks and k-nearest neighbor classifiers, and applied them to compute a model mapping input sensors to actions which could imitate the behavior of an observed driver.
 
@@ -234,8 +187,4 @@ They considered two supervised learning methods, multi-layer neural networks and
 Their framework is a continuous reinforcement learning setting, in which they integrate DDPG with human demonstrations.
 To achieve that, they formulate a loss function to optimize which combines the experience gathered from the environment and by the demonstrations. In such a way, with respect to a state, the agent should pick an action wich is consisent with the human behavior.
 
-- Finn et al. proposed an Inverse Reinforcement Learning \cite{inverse} approach to integrate human demonstrations with reinforcement learning. They applied the algorithm to optimal robotic control.
-
-
-
-- Our work proposed different approaches to solve time-optimal racing problem in the framework of reinforcement learning. ampliare, parlare di torcs
+ Our work proposed different approaches to solve time-optimal racing problem in the framework of reinforcement learning. ampliare, parlare di torcs

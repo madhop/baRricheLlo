@@ -4,3 +4,28 @@
 
 TESTO CAPITOLO 5
 
+\subsection{Autonomous Driving}
+Autonomous Driving is a broad concept which branches in different tasks, such as lane-keeping, parking, driving in different areas, in which perception plays a big role.
+Here we propose some of the applications of reinforcement learning to controlling an autonomous vehicle.
+
+- Controlling an Autonomous Vehicle with Deep Reinforcement Learning
+This paper https://arxiv.org/pdf/1909.12153.pdf shows an example of end-to-end reinforcement learning application to autonomous drive, using a proximal policy optimization algorithms by means of a neural network which maps the state to the controls. It learns two different policies: the driver and the stopper, and the reward is the squared proximity to a target position. The work aims at realizing the autonomous exploration of a parking lot based on deep reinforcement learning. It describes how a policy is trained to compute sophisticated control commands which depend on an estimate of the current vehicle state. This is done by designing an appropriate Markov decision process and a corresponding proximal policy optimization learning algorithm. For that purpose a simulated environment is used for data generation. Here, information about the vehicle's surrounding are measured by, e. g., laser scanners and are further extended by a rough knowledge about the geometry of the drivable area.
+Here, the state is composed by: steering wheel angle and longitudinal acceleration; the state transition is made by single-track-models. The vehicle is assumed to have only one wheel at the front and back respectively, each centered between the real ones. Finally, two reward functions are used in order to train a driver and a stopper.
+
+
+
+- CARMA: A Deep Reinforcement Learning Approach to Autonomous Driving
+In this paper they experiment different setups of Deep Neural Networks, such as CNN and RNN as functions approximator of a reinfocement learning agent.
+They formulate the state-space as follows: At each timestep, the agent receives an image I t of the environment, an estimate of the agent's speed, an estimate of the agent's distance to the center of the road, and an estimate of the angle between the agent's forward vector and the center of the road. At each timestep t, the agent can perform a discrete action: acceleration a = (Brake, DoNothing, Accelerate) and steer t = (TurnLef, DoNothing, TurnRight). Thus,there are a total of 9 possible actions the car can take at each timestep.
+Then, they experimented different modeling approaches based on Q-Learning, involving CNN and RNN agents.
+
+
+- Simulation-based reinforcement learning for autonomous driving:
+This paper applies via reinforcement throughe Proximal Policy Optimization (PPO) with a contin-ous action space operating on multiple tensors of multiple shapes: a front camera, a high-level navigation command, car speed, and car acceleration. Thus, they adopted a custom policy that operates on multiple input tensors coming from one observation. They operated within the CARLA simulator. Their policy controls only the steering, while throttle is controlled via a PID controller with the speed set to a constant.
+They modeled continuous actions with the Gaussian distribution.
+The agent receives as its observation an RGB image from a single front camera from which extract semantic segmentation and car metrics such as speed and acceleration. The agent is also provided with high-level navigation command. 
+
+
+
+- Finn et al. proposed an Inverse Reinforcement Learning \cite{inverse} approach to integrate human demonstrations with reinforcement learning. They applied the algorithm to optimal robotic control.
+

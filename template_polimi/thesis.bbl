@@ -1,10 +1,38 @@
 \begin{thebibliography}{1}
 
-\bibitem{inverse}
-Abbeel Finn, Levine.
-\newblock Guided cost learning: Deep inverse optimal control via policy
-  optimization.
-\newblock {\em International Conference on Machine Learning (ICML}, 2016.
+\bibitem{ahura}
+M.~R. {Bonyadi}, Z.~{Michalewicz}, S.~{Nallaperuma}, and F.~{Neumann}.
+\newblock Ahura: A heuristic-based racer for the open racing car simulator.
+\newblock {\em IEEE Transactions on Computational Intelligence and AI in
+  Games}, 9(3):290--304, 2017.
+
+\bibitem{botta}
+M.~{Botta}, V.~{Gautieri}, D.~{Loiacono}, and P.~L. {Lanzi}.
+\newblock Evolving the optimal racing line in a high-end racing game.
+\newblock In {\em 2012 IEEE Conference on Computational Intelligence and Games
+  (CIG)}, pages 108--115, 2012.
+
+\bibitem{cardamone}
+L.~{Cardamone}, D.~{Loiacono}, and P.~L. {Lanzi}.
+\newblock Learning drivers for torcs through imitation using supervised
+  methods.
+\newblock In {\em 2009 IEEE Symposium on Computational Intelligence and Games},
+  pages 148--155, 2009.
+
+\bibitem{atari}
+Silver Mnih, Kavukcuoglu.
+\newblock Playing atari with deep reinforcement learning.
+
+\bibitem{alphago}
+Maddison Silver, Huang.
+\newblock Mastering the game of go with deep neural networks and tree search.
+\newblock {\em Nature}, 2016.
+
+\bibitem{mpc}
+Robin Verschueren, Stijn Bruyne, Mario Zanon, Janick Frasch, and Moritz Diehl.
+\newblock Towards time-optimal race car driving using nonlinear mpc in
+  real-time.
+\newblock volume 2015, 12 2014.
 
 \bibitem{cinesi}
 Zhu Zuo, Wang.
