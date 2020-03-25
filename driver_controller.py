@@ -141,9 +141,7 @@ class Controller():
         
         # Compute actions
         l = ['rho', 'delta_O', 'delta_ref_O']
-        print(rho, '-', l[np.argmax([np.abs(self.gamma1 * rho),
-                                     np.abs(self.gamma2 * delta_O),
-                                     np.abs(self.gamma3 * delta_ref_O)])])
+        #print(rho, '-', l[np.argmax([np.abs(self.gamma1 * rho), np.abs(self.gamma2 * delta_O), np.abs(self.gamma3 * delta_ref_O)])])
         #steer = 0.75 * np.tanh(self.gamma1 * rho + self.gamma2 * delta_O + self.gamma3 * delta_ref_O)
         steer = self.steer_rho_PID(rho)
         brake = self.sigmoid(self.beta1 * (V - Vref_proj) + self.k2 * np.power(V, 2))
@@ -192,7 +190,7 @@ if __name__ == '__main__':
     C.playGame()
     
     
-#%% Build env
+"""#%% Build env
 ref_df = pd.read_csv('trajectory/ref_traj.csv')
 simulations = pd.read_csv('trajectory/dataset_offroad_human.csv')
 # Reward function
@@ -209,11 +207,11 @@ gamma1=0.002    #rho
 gamma2=(2*np.pi) * 0.1     #delta_O
 gamma3=(2*np.pi) * 24      #delta_ref_O
 Tu = 3.
-Kp = 0.2
-Ki = 0.07#1.2*(Kp/0.45)/Tu #0.2    
-Kd = 0.4#(3*(Kp/0.45)*Tu)/40
+Kp = 0.01
+Ki = 0.001#1.2*(Kp/0.45)/Tu #0.2    
+Kd = 0.01#(3*(Kp/0.45)*Tu)/40
 alpha1=1
-k1=0.000001 
+k1=0.000001
 k2=0
 max_steps=100000
 C = Controller(env, gamma1=gamma1, gamma2=gamma2, gamma3=gamma3, alpha1=alpha1, k1=k1, k2=k2, Kp=Kp,Ki=Ki,Kd=Kd)
@@ -243,9 +241,11 @@ C.env.end()
 
 #%% plot PID staff
 fig, axs = plt.subplots(3, 1)
-axs[0].plot(list(map(lambda x: x, action_vars['rho'])), label='rho')
-axs[0].plot(list(map(lambda x: x, action_vars['integral'])), label='integral')
-axs[0].plot(list(map(lambda x: x, action_vars['derivative'])), label='derivative')
+axs[0].set_title('Kp:'+str(Kp)+ ' Ki:'+str(Ki)+ ' Kd:'+str(Kd))
+axs[0].plot(list(map(lambda x: x*Kp, action_vars['rho'])), label='rho')
+axs[0].plot(list(map(lambda x: x*Ki, action_vars['integral'])), label='integral')
+axs[0].plot(list(map(lambda x: x*Kd, action_vars['derivative'])), label='derivative')
+#axs[0].plot(list(map(lambda x: x*gamma3, action_vars['delta_ref_O'])), label='delta_ref_O')
 axs[0].grid(True)
 axs[0].legend()
 
@@ -257,6 +257,13 @@ axs[1].legend()
 axs[2].scatter(action_vars['x'], action_vars['y'], label='car', s=0.5)
 axs[2].scatter(action_vars['ref_x'], action_vars['ref_y'], label='ref', s=0.5)
 axs[2].legend()
+plt.show()
+#%%
+for i in range(len(action_vars['x'])):
+    plt.plot([action_vars['x'][i], action_vars['ref_x'][i]], [action_vars['y'][i], action_vars['ref_y'][i]])
+#plt.scatter(action_vars['x'], action_vars['y'], label='car', s=0.5)
+#plt.scatter(action_vars['ref_x'], action_vars['ref_y'], label='ref', s=0.5)
+#plt.legend()
 plt.show()
 #%% plot vars and steering action
 fig, axs = plt.subplots(3, 1)
@@ -284,12 +291,6 @@ state_p = data.head(1)[['xCarWorld', 'yCarWorld', 'actualSpeedModule', 'nYawBody
 obs  = {'xCarWorld': 654.799744, 'yCarWorld': 1169.202148, 'speed_x': 310.11856326, 'nYawBody': 0.013237}
 action = C.act(obs)
 
-#%% plot
-"""import matplotlib.pyplot as plt
-ref_dt = pd.read_csv('trajectory/ref_traj.csv')
-plt.scatter(ref_dt[99:101].xCarWorld, ref_dt[99:101].yCarWorld)
-plt.scatter(data[8:9].xCarWorld, data[8:9].yCarWorld)
-plt.show()"""
 #%% check projection
 trackPoss = [0.721191, 0.708962, 0.695912]
 p = [np.array([[836.23, 1173.43]]), np.array([[840.138, 1173.37]]), np.array([[844.053, 1173.29]])]
@@ -306,3 +307,4 @@ plt.scatter([r[0],r1[0]], [r[1],r1[1]])
 plt.scatter(ref_proj[0][0], ref_proj[0][1])
 plt.show()
 
+"""
