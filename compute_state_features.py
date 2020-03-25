@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy import spatial
 
 def compute_alpha(r, r1, r2):   # r_t, r_t-1, t_t-2

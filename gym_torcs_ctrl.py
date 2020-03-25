@@ -156,7 +156,7 @@ class TorcsEnv(gym.Env):
         else:
             # Reward computation
             # Compute the current state
-            current_state = self.observation_to_state(self.observation, self.p1_observation, self.p2_observation,
+            """current_state = self.observation_to_state(self.observation, self.p1_observation, self.p2_observation,
                                                       self.prev_u)
             current_state_df = np.concatenate([current_state.reshape(1, -1), np.zeros((1, 1))], axis=1)
             # Compute the next state
@@ -164,7 +164,8 @@ class TorcsEnv(gym.Env):
             next_state_df = np.concatenate([next_state.reshape(1, -1), np.ones((1, 1)) * obs['trackPos']], axis=1)
             data = pd.DataFrame(data=np.concatenate([current_state_df, next_state_df], axis=0),
                                 columns=self.state_cols + ['trackPos'])
-            reward = self.reward_function(data)
+            reward = self.reward_function(data)"""
+            reward = 0
             # gym-torcs reward
             """sp = np.array(obs['speed_x'])
             progress = sp*np.cos(obs['angle']) - np.abs(sp*np.sin(obs['angle'])) - sp * np.abs(obs['trackPos'])
@@ -205,14 +206,14 @@ class TorcsEnv(gym.Env):
 
         # 3) Low speed
         if obs['speed_x'] <= self.speed_limit:
-            if self.verbose:
+            if self.verbose and not raw:
                 print('Low speed')
             episode_terminate = True
             low_speed = True
             reward += self.low_speed_penalty
         else:
             low_speed = False
-            
+
         # 4) Running backward
         if np.cos(obs['angle']) < 0: # Episode is terminated if the agent runs backward
             episode_terminate = True
@@ -221,14 +222,14 @@ class TorcsEnv(gym.Env):
             running_backward = False
         
         # 5) Out of track
-        if abs(obs['trackPos']) > 1.01:  # Episode is terminated if the car is out of track
+        if abs(obs['trackPos']) > 1.5:#1.01:  # Episode is terminated if the car is out of track
             print('out of track')
             episode_terminate = True
             out_of_track = True
             reward += self.collision_penalty
         else:
             out_of_track = False
-        out_of_track=0
+
         # 6) No break and throttle at the same time
         #if action_torcs['accel'] > 0.8 and action_torcs['brake'] > 0.8:
         #    reward += -200
@@ -248,16 +249,17 @@ class TorcsEnv(gym.Env):
 
         info = {'collision': collision, 'is_success': checkered_flag, 'low_speed': low_speed,
                 'running_backward': running_backward, 'out_of_track': out_of_track }
-        if self.verbose:
-            print('T={} B={} S={} r={} d={}'.format(action_torcs['accel'], action_torcs['brake'], action_torcs['steer'],
-            reward, obs['damage'] - obs_pre['damage']))
+        #if self.verbose:
+            #print('T={:.2f} B={:.2f} S={:.6f} r={} d={}'.format(action_torcs['accel'], action_torcs['brake'], action_torcs['steer'],
+            #      reward, obs['damage'] - obs_pre['damage']))
+
 
         if raw:
             # If raw then return current observation otherwise return the state
             return self.get_obs(), reward, episode_terminate, info
         else:
             # Transform raw torcs data to state
-            self.state = self.observation_to_state(self.observation, self.p1_observation, self.p2_observation, u)
+            #self.state = self.observation_to_state(self.observation, self.p1_observation, self.p2_observation, u)
             #return self.get_state(), reward, episode_terminate, info
             return self.get_obs(), reward, episode_terminate, info
 
@@ -301,9 +303,9 @@ class TorcsEnv(gym.Env):
             os.system('sh slow_time_down.sh')
         if self.faster:
             os.system('sh faster_time.sh')
-        time.sleep(0.5)
+        #time.sleep(0.5)
         print('Started auto driving')
-
+        
         while auto_drive:
             ob_distFromStart = self.observation['distFromStart']
             track_pos = self.observation['trackPos']
