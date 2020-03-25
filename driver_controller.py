@@ -69,11 +69,12 @@ class Projection(Reward_function):
         return ref_id, delta
 #%% Define Controller
 class Controller():
-    def __init__(self, env, alpha1=1, k1=1, beta1=1, k2=1, gamma1=1, gamma2=1, gamma3=1, Kp=1, Ki=1, Kd=1):
+    #def __init__(self, env, s_Kp=1, s_Ki=1, s_Kd=1, alpha1=1, k1=1, beta1=1, k2=1, gamma1=1, gamma2=1, gamma3=1):
+    def __init__(self, env, s_Kp=1, s_Ki=1, s_Kd=1, t_Kp=1, t_Ki=1, t_Kd=1, b_Kp=1, b_Ki=1, b_Kd=1):
         # Init
         self.env = env
         # Throttle params
-        self.alpha1 = alpha1
+        """self.alpha1 = alpha1
         self.k1 = k1
         # Break params
         self.beta1 = beta1
@@ -81,52 +82,82 @@ class Controller():
         # Steering params
         self.gamma1 = gamma1  # rho param
         self.gamma2 = gamma2  # orientation parma
-        self.gamma3 = gamma3  # steering maintenance
+        self.gamma3 = gamma3  # steering maintenance"""
         self.ref_df = pd.read_csv('trajectory/ref_traj_yaw.csv')
         self.projector = Projection(ref_t=self.ref_df, clip_range=None, ref_dt=1, sample_dt=10, penalty=None)
         
-        # steering PID 
-        self.previous_error = None
-        self.integral = 0
         self.dt = 0.05
-        self.Kp = Kp
-        self.Ki = Ki
-        self.Kd = Kd
+        # steering PID 
+        self.s_previous_error = None
+        self.s_integral = 0
+        self.s_Kp = s_Kp
+        self.s_Ki = s_Ki
+        self.s_Kd = s_Kd
+        
+        # throttle PID 
+        self.t_previous_error = None
+        self.t_integral = 0
+        self.t_Kp = t_Kp
+        self.t_Ki = t_Ki
+        self.t_Kd = t_Kd
+        
+        # brake PID 
+        self.b_previous_error = None
+        self.b_integral = 0
+        self.b_Kp = b_Kp
+        self.b_Ki = b_Ki
+        self.b_Kd = b_Kd
     
     def sigmoid(self, x):
         return 1 / (1 + np.exp(-x))
     
-    def steer_rho_PID(self, rho):
-        #loop:
-        error = rho#setpoint − measured_value
-        self.integral = self.integral + error * self.dt
-        if self.previous_error is not None:
-            self.derivative = (error - self.previous_error)/self.dt
+    def steer_rho_PID(self, error):
+        #error = setpoint − measured_value
+        self.s_integral = self.s_integral + error * self.dt
+        if self.s_previous_error is not None:
+            self.s_derivative = (error - self.s_previous_error)/self.dt
         else:
-            self.derivative = 0
-        output = self.Kp * error + self.Ki * self.integral + self.Kd * self.derivative
-        self.previous_error = error
+            self.s_derivative = 0
+        output = self.s_Kp * error + self.s_Ki * self.s_integral + self.s_Kd * self.s_derivative
+        self.s_previous_error = error
             
         return np.clip(output, -1,1)
+    
+    def throttle_PID(self, error):
+        #error = setpoint − measured_value
+        self.t_integral = self.t_integral + error * self.dt
+        if self.t_previous_error is not None:
+            self.t_derivative = (error - self.t_previous_error)/self.dt
+        else:
+            self.t_derivative = 0
+        output = self.t_Kp * error + self.t_Ki * self.t_integral + self.t_Kd * self.t_derivative
+        self.t_previous_error = error
+            
+        return np.clip(output, 0,1)
+    
+    def brake_PID(self, error):
+        #error = setpoint − measured_value
+        self.b_integral = self.b_integral + error * self.dt
+        if self.b_previous_error is not None:
+            self.b_derivative = (error - self.b_previous_error)/self.dt
+        else:
+            self.b_derivative = 0
+        output = self.b_Kp * error + self.b_Ki * self.b_integral + self.b_Kd * self.b_derivative
+        self.b_previous_error = error
+            
+        return np.clip(output, 0,1)
     
     
     def act(self, obs):
         th_rho = 0#0.3
-        th_O = 0.01
+        th_O = 0 #0.01
         # Find projection on reference trajectory
         state_p = np.array([[obs['x'], obs['y']]])
         ref_id, delta = self.projector._compute_projection(state_p)
         # compute rho as delta_trackPos
-        """r = np.array([self.ref_df['xCarWorld'].values[ref_id], self.ref_df['yCarWorld'].values[ref_id]])
-        r1 = np.array([self.ref_df['xCarWorld'].values[ref_id+1], self.ref_df['yCarWorld'].values[ref_id+1]])
-        ref_segment = (r1 - r) * delta
-        ref_proj = (r + ref_segment).reshape(1,2)
-        rho = ref_proj - state_p
-        rho = np.linalg.norm(rho) if rho[0][1] > 0 else -np.linalg.norm(rho)    # position of the car wrt the reference"""
         trackPoss_proj = (1-delta)*self.ref_df['trackPos'].values[ref_id]+delta*self.ref_df['trackPos'].values[ref_id+1]
         rho = (trackPoss_proj - obs['trackPos'])/2  # scale from -1 to 1
         rho = rho if np.absolute(rho) > th_rho else 0   # tollerance near the ref traj
-        #rho = self.steer_rho_PID(rho)
         # compute velocity
         Vref_proj = (1-delta)*self.ref_df['speed_x'].values[ref_id]+delta*self.ref_df['speed_x'].values[ref_id+1]
         V = obs['speed_x']
