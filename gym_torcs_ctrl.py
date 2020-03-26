@@ -21,8 +21,10 @@ class TorcsEnv(gym.Env):
 
     def __init__(self, reward_function, state_cols, ref_df, vision=False, throttle=False, gear_change=False,
                  brake=False, start_env=True, track_length=5783.85, damage_th=4.0, slow=True, faster=False, 
-                 graphic=True, speed_limit=5, verbose=True, collision_penalty=-1000, low_speed_penalty=-1000):
+                 graphic=True, speed_limit=5, verbose=True, collision_penalty=-1000, low_speed_penalty=-1000,
+                 starter=auto_driver.get_action):
 
+        self.starter = starter
         self.vision = vision
         self.throttle = throttle
         self.gear_change = gear_change
@@ -309,7 +311,8 @@ class TorcsEnv(gym.Env):
         while auto_drive:
             ob_distFromStart = self.observation['distFromStart']
             track_pos = self.observation['trackPos']
-            action = auto_driver.get_action(track_pos)
+            action = self.starter(track_pos)
+
             self.observation, _, done, info = self.step(action, raw=True)
 
             #if ob_distFromStart < 100:
