@@ -65,7 +65,7 @@ class Projection(Reward_function):
 
 
 class MeanController(object):
-    def __init__(self, env, ref_df, alpha1=0.5, alpha2=0.02, beta1=0.055, gamma1=2, gamma2=45, gamma3=45, k=20):
+    def __init__(self, env, ref_df, alpha1=0.5, alpha2=0.02, beta1=0.055, gamma1=3, gamma2=73.5, gamma3=116, k=20):
         # Init
         self.env = env
         # Throttle params

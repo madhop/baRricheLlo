@@ -23,7 +23,7 @@ if __name__ == '__main__':
                    throttle=True, gear_change=False, brake=True, start_env=False, damage_th=10.0, slow=False,
                    faster=False, graphic=True, starter=starter)
 
-    C = MeanController(env, ref_df, gamma1=3, gamma2=73.5, gamma3=117, alpha1=0.5, alpha2=0.02, beta1=0.055, k=20)
+    C = MeanController(env, ref_df, gamma1=3, gamma2=73.5, gamma3=116, alpha1=0.5, alpha2=0.02, beta1=0.055, k=20)
     episode = C.playGame()
     C.env.end()
-    #pickle.dump(episode, open('../episode.pkl', 'wb'))
+    pickle.dump(episode, open('../episode_to_check.pkl', 'wb'))
