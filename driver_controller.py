@@ -86,7 +86,7 @@ class Controller():
         self.ref_df = pd.read_csv('trajectory/ref_traj_yaw.csv')
         self.projector = Projection(ref_t=self.ref_df, clip_range=None, ref_dt=1, sample_dt=10, penalty=None)
         
-        self.dt = 0.05
+        self.dt = 0.01
         # steering PID 
         self.s_previous_error = None
         self.s_integral = 0
@@ -179,7 +179,7 @@ class Controller():
         #throttle = self.sigmoid(self.alpha1 * (Vref_proj - V) + self.k1 * np.power(V, 2))
         steer = self.steer_rho_PID(rho)
         brake = self.brake_PID(-speed_error)
-        throttle = self.throttle_PID(speed_error)
+        throttle = 0.9*self.throttle_PID(speed_error)
         #return [steer, brake, throttle], rho, delta_O, delta_ref_O, self.ref_df['Steer'].values[ref_id], obs['x'], obs['y'], self.ref_df['xCarWorld'].values[ref_id], self.ref_df['yCarWorld'].values[ref_id]
         return [steer, brake, throttle], rho, speed_error, ref_id, obs['x'], obs['y']
     

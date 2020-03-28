@@ -222,7 +222,7 @@ class TorcsEnv(gym.Env):
             running_backward = False
         
         # 5) Out of track
-        if abs(obs['trackPos']) > 1.5:#1.01:  # Episode is terminated if the car is out of track
+        if abs(obs['trackPos']) > 2.0:#1.01:  # Episode is terminated if the car is out of track
             print('out of track')
             episode_terminate = True
             out_of_track = True
