@@ -5,6 +5,10 @@ import pandas as pd
 from controller import MeanController
 from gym_torcs_ctrl import TorcsEnv
 
+
+def starter(x):
+    return [0, 0, 1, 7]
+
 if __name__ == '__main__':
     ref_df = pd.read_csv('../demonstrations/extracted_features/ref_traj.csv')
 
@@ -17,9 +21,9 @@ if __name__ == '__main__':
 
     env = TorcsEnv(reward_function, collision_penalty=-1000, state_cols=state_cols, ref_df=ref_df, vision=False,
                    throttle=True, gear_change=False, brake=True, start_env=False, damage_th=10.0, slow=False,
-                   faster=False, graphic=True)
+                   faster=False, graphic=True, starter=starter)
 
-    C = MeanController(env, ref_df, gamma1=2, gamma2=45, gamma3=45, alpha1=0.5, alpha2=0.02, beta1=0.055)
+    C = MeanController(env, ref_df, gamma1=3, gamma2=73.5, gamma3=116, alpha1=0.5, alpha2=0.02, beta1=0.055, k=20)
     episode = C.playGame()
     C.env.end()
-    pickle.dump(episode, open('../episode.pkl', 'wb'))
+    pickle.dump(episode, open('../episode_to_check.pkl', 'wb'))

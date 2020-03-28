@@ -65,7 +65,7 @@ class Projection(Reward_function):
 
 
 class MeanController(object):
-    def __init__(self, env, ref_df, alpha1=0.5, alpha2=0.02, beta1=0.055, gamma1=2, gamma2=45, gamma3=45):
+    def __init__(self, env, ref_df, alpha1=0.5, alpha2=0.02, beta1=0.055, gamma1=3, gamma2=73.5, gamma3=116, k=20):
         # Init
         self.env = env
         # Throttle params
@@ -77,6 +77,8 @@ class MeanController(object):
         self.gamma1 = gamma1  # rho param
         self.gamma2 = gamma2  # orientation parm
         self.gamma3 = gamma3  # angle param
+
+        self.k = k
 
         self.ref_df = ref_df
         self.projector = Projection(ref_t=self.ref_df, clip_range=None, ref_dt=1, sample_dt=10, penalty=None)
@@ -98,6 +100,18 @@ class MeanController(object):
             if y < 0:
                 y = 2 * np.pi + y
         return x - y
+
+    def yaw_proj(self, x0, x1, delta):
+        x0 = x0.copy()
+        x1 = x1.copy()
+        x0_sign = 1 if x0 >= 0 else -1
+        x1_sign = 1 if x1 >= 0 else -1
+        if abs(x0) > np.pi / 2 and abs(x1) > np.pi / 2 and ((x0_sign * x1_sign) < 0):
+            if x0 < 0:
+                x0 = 2 * np.pi + x0
+            if x1 < 0:
+                x1 = 2 * np.pi + x1
+        return (1 - delta) * x0 + delta * x1
 
     def forward_ref_id(self, ref_id, k):
         if ref_id + k < self.ref_df.shape[0]:
@@ -127,12 +141,13 @@ class MeanController(object):
         # Yaw components
         ref_O = self.ref_df['yaw'].values[ref_id]
         ref_O1 = self.ref_df['yaw'].values[self.forward_ref_id(ref_id, 1)]
-        ref_O_proj = (1 - delta) * ref_O + delta * ref_O1
+        # ref_O_proj = (1 - delta) * ref_O + delta * ref_O1
+        ref_O_proj = self.yaw_proj(ref_O, ref_O1, delta)
 
         delta_O = self.yaw_diff(ref_O_proj, obs['yaw'])
         delta_O = delta_O / (2 * np.pi)
 
-        delta_ref_O = self.yaw_diff(self.ref_df['yaw'].values[self.forward_ref_id(ref_id, 20)], ref_O)
+        delta_ref_O = self.yaw_diff(self.ref_df['yaw'].values[self.forward_ref_id(ref_id, self.k)], ref_O)
         delta_ref_O = delta_ref_O / (2 * np.pi)  # scale from -1 to 1
 
         # Compute steer
@@ -179,7 +194,7 @@ class MeanController(object):
             print('SPEED X {:.4f} SPEED Y {:.4f}'.format(obs['speed_x'], obs['speed_y']))
 
         info = {'rho': rho, 'delta_O': delta_O, 'delta_ref_O': delta_ref_O, 'vr': Vref_proj, 'v': V,
-                'steer_r': self.ref_df['Steer'].values[ref_id], 'ref_id': ref_id}
+                'steer_r': self.ref_df['Steer'].values[ref_id], 'ref_id': ref_id, 'delta': delta}
         return [steer, brake, throttle], info
 
     def playGame(self, episode_count=1, max_steps=100000, save_data=False):
@@ -195,7 +210,7 @@ class MeanController(object):
                 episode = list()
 
             for j in range(max_steps):
-                if j % 50 == 0:
+                if j % 1 == 0:
                     action, info = self.act(ob, True)
                 else:
                     action, info = self.act(ob, False)
@@ -211,6 +226,7 @@ class MeanController(object):
                 ob['v'] = info['v']
                 ob['steer_r'] = info['steer_r']
                 ob['ref_id'] = info['ref_id']
+                ob['delta'] = info['delta']
 
                 episode.append(ob)
                 ob, reward, done, _ = self.env.step(action)
