@@ -52,7 +52,7 @@ In order to evaluate the usefulness of a policy, we now introduce the concept of
 
 Parallel to the value functions is the concept of action-value function, or Q-value, which is the expected return after taking an action \(a_t\) in state \(s_t\) and thereafter following policy \(\pi\):
 \[Q^\pi(s_t,a_t)=\mathbb{E}_{r_{i \geq t},s_{i>t} \sim ,a_{i>t} \sim \pi}[R_t|s_t,a_t]\]
-from which can be derived the recursive form called Bellman Equation:
+from which can be derived the recursive form the Bellman Equation:
 \[Q^\pi(s_t,a_t)=\mathbb{E}_{r_t,s_{t+1} \sim E }\left[ r(s_t,a_t) + \gamma \mathbb{E}_{a_{t+1} \sim \pi}\left[Q^\pi (s_{t+1},a_{t+1})\right]\right]\]
 
 
@@ -70,11 +70,9 @@ and both the Critic and Actor functions are parameterized with neural networks. 
 \subsubsection{Fitted Q-Iteration}
 
 \subsubsection{Deep Deterministic Policy Gradient}
-It is not possible to straightforwardly apply Q-learning to continuous action spaces, because in con-
-tinuous spaces finding the greedy policy requires an optimization of a t at every timestep; this opti-
-mization is too slow to be practical with large, unconstrained function approximators and nontrivial
-action spaces. Instead, here we used an actor-critic approach based on the DPG algorithm.
-23
+It is not possible to straightforwardly apply Q-learning to continuous action spaces, because in continuous spaces finding the greedy policy requires an optimization of a t at every timestep; this opti-
+mization is too slow to be practical with large, unconstrained function approximators and nontrivial action spaces. Instead, here we used an actor-critic approach based on the DPG algorithm.
+
 
 
 
@@ -139,18 +137,25 @@ Autonomous driving tasks where RL could be applied include: controller optimizat
 
 
 
-In this section we'll describe some of the applications of Reinforcement Learning to videogames, autonomous driving and racing. 
+In this section we'll describe some of the applications of Reinforcement Learning in the context of videogames, autonomous driving and racing. 
 
 
 \subsection{Reinforcement Learning in Videogames}
 
-Due to the flexibility of the reinforcement learning algorithms, which enable an agent to learn a behavior from its experience, by giving a representation of the world a which don't require an apriori knowledge of its dynamics, reinforcement learning is particularly suitable to the contexts which permit to perform many tries of a particular task. For this reason, videogames and computer simulator are adapt to run a reinforcement learning algorithm on.
+All the Reinforcement Learning algorithms require interaction with the environment to learn a policy the gathered experience. Trajectories can be collected by using real world environment or through a simulator. 
+Both approaches have pros and cons, and the choice mainly depends on the context and the application of the learning agent. 
+A simulator is preferred when the exploration is not dangerous, whereas simulator when the real agent can hurt itself or damage environment. 
+The drawbacks of learning in a physical system reside mainly in the fact that exploration may be dangerous, and learning is expensive. A learning agent is often a robot, composed of mechanical parts, which may perform a range of movements that can be harmful - to itself, to other people, to the environment itself - if not behaving in an intended manner. Think about a car hitting a wall, and with a person aboard. Simulators, on the other hand, are safe: everything is happening inside a computer, in a virtual world, and every - or almost - can be properly tuned before putting the code on the physical robot. Another downside of learning in the real world is expensiveness: machine learning, relying on statistics, requires vast amount of data to be available, which in a RL context translates in a big number of repetition of an experiment. In a physical environment the components are typically more expensive than on a simulator, which requires AC current to power one or more machines. A robot requires one or more engines, which can be electrical (consuming much more than computers) or combustion-like, which require some kind of fuel, like gasoline. Moreover, wears comes into play, which requires fixing, or replacing, for instance the wear of tyres due by friction with asphalt. Finally, possibles repaires required when the robot crashes or hurts itself of the environment must be taken into account
+On the contrary, in the real world there is model-free, thus, the learning outcome is typically more accurate than on simulator, or better, it doesn't need aposteriori fine-tunings, which may be need to be taken into account when learning in a simulation environment. In fact, whether simulators may be preferred for the reasons listed above, they have drawbacks, too.
+A simulated environment must replicate the world and an agent to a certain degree of accuracy: replicating a perfect copy would be unfeasible, because of the power of computation required to run it, and the intrinsic complexity of the rules which govern it, which today are known to a certain extent. On the other side, a simple representation of the world is much more lean to run, and simple to be coded, but may be undermodeling with respect to the task. The main difficulty here is finding is the best trade off. Another aspect to take into consideration when choosing to learn on a simulated environment is that the computed parameters of the equations ruling the world and the actions to fulfill a task may be different to the real ones, thus may need some fine tuning when embodied into the machine. This is due to all the aspects which are not taken into account by the model of the simulator. For instance, wear of components and deformation dynamics are ruled by complex models which are hard to replicate on simulators.
+As said, the choice between real environment and a simulated one mainly depends on the context and the application of the learning agent. When exploration is not dangerous, real world environments are preferred whereas simulator when the real agent can hurt itself or damage environment.
+Thanks to the flexibility of the reinforcement learning algorithms, which enable an agent to learn a behavior from its experience, by giving a representation of the world a which don't require an apriori knowledge of its dynamics, reinforcement learning is particularly suitable to the contexts which permit to perform many tries of a particular task. For this reason, videogames and computer simulator are adapt to run a reinforcement learning algorithm on.
 A notorius videogame played by a rl autonomous agent is Atari \cite{atari} by Google's Deepmind. By learning a deep convolutional neural network to approximate the Q-function, Mnih et al. successfully construct a Deep Reinforcement Learning framework called Deep Q-Network (DQN) which plays Atari games in human level. It takes as representation of the world the raw pixels and learns and learns an end-to-end policy which maximizes the q-values.
 Another famous example is Alphago also by Deepmind \cite{alphago}, which beated for several years consecutively the human champion at Go game. This is not a videogame but a board game, but the case is noteworthy, because such game is known for being one of the most complex  for his huge set of rules, which makes brute-force approaches infeasible. To achieve this result, it has been trained with a supervised learning neural network from past experience, and then, a reinforcement learning algorithms has been applied to try and beat itself's own play. 
 In racing games, which is the scope of our thesis, different solutions has been proposed over the years. In the next section we'll introduce the concept of autonomous driving and in particular in the racing context. We'll expose the problem of finding the optimal trajectory and explore some of the state-of-the-art-techniques which tackle this issue.
 
 
-\subsection{Autonomous Driving}
+\subsection{Autonomous Driving in Videogames}
 Finding a racing line that allows to achieve a competitive lap-time is a key problem in real-world car racing as well as in the development of non-player characters for a commercial racing game.
 The optimal racing line is defined as the line to follow to achieve the best lap-time possible on a given track with a given car. The optimal racing line is the path that a driver should follow to complete a lap on a given track in the smallest amount of time possible. As the lap-time depends both on the distance raced and on the average racing speed, finding the optimal racing involves two different sub-problems: racing the shortest distance possible and racing as fast
 as possible along the track.
@@ -173,7 +178,7 @@ They were determined by using the optimization algorithm CMA-ES: it has a good p
 Model Predictive Control (MPC) is a multivariable control algorithm that uses an internal dynamic model of the process, a cost function over the receding horizon and an optimization algorithm minimizing the cost function using the control input. Existing advanced control based attempts to minimum-time driving usually provide only offline open-loop solutions. In this paper \cite{mpc} the authors directly use a one-level approach, solving the nonlinear MPC problem with an economic cost function in real-time. The tight real-time bounds imposed on computational times make it necessary to reformulate the problem so as to allow for the use of efficient algorithms.
 It provides real-world experimental results of the proposed nonlinear MPC scheme from a miniature race-car setup that is detailed in the paper. 
 
-\subsubsection{Reinforcement Learning in Autonomous Driving}
+\subsection{Reinforcement Learning in Autonomous Driving}
 
 With the evolving of technologies and algorithms, the focus has been shifting towards reinforcement learning and in general data-driven algorithms, that has been proven to outperform classical algorithms in a variety of applications, including autonomous driving and racing.
 
