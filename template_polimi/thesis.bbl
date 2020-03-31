@@ -19,6 +19,12 @@ L.~{Cardamone}, D.~{Loiacono}, and P.~L. {Lanzi}.
 \newblock In {\em 2009 IEEE Symposium on Computational Intelligence and Games},
   pages 148--155, 2009.
 
+\bibitem{cmaes}
+N.~{Hansen}, S.~D. {Müller}, and P.~{Koumoutsakos}.
+\newblock Reducing the time complexity of the derandomized evolution strategy
+  with covariance matrix adaptation (cma-es).
+\newblock {\em Evolutionary Computation}, 11(1):1--18, 2003.
+
 \bibitem{atari}
 Silver Mnih, Kavukcuoglu.
 \newblock Playing atari with deep reinforcement learning.
@@ -28,11 +34,10 @@ Maddison Silver, Huang.
 \newblock Mastering the game of go with deep neural networks and tree search.
 \newblock {\em Nature}, 2016.
 
-\bibitem{mpc}
-Robin Verschueren, Stijn Bruyne, Mario Zanon, Janick Frasch, and Moritz Diehl.
-\newblock Towards time-optimal race car driving using nonlinear mpc in
-  real-time.
-\newblock volume 2015, 12 2014.
+\bibitem{mpc_orig}
+Yu-Geng XI, Dewei Li, and Shu Lin.
+\newblock Model predictive control - status and challenges.
+\newblock {\em Acta Automatica Sinica}, 39, 03 2013.
 
 \bibitem{cinesi}
 Zhu Zuo, Wang.

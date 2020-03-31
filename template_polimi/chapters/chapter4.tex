@@ -149,33 +149,43 @@ The drawbacks of learning in a physical system reside mainly in the fact that ex
 On the contrary, in the real world there is model-free, thus, the learning outcome is typically more accurate than on simulator, or better, it doesn't need aposteriori fine-tunings, which may be need to be taken into account when learning in a simulation environment. In fact, whether simulators may be preferred for the reasons listed above, they have drawbacks, too.
 A simulated environment must replicate the world and an agent to a certain degree of accuracy: replicating a perfect copy would be unfeasible, because of the power of computation required to run it, and the intrinsic complexity of the rules which govern it, which today are known to a certain extent. On the other side, a simple representation of the world is much more lean to run, and simple to be coded, but may be undermodeling with respect to the task. The main difficulty here is finding is the best trade off. Another aspect to take into consideration when choosing to learn on a simulated environment is that the computed parameters of the equations ruling the world and the actions to fulfill a task may be different to the real ones, thus may need some fine tuning when embodied into the machine. This is due to all the aspects which are not taken into account by the model of the simulator. For instance, wear of components and deformation dynamics are ruled by complex models which are hard to replicate on simulators.
 As said, the choice between real environment and a simulated one mainly depends on the context and the application of the learning agent. When exploration is not dangerous, real world environments are preferred whereas simulator when the real agent can hurt itself or damage environment.
-Thanks to the flexibility of the reinforcement learning algorithms, which enable an agent to learn a behavior from its experience, by giving a representation of the world a which don't require an apriori knowledge of its dynamics, reinforcement learning is particularly suitable to the contexts which permit to perform many tries of a particular task. For this reason, videogames and computer simulator are adapt to run a reinforcement learning algorithm on.
-A notorius videogame played by a rl autonomous agent is Atari \cite{atari} by Google's Deepmind. By learning a deep convolutional neural network to approximate the Q-function, Mnih et al. successfully construct a Deep Reinforcement Learning framework called Deep Q-Network (DQN) which plays Atari games in human level. It takes as representation of the world the raw pixels and learns and learns an end-to-end policy which maximizes the q-values.
+Thanks to the flexibility of the reinforcement learning algorithms, which enable an agent to learn a behavior from its experience, by giving a representation of the world a which don't require an apriori knowledge of its dynamics, reinforcement learning is particularly suitable to the contexts which permit to perform many tries of a particular task. For this reason, videogames and computer simulators are adapt to run a reinforcement learning algorithm on.
+A notorius videogame played by a RL autonomous agent is Atari \cite{atari} by Google's Deepmind. By learning a deep convolutional neural network to approximate the Q-function, Mnih et al. successfully construct a Deep Reinforcement Learning framework called Deep Q-Network (DQN) which plays Atari games in human level. It takes as representation of the world the raw pixels and learns an end-to-end policy which maximizes the q-values.
 Another famous example is Alphago also by Deepmind \cite{alphago}, which beated for several years consecutively the human champion at Go game. This is not a videogame but a board game, but the case is noteworthy, because such game is known for being one of the most complex  for his huge set of rules, which makes brute-force approaches infeasible. To achieve this result, it has been trained with a supervised learning neural network from past experience, and then, a reinforcement learning algorithms has been applied to try and beat itself's own play. 
 In racing games, which is the scope of our thesis, different solutions has been proposed over the years. In the next section we'll introduce the concept of autonomous driving and in particular in the racing context. We'll expose the problem of finding the optimal trajectory and explore some of the state-of-the-art-techniques which tackle this issue.
 
 
 \subsection{Autonomous Driving in Videogames}
 Finding a racing line that allows to achieve a competitive lap-time is a key problem in real-world car racing as well as in the development of non-player characters for a commercial racing game.
-The optimal racing line is defined as the line to follow to achieve the best lap-time possible on a given track with a given car. The optimal racing line is the path that a driver should follow to complete a lap on a given track in the smallest amount of time possible. As the lap-time depends both on the distance raced and on the average racing speed, finding the optimal racing involves two different sub-problems: racing the shortest distance possible and racing as fast
-as possible along the track.
+The optimal racing line is defined as the line to follow to achieve the best lap-time possible on a given track with a given car. The optimal racing line is the path that a driver should follow to complete a lap on a given track in the smallest amount of time possible. As the lap-time depends both on the distance raced and on the average racing speed, finding the optimal racing involves two different sub-problems: racing the shortest distance possible and racing as fast as possible along the track.
 
 Over the years, different attempts to achieve time-optimal racing, evolving together with technology. Besides Reinforcement Learning, controlling a self-driving car can be done with a planner, if the optimal trajectory is a priori computed, or by a controller. In this section, we provide an overview of such techniques. 
 
 
-This paper \cite{botta} shows how to encode a racing line by a set of connected Bézier curves, such that each gene defines a small portion of the racing line. Therefore, the evolution is responsible of the entire design of the racing line. In addition, the authors compare two different methods to evaluate the evolved racing line; the first one is based on testing the evolved racing lines in a racing simulator; the second one consists of estimating the performance of a racing line through a computational model.
+Botta et al. \cite{botta} show how to encode a racing line by a set of connected B\'{e}zier curves, such that each gene defines a small portion of the racing line. B\'{e}zier curves are a family of parametrized curves widely used in computer graphics and in related fields. Initially used for drawing cars, nowadays B\'{e}zier curves are frequently used in vector graphics to model smooth paths, as they offer a compact and convenient representation.
+A B\'{e}zier curve is defined by a set of control points, with the first and the last one being respectively the beginning and the end of the curve, while the intermediate control points do not usually lie on it. Therefore, the evolution is responsible of the entire design of the racing line.  
+  \begin{figure}
+
+    \centering
+      \includegraphics[width=10cm]{./img/bezier}
+     \caption{An example of B\'{e}zier curve: black points are the control point of the curve; blue lines simply connect with straight segments the control points; red line is the resulting B\'{e}zier curve.}
+  \end{figure}
+In addition, the authors compare two different methods to evaluate the evolved racing line; the first one is based on testing the evolved racing lines in a racing simulator; the second one consists of estimating the performance of a racing line through a computational model.
 	
-This work \cite{ahura} proposes a controller called Ahura for TORCS. 
-TORCS is the state-of-the-art simuator for racing. Later on we will describe more in detail the architecture.
-The controller uses five modules: steer controller, speed controller, opponent manager (it creates a map of opponents around  and finds the vacant slot to overtake), dynamic adjuster (friction, bumps), stuck manager (uses the idea proposed in to control the vehicle when it is out of the track or it has stuck somewhere.).
-There are 23 parameters in Ahura that need to be determined:
-1) eight parameters for the steer controller 
-2) ten parameters for the speed controller 
-3) five parameters for the opponent manager
-They were determined by using the optimization algorithm CMA-ES: it has a good performance in continuous space, works with nonlinear systems, no constraint handling technique is required, and it is appropriate for nonseparable search spaces.
+This work \cite{ahura} proposes a controller called Ahura for TORCS.
+The controller uses five modules: 
+\begin{itemize}
+\item steer controller
+\item speed controller
+\item opponent manager (it creates a map of opponents around  and finds the vacant slot to overtake)
+\item dynamic adjuster (friction, bumps)
+\item stuck manager (uses the idea proposed in to control the vehicle when it is out of the track or it has stuck somewhere.).
+\end{itemize}
+There are 23 parameters in Ahura that need to be determined: eight parameters for the steer controller, ten parameters for the speed controller, five parameters for the opponent manager.
+They were determined by using the optimization algorithm CMA-ES \cite{cmaes}, which has a good performance in continuous space, works with nonlinear systems, no constraint handling technique is required, and it is appropriate for nonseparable search spaces.
 
 
-Model Predictive Control (MPC) is a multivariable control algorithm that uses an internal dynamic model of the process, a cost function over the receding horizon and an optimization algorithm minimizing the cost function using the control input. Existing advanced control based attempts to minimum-time driving usually provide only offline open-loop solutions. In this paper \cite{mpc} the authors directly use a one-level approach, solving the nonlinear MPC problem with an economic cost function in real-time. The tight real-time bounds imposed on computational times make it necessary to reformulate the problem so as to allow for the use of efficient algorithms.
+Model Predictive Control (MPC) \cite{mpc_orig} is a multivariable control algorithm that uses an internal dynamic model of the process, a cost function over the receding horizon and an optimization algorithm minimizing the cost function using the control input. Existing advanced control based attempts to minimum-time driving usually provide only offline open-loop solutions. In the authors directly use a one-level approach, solving the nonlinear MPC problem with an economic cost function in real-time. The tight real-time bounds imposed on computational times make it necessary to reformulate the problem so as to allow for the use of efficient algorithms.
 It provides real-world experimental results of the proposed nonlinear MPC scheme from a miniature race-car setup that is detailed in the paper. 
 
 \subsection{Reinforcement Learning in Autonomous Driving}
@@ -184,12 +194,22 @@ With the evolving of technologies and algorithms, the focus has been shifting to
 
 Due to the complexity of the problem, the most successful approaches has been proved to be the ones that incorporate an automatic learning process with human expertise.
 
-In this work \cite{cardamone} Cardamone, Loiacono and Lanzi applied supervised learning to develop car controllers for The Open Car Race Simulator from the logs collected from other drivers. 
+In \cite{cardamone} Cardamone, Loiacono and Lanzi applied supervised learning to develop car controllers for The Open Car Race Simulator from the logs collected from other drivers. 
 They considered two representations of the current state of the car: the set of rangefinder inputs usually employed in simulated car racing competitions, and a high-level, qualitative, representation involving basic lookahead information about the track in front of the car. Instead of predicting the typical low-level actions on the car actuators available in TORCS (namely, the steering wheel, the gas pedal, the brake pedal and the gear change), their approach predicts a target speed and the car position with respect to the track axis.
 They considered two supervised learning methods, multi-layer neural networks and k-nearest neighbor classifiers, and applied them to compute a model mapping input sensors to actions which could imitate the behavior of an observed driver.
 
-- In this paper \cite{cinesi}, the authors addresses an issue which is similar to ours: they aim at integrate a reinforcement learning algorithm with human expertise. Their claim is that this process could help accelerate the exploration and increase learning agent's stability.
+In \cite{cinesi} the authors addresses an issue which is similar to ours: they aim at integrate a reinforcement learning algorithm with human expertise. Their claim is that this process could help accelerate the exploration phase and increase learning agent's stability.
 Their framework is a continuous reinforcement learning setting, in which they integrate DDPG with human demonstrations.
 To achieve that, they formulate a loss function to optimize which combines the experience gathered from the environment and by the demonstrations. In such a way, with respect to a state, the agent should pick an action wich is consisent with the human behavior.
 
  Our work proposed different approaches to solve time-optimal racing problem in the framework of reinforcement learning. ampliare, parlare di torcs
+ 
+ 
+ 
+ 
+-bezier
+-ahura
+-mpc
+-expertise
+-loiacono
+-cinesi
