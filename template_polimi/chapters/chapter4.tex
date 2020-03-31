@@ -165,30 +165,64 @@ Over the years, different attempts to achieve time-optimal racing, evolving toge
 Botta et al. \cite{botta} show how to encode a racing line by a set of connected B\'{e}zier curves, such that each gene defines a small portion of the racing line. B\'{e}zier curves are a family of parametrized curves widely used in computer graphics and in related fields. Initially used for drawing cars, nowadays B\'{e}zier curves are frequently used in vector graphics to model smooth paths, as they offer a compact and convenient representation.
 A B\'{e}zier curve is defined by a set of control points, with the first and the last one being respectively the beginning and the end of the curve, while the intermediate control points do not usually lie on it. Therefore, the evolution is responsible of the entire design of the racing line.  
   \begin{figure}
-
     \centering
+ 	  \captionsetup{width=10cm}
       \includegraphics[width=10cm]{./img/bezier}
-     \caption{An example of B\'{e}zier curve: black points are the control point of the curve; blue lines simply connect with straight segments the control points; red line is the resulting B\'{e}zier curve.}
+     \caption{From \cite{botta}. An example of B\'{e}zier curve: black points are the control point of the curve; blue lines simply connect with straight segments the control points; red line is the resulting B\'{e}zier curve.}
   \end{figure}
 In addition, the authors compare two different methods to evaluate the evolved racing line; the first one is based on testing the evolved racing lines in a racing simulator; the second one consists of estimating the performance of a racing line through a computational model.
-	
-This work \cite{ahura} proposes a controller called Ahura for TORCS.
+The former consists in making a TORCS predefined controller follow a determined trajectory. Then, a fitness function is computed as the lap-time achieved during the best lap. While this approach does not require any previous domain knowledge, as the fitness is the result of simulation, it is also rather expensive in computational terms as it requires a full simulation. 
+On the contrary, the latter relies on a computational model which provides an estimate of the lap-time
+that could be achieved following the racing line to evaluate. In particular, as soon as an estimate of the lap-time is available, the fitness function is computed as in the simulation-based method. This way, the computation is generally significantly less expensive than the simulation-based evaluation. As a drawback, a previous domain knowledge is required in order to estimate the speed that can be reached in each point of the racing line, such as car dynamics and the track grip. Moreover, the accuracy of the estimation depends on the precision of the model itself.
+
+Another approach has been proposed by Bonyadi et al: in \cite{ahura} they implemented a controller called Ahura for TORCS based on heuristics.
 The controller uses five modules: 
 \begin{itemize}
-\item steer controller
-\item speed controller
-\item opponent manager (it creates a map of opponents around  and finds the vacant slot to overtake)
-\item dynamic adjuster (friction, bumps)
-\item stuck manager (uses the idea proposed in to control the vehicle when it is out of the track or it has stuck somewhere.).
-\end{itemize}
-There are 23 parameters in Ahura that need to be determined: eight parameters for the steer controller, ten parameters for the speed controller, five parameters for the opponent manager.
+\item Steer controller: This module uses the estimated angle
+of the turn in front and the vacant distance in front to determine the steer angle. The module can control how smooth or sharp the vehicle is going to turn.
+The main idea behind calculation of the steer angle is to find the proximity sensor that has the maximum empty space in front (called the base sensor). The angle of the base sensor, together with some other auxiliary proximity sensors, is then used to set the angle of the steer.
+\begin{figure}
+ \centering
+  \captionsetup{width=10cm}
+  \includegraphics[width=10cm]{./img/ahura-steer}
+  \caption{From \cite{ahura}. Red vector, the yellow vector, green vectors, and the blue vector represent the zero sensor, the base sensor, auxiliary sensors, and the final angle to take the turn, respectively.}
+\end{figure}
+\item Speed controller: The aim of the speed controller is to determine the speed that the vehicle can move according to the current situation without considering opponents. This decision then is translated to the acceleration/breaking pedals. This module uses the estimated turn angle together with the vacant distance in front to decide the safe speed.
+The target speed is mapped with a nonlinear function to values of acceleration and brake. Then, it is necessary to make sure that these values are applied in an appropriate way.  During the brake, the spin of thewheels might become smaller than the speed of the vehicle that
+means the wheels are slipping. Also, during the acceleration, the spin of the wheels might increase more than the speed of the vehicle that means the vehicle is in traction. The ABS and ASR technologies solve these issues through keeping the speed of the spinning wheels and the speedof vehicle as close as possible.
+Moreover, a gearing system is implemented, based based on the minimum and maximum values of the rpm for each gear.
+\item Opponent manager: This module creates a map of oppoents around and finds the vacant slot to overtake. This action may entail modification of the speed and steer calculated by the speed and steer controller modules.
+Ahura’s opponent manager contains two modules, steer reviser and speed reviser, that are responsible to revise steer and speed for overtaking. The information about opponents provided by opp sensors contain their distance and angle from the current position of the vehicle. This means that the position of opponents is provided in a polar coordinates system with the center of the measuring vehicle. Ahura builds a spatial map of the position of opponents based on the information provided by the opp sensors. This map is used to revise steer and speed of the vehicle for overtaking purposes.
+\item Dynamic adjuster: This module uses the mechanical specifications of the track (friction, bumps) as well as recorded difficulties the controller has experienced during the earlier laps and adjusts the current driving style.
+The dynamics parameters are estimated using an optimization-based approach to find the best values so that Ahura can drive a specific bot in TORCS. There are 23 parameters in Ahura that need to be determined: eight parameters for the steer controller, ten parameters for the speed controller, five parameters for the opponent manager.
 They were determined by using the optimization algorithm CMA-ES \cite{cmaes}, which has a good performance in continuous space, works with nonlinear systems, no constraint handling technique is required, and it is appropriate for nonseparable search spaces.
+\item Stuck manager: This module controls the vehicle when it is out of the track or it has stuck somewhere.
+The calculated parameters for the speed and steer controllers need to be revised based on the specifications of the track. The reason is that the parameters have been set for a limited number of tracks while new tracks might have different specifications. The main characteristics of tracks that may affect the best choice for parameters are friction, width, and bumps. Also, Ahura is able to handle stuck situation. In fact, if Ahura recognizes that it is off the track, it reduces the maximum value of the acceleration pedal to prevent too much traction. It finds the correct direction first and tries to get back to the track. If it detects that the car is not moving, the gear is changed to -1 (rear gear) and the steer is adjusted accordingly to repair the direction of movement.
+\end{itemize}
 
 
-Model Predictive Control (MPC) \cite{mpc_orig} is a multivariable control algorithm that uses an internal dynamic model of the process, a cost function over the receding horizon and an optimization algorithm minimizing the cost function using the control input. Existing advanced control based attempts to minimum-time driving usually provide only offline open-loop solutions. In the authors directly use a one-level approach, solving the nonlinear MPC problem with an economic cost function in real-time. The tight real-time bounds imposed on computational times make it necessary to reformulate the problem so as to allow for the use of efficient algorithms.
-It provides real-world experimental results of the proposed nonlinear MPC scheme from a miniature race-car setup that is detailed in the paper. 
+Existing advanced control based attempts to minimum-time driving usually provide only offline open-loop solutions.
+In \cite{mpc}, the authors experimentally compared different time-optimal nonlinear MPC \cite{mpc_orig} formulations based on least squares objectives with an economic cost function in a real-time setup of small-scale model race cars, with the help of ACADO simulation toolkit from MATLAB \cite{acado}.
+MPC, standing for Model Predictive Control is a multivariable control algorithm that uses an internal dynamic model of the process, a cost function over the receding horizon and an optimization algorithm minimizing the cost function using the control input.
+The tight real-time bounds imposed on computational times make it necessary to reformulate the problem so as to allow for the use of efficient algorithms. To this end, they employed a nonlinear bicycle model \cite{bycicle} in a reformulation to spatial coordinates and proposed an infeasible-time-tracking objective for the best practical results.
+For an approximate solution of the time-optimal driving problem, the aim is to minimize the time required for the race car to reach the end of the fixed-length spatial prediction horizon. For prediction horizons which tend to infinity, this objective tends to the goal of driving time-optimally. As a consequence, long horizons are expected to yield a good approximation of the original problem in practice.
+In the author's formulation, by providing a suffciently small (i.e., infeasible) "target time" T ref they can have an approximate time-
+optimal MPC formulation in least-squares form. 
+The real-world experiments showed that this approach has potential, but the bicycle model proved insufficient at high velocities due to slip effects not being modelled.
+\begin{figure}
+ \centering
+  \captionsetup{width=10cm}
+  \includegraphics[width=10cm]{./img/bycicle}
+  \caption{From \cite{mpc}. Kinematic Bicycle Model}
+\end{figure}
+\begin{figure}
+ \centering
+  \captionsetup{width=10cm}
+  \includegraphics[width=10cm]{./img/mpc-comparison}
+  \caption{From \cite{mpc}. Comparison of the performance of trajectory tracking and time-optimal driving on the experimental setup.}
+\end{figure}
 
-\subsection{Reinforcement Learning in Autonomous Driving}
+\subsection{Reinforcement Learning in Racing Videogames}
 
 With the evolving of technologies and algorithms, the focus has been shifting towards reinforcement learning and in general data-driven algorithms, that has been proven to outperform classical algorithms in a variety of applications, including autonomous driving and racing.
 
@@ -207,9 +241,7 @@ To achieve that, they formulate a loss function to optimize which combines the e
  
  
  
--bezier
--ahura
--mpc
+
 -expertise
 -loiacono
 -cinesi

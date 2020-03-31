@@ -1,4 +1,4 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
 
 \bibitem{ahura}
 M.~R. {Bonyadi}, Z.~{Michalewicz}, S.~{Nallaperuma}, and F.~{Neumann}.
@@ -25,6 +25,16 @@ N.~{Hansen}, S.~D. {Müller}, and P.~{Koumoutsakos}.
   with covariance matrix adaptation (cma-es).
 \newblock {\em Evolutionary Computation}, 11(1):1--18, 2003.
 
+\bibitem{bycicle}
+Georg~Schildbach Jason~Kong, Mark~Pfeiffer.
+\newblock Kinematic and dynamic vehicle models for autonomous driving control
+  design.
+
+\bibitem{acado}
+MATLAB.
+\newblock Acado toolkit.
+\newblock \url{https://acado.github.io/documentation.html}.
+
 \bibitem{atari}
 Silver Mnih, Kavukcuoglu.
 \newblock Playing atari with deep reinforcement learning.
@@ -33,6 +43,12 @@ Silver Mnih, Kavukcuoglu.
 Maddison Silver, Huang.
 \newblock Mastering the game of go with deep neural networks and tree search.
 \newblock {\em Nature}, 2016.
+
+\bibitem{mpc}
+Robin Verschueren, Stijn Bruyne, Mario Zanon, Janick Frasch, and Moritz Diehl.
+\newblock Towards time-optimal race car driving using nonlinear mpc in
+  real-time.
+\newblock volume 2015, 12 2014.
 
 \bibitem{mpc_orig}
 Yu-Geng XI, Dewei Li, and Shu Lin.
