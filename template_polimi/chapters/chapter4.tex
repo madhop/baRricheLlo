@@ -239,41 +239,111 @@ same track the results were used to select the hyperparametrs
 for each of the algorithms used. The second one, the algorithm has been tested on a technically more complex track, while in the last part they evaluated the impact of adding future information of the track by adding a look ahead curvature and training in all three tracks.
 
 
-\subsection{RL in Racing Videogames via Imitation Learning}
+\subsection{Imitation Learning in Videogames}
 
-A promising approach in building human-like artificial players is what is commonly known as Imitation Learning \cite{imit1}, \cite{imit2}, which consists in integrating some human expertise in the algorithm, be it collected data to which learn from or to be incorporate in a RL algorithm resulting in a hybrid solution.
-The techniques used for imitation learning can be roughly divided into direct methods [4], which apply supervised learning to extract a
-model from the data logged from a target behavior; indirect
-methods [4], which apply typical methods of computational
-intelligence (e.g., neuroevolution) and use the data from the
-target behavior to compute a similarity score used to guide
-the development of the imitative controller.
-In car racing games, direct methods are well-known to
-produce drivers with dramatically low performances that are
-usually incapable of completing even one lap (or even just
-a significant part of a lap) in very simple tracks (see the
-discussions in [4], [6]). In this work, we focus on The Open
-Racing Car Simulator (TORCS) [8] and apply supervised
-learning to develop controllers capable of driving in non-
-trivial tracks reaching a performance that is in some cases
-“only” 15% lower than that of the fastest bot available in
-TORCS. While in [4] the supervised models were trained
+A promising approach in building human-like artificial players is what is commonly known as Imitation Learning \cite{imit1}, \cite{imit2}, or Learning from Demonstration (LfD) \cite{lfd}, which consists in integrating some human expertise in the algorithm, be it collected data to which learn from or to be incorporate in a RL algorithm resulting in a hybrid solution.
 
 
-In \cite{cardamone} Cardamone, Loiacono and Lanzi applied supervised learning to develop car controllers for The Open Car Race Simulator from the logs collected from other drivers. 
-They considered two representations of the current state of the car: the set of rangefinder inputs usually employed in simulated car racing competitions, and a high-level, qualitative, representation involving basic lookahead information about the track in front of the car. Instead of predicting the typical low-level actions on the car actuators available in TORCS (namely, the steering wheel, the gas pedal, the brake pedal and the gear change), their approach predicts a target speed and the car position with respect to the track axis.
-They considered two supervised learning methods, multi-layer neural networks and k-nearest neighbor classifiers, and applied them to compute a model mapping input sensors to actions which could imitate the behavior of an observed driver.
+A popular algorithm called DAGGER \cite{dagger} provides a easy way for incorporating human experience. However, a human expert should always be available to provide feedback which is not convenient in
+practice. Finn et al. proposed the Inverse Reinforcement
+Learning (IRL) \cite{inv}, which automatically learns reward functions from human demonstrations for robotic control. Since it
+does not provide a mechanism to obtain feedback from the interaction with the environment, the generalization ability of imitation learning is limited.
 
-In \cite{cinesi} the authors addresses an issue which is similar to ours: they aim at integrate a reinforcement learning algorithm with human expertise. Their claim is that this process could help accelerate the exploration phase and increase learning agent's stability.
-Their framework is a continuous reinforcement learning setting, in which they integrate DDPG with human demonstrations.
-To achieve that, they formulate a loss function to optimize which combines the experience gathered from the environment and by the demonstrations. In such a way, with respect to a state, the agent should pick an action wich is consisent with the human behavior.
+Presented in \cite{dqlfd}, Deep Q-learning from Demonstrations (DQfD) vastly accelerates DQN by pretraining an initial behavior network, and also introducing a supervised loss and a L2 regularization loss when training the target network.
 
- Our work proposed different approaches to solve time-optimal racing problem in the framework of reinforcement learning. ampliare, parlare di torcs
+In \cite{drlhp} the reward is from a reward predictor trained with human feedback rather than from  interactions with the environment. This method separates the goal learning from the behavior learning by training a reward predictor with non-expert human preferences, and the behavior of the agent is improved accordingly.
+
+\subsection{Imitation Learning in Racing Videogames}
+
+Togelius and colleagues focused on the learning of a specific driving style using a simple 2D car simulator \cite{imit3}, \cite{imit4} and TORCS \cite{imit5}. In \cite{imit3}, the authors applied supervised learning (more precisely, neural networks and k-nearest neighbor \cite{knn}) to model driving styles directly, that is, by building models that could accurately predict the player actions based on the current game state. However, direct modeling resulted limited performance, accordingly, they moved to indirect modeling and used a genetic algorithm to evolve a controller with a driving style similar to a target human player. In \cite{imit4}, the approach based on indirect modeling was improved by using a different fitness function while later, in \cite{imit5}, it was extended by introducing a multi-objective evolutionary algorithm to evolve controllers which could be both robust (in that, they never run out of the track) and could demonstrate a driving style similar to one recorded from a user (in that, they accurately predict the user actions).
+
+
+In  \cite{cardamone}, Cardamone, Loiacono and Lanzi applied supervised learning to develop car controllers in TORCS from the logs collected from other driver, and developed controllers capable of driving in non-trivial tracks reaching a performance that is in some cases 15\% lower than that of the fastest bot available in
+the simulator (a good result if considered that supervised learning approaches generally yeld to poor performances).
+They considered two representations of the current state of the car:
+\begin{itemize}
+\item The first sensory representation is based on a rangefinder inputs usually employed in simulated car racing competitions.
+The rangefinder casts an array of beams, with a range of 100m, around the car and returns the distance from the car to the track edge.
+\item  A high-level, qualitative, representation involving basic lookahead information about the track in front of the car, based on a  novel sensor model, called lookahead sensor. This representation is inspired by the behavior of human drivers whose decisions are usually based on high-level information about the current speed and trajectory and on the shape for the track ahead. 
+For this purpose, the next h meters of the track ahead are considered and divided into segments of the same length, and the lookahead sensor returns the bending radius for each segment: a rectilinear segment corresponds to a 0; a positive radius corresponds to a right turn; while a negative radius corresponds to a left turn. 
+\end{itemize} 
+\begin{figure}
+ \centering
+  \captionsetup{width=10cm}
+  \includegraphics[width=10cm]{./img/cardamone}
+  \caption{From \cite{cardamone}. Trajectories comparison in track G-track-1: bot Inferno (blue line), 8 segments lookahead (red line), 16 segments lookahead (black line).}
+\end{figure}
+\begin{figure}
+ \centering
+  \captionsetup{width=10cm}
+  \includegraphics[width=10cm]{./img/cardamone2}
+  \caption{From \cite{cardamone}. Lookahead Sensor.}
+\end{figure}
+
+Regarding the control phase, rather then acting on steer, throttle and break pedal, they propose  to control the car at a higher
+level: they try to learn the trajectories and the speeds along
+the track rather than low level commands.
+In other words, instead of predicting the typical low-level actions on the car actuators available in TORCS, their approach is to predict a target speed and the car position with respect to the track axis.
+A trajectory can be represented as the distance from the track axis in each segment of the track. So the output variables of the controller are the speed and the axis distance in the current segment of.
+The control is realized by means of three simple algorithms:
+\begin{itemize}
+\item Algorithm 1 computes the steer value: it describes the simple policy that controls the steering command to reach the target distance from the track axis. First, the wheel is aligned to the car axis and then a correction is applied to reduce the error.
+\item Algorithms 2 computes the acceleration value.
+\item Algorithms 3 computes the brake value. 
+Algorithms 2 and 3 work this way: simply accelerate at full speed when the current speed is low and brake when is too high. 
+\end{itemize}
+A soft transition is finally applied between brake and accelerator when the actual speed is near to the target speed: in this way switching from full acceleration to full brake is avoided, resulting in no fluctuations around the target speed.
+
  
- 
- 
- 
+Finally, as concerns the learning phase, they considered two supervised learning methods, multi-layer neural networks and k-nearest neighbor classifiers, and applied them to compute a model mapping input sensors to actions which could imitate the behavior of an observed driver.
+The model was then deployed to a driver controller
+that would map the high-level actions predicted by the
+models to low-level actions of the usual TORCS effectors
+using the algorithms discussed in the previous section.
+\begin{itemize}
+\item{KNN.} k-nearest neighbour does not involve any training in that
+the collected data represent the model. Accordingly, it has been directly applied during the evaluation, i.e. during a race using TORCS. At each game tic, the logged data are searched to find the k most similar instances to the current sensory input using either the typical rangefinder representation or the new lookahead representation. The k similar instances are selected and the respective outputs variable are averaged to predict the target value. The similarity measure used is simply the Manhattan distance among instances.
+\item{Neural Networks.} To avoid the issue of selecting a particular
+neural network structure, we applied Neuroevolution with Augmenting Topology (NEAT) \cite{neat} which applies a genetic algorithm to evolve both the weights and the topology of a neural network. They evolved two separate neural networks, one to predict the target speed and one to predict the target position for a given input configuration. The fitness was defined as the prediction error computed as the total sum of the absolute error between the true value and the predicted value, for each instance in the training data. 
+\end{itemize}
+Their experiment consisted in running the Inferno bot on three tracks: G-track-1, a simple track; Wheel-1, a more difficult track with many fast turns; and Aalborg, a difficult track with many slow sharp turns. They logged the data from the rangefinders and from the lookahead sensors, together with the car distance from the track axis and the car speed which we use
+as outputs.
 
--expertise
--loiacono
--cinesi
+
+
+This paper \cite{cinesi} aims at improving the achievements of DQfD \cite{dqfd} in integrating reinforcement learning with human demonstrations using TORCS.
+Their goal is to bring experts demonstrations together with reinforcement learning, try to let the agent learn an appropriate policy by interacting with the environment on itself, and learn from expert’s demonstrations at the same time.
+Their contribute develops in three parts:
+\begin{itemize}
+\item They shift from the discrete action domain contained in \cite{dqfd} to a continuous action domain.
+In order to determine the similarity between actions, they
+approximately evaluate the two considered actions by their
+mean squared error.  As DQN uses a greedy way to find the optimal policy, and the actions are finite discrete values, it is easy to calculate the supervised error for DQfD. However, in continuous action domain, the greedy policy is inapplicable, so they try to use the output of actor network directly for supervision. They combine a supervised loss with the original TD-loss to update the parameters of the critic network, and control the weighting between the losses by a given parameter.
+\item They adjust the Experience Replay of DQN and DDPG by constructing an integrated replay buffer, which improves DDPG stability.  In DQN, the authors use a replay buffer to store the
+transitions generated by interacting with the environment, and randomly sample batches for training. In DQfD, two replay buffers are utilized to store the self-generated data and demonstrator’s data respectively. Training data is sampled from these two buffers by a certain proportion. In this paper, the authors added another buffer to store the self-generated training data with good performances. 
+For the beginning episodes which usually does not contain enough good data, they instead use another buffer to collect the best transitions in every training episode, and substitute for the good performance buffer temporally. 
+Their claim is that this procedure may improve the performance and stability of training. 
+\item  They attempt to learnhuman preferences without contradicting to the overall target of the task. Most RL methods have only a solely overall goal, but does not consider the human behavior in realizing
+the goal, which can be reflected from the slightly differences
+between human personal preferences in completing the same
+task. They tackle this problem by recording demonstrations
+with human preferences and define specific optimization
+objectives to ensure the consistence with human preferences.
+To do that, they use demonstration data to be the critic network’s inputs: the actor network yields an action, and we want this
+action to be similar enough with the demonstrator’s action. Meanwhile, this action needs to satisfy the Bellman Equation and to yield higher rewards when interacting with the environment. So, they use a combined loss to update the critic network’s parameters.
+\end{itemize}
+Their claim is that their method not only masters the preferences in choosing the lane, but also outperforms human expert demonstration in
+average reward.
+
+
+\begin{figure}
+ \centering
+  \captionsetup{width=10cm}
+  \includegraphics[width=10cm]{./img/cinesi}
+  \caption{From \cite{cinesi}. The framework of Reinforcement Learning, Imitation Learning, and their integration. The demonstrations of human experts can be used to pretrain a model for RL, to shape the reward/policy of RL, and so on.}
+\end{figure}
+
+
+
+Our work takes place in this context of imitation learning integrated with reinforcement learning applied to autonomous driving in TORCS.
+In the next section we illustrate in detail the techniques we used. 

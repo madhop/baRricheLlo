@@ -13,51 +13,57 @@ A level-1 auxiliary file: chapters/chapter7.aux
 A level-1 auxiliary file: chapters/chapter8.aux
 The style file: plain.bst
 Database file #1: bibl_thesis.bib
+Warning--I didn't find a database entry for "inv"
+Warning--I didn't find a database entry for "dqfd"
+Warning--can't use both author and editor fields in lfd
+Warning--empty journal in drlhp
 Warning--empty journal in bycicle
 Warning--empty year in bycicle
 Warning--empty journal in atari
 Warning--empty year in atari
+Warning--empty booktitle in imit1
 Warning--empty booktitle in formularl
+Warning--empty booktitle in imit4
 Warning--empty booktitle in mpc
-You've used 13 entries,
+You've used 24 entries,
             2118 wiz_defined-function locations,
-            577 strings with 6230 characters,
-and the built_in function-call counts, 4045 in all, are:
-= -- 369
-> -- 204
-< -- 3
-+ -- 81
-- -- 68
-* -- 267
-:= -- 687
-add.period$ -- 37
-call.type$ -- 13
-change.case$ -- 73
+            643 strings with 8346 characters,
+and the built_in function-call counts, 8924 in all, are:
+= -- 837
+> -- 472
+< -- 10
++ -- 187
+- -- 162
+* -- 604
+:= -- 1442
+add.period$ -- 71
+call.type$ -- 24
+change.case$ -- 152
 chr.to.int$ -- 0
-cite$ -- 19
-duplicate$ -- 162
-empty$ -- 319
-format.name$ -- 68
-if$ -- 841
+cite$ -- 34
+duplicate$ -- 364
+empty$ -- 658
+format.name$ -- 162
+if$ -- 1904
 int.to.chr$ -- 0
-int.to.str$ -- 13
-missing$ -- 12
-newline$ -- 66
-num.names$ -- 26
-pop$ -- 92
+int.to.str$ -- 24
+missing$ -- 24
+newline$ -- 121
+num.names$ -- 48
+pop$ -- 185
 preamble$ -- 1
-purify$ -- 60
+purify$ -- 129
 quote$ -- 0
-skip$ -- 118
+skip$ -- 299
 stack$ -- 0
-substring$ -- 175
-swap$ -- 32
-text.length$ -- 3
+substring$ -- 435
+swap$ -- 117
+text.length$ -- 10
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 52
-warning$ -- 6
-while$ -- 33
-width$ -- 15
-write$ -- 130
-(There were 6 warnings)
+type$ -- 94
+warning$ -- 10
+while$ -- 68
+width$ -- 26
+write$ -- 250
+(There were 12 warnings)

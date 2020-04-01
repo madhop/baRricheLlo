@@ -1,5 +1,10 @@
 \begin{thebibliography}{10}
 
+\bibitem{lfd}
+Aude~G. Billard, Sylvain Calinon, and R{\"u}diger Dillmann.
+\newblock {\em Learning from Humans}, pages 1995--2014.
+\newblock Springer International Publishing, Cham, 2016.
+
 \bibitem{ahura}
 M.~R. {Bonyadi}, Z.~{Michalewicz}, S.~{Nallaperuma}, and F.~{Neumann}.
 \newblock Ahura: A heuristic-based racer for the open racing car simulator.
@@ -19,11 +24,35 @@ L.~{Cardamone}, D.~{Loiacono}, and P.~L. {Lanzi}.
 \newblock In {\em 2009 IEEE Symposium on Computational Intelligence and Games},
   pages 148--155, 2009.
 
+\bibitem{drlhp}
+Paul Christiano, Jan Leike, Tom Brown, Miljan Martic, Shane Legg, and Dario
+  Amodei.
+\newblock Deep reinforcement learning from human preferences.
+\newblock 06 2017.
+
+\bibitem{knn}
+Padraig Cunningham and Sarah Delany.
+\newblock k-nearest neighbour classifiers.
+\newblock {\em Mult Classif Syst}, 04 2007.
+
+\bibitem{imit2}
+B.~{Gorman}, C.~{Thurau}, C.~{Bauckhage}, and M.~{Humphrys}.
+\newblock Bayesian imitation of human behavior in interactive computer games.
+\newblock In {\em 18th International Conference on Pattern Recognition
+  (ICPR'06)}, volume~1, pages 1244--1247, 2006.
+
 \bibitem{cmaes}
 N.~{Hansen}, S.~D. {Müller}, and P.~{Koumoutsakos}.
 \newblock Reducing the time complexity of the derandomized evolution strategy
   with covariance matrix adaptation (cma-es).
 \newblock {\em Evolutionary Computation}, 11(1):1--18, 2003.
+
+\bibitem{dqlfd}
+Todd Hester, Matej Vecer{\'i}k, Olivier Pietquin, Marc Lanctot, Tom Schaul,
+  Bilal Piot, Andrew Sendonaris, Gabriel Dulac-Arnold, Ian Osband, John
+  Agapiou, Joel~Z. Leibo, and Audrunas Gruslys.
+\newblock Learning from demonstrations for real world reinforcement learning.
+\newblock {\em ArXiv}, abs/1704.03732, 2017.
 
 \bibitem{lstm}
 Sepp Hochreiter and Jürgen Schmidhuber.
@@ -44,16 +73,51 @@ MATLAB.
 Silver Mnih, Kavukcuoglu.
 \newblock Playing atari with deep reinforcement learning.
 
+\bibitem{imit1}
+Steffen Priesterjahn, Oliver Kramer, Alexander Weimer, and Andreas Goebels.
+\newblock Evolution of reactive rules in multi player computer games based on
+  imitation.
+\newblock pages 744--755, 08 2005.
+
 \bibitem{formularl}
 Adrian Remonda, Sarah Krebs, Eduardo Veas, Granit Luzhnica, and Roman Kern.
 \newblock Formula rl: Deep reinforcement learning for autonomous racing using
   telemetry data.
 \newblock 06 2019.
 
+\bibitem{dagger}
+Stephane Ross, Geoffrey Gordon, and J.~Bagnell.
+\newblock A reduction of imitation learning and structured prediction to
+  no-regret online learning.
+\newblock {\em Journal of Machine Learning Research - Proceedings Track}, 15,
+  11 2010.
+
 \bibitem{alphago}
 Maddison Silver, Huang.
 \newblock Mastering the game of go with deep neural networks and tree search.
 \newblock {\em Nature}, 2016.
+
+\bibitem{neat}
+K.~O. {Stanley} and R.~{Miikkulainen}.
+\newblock Evolving neural networks through augmenting topologies.
+\newblock {\em Evolutionary Computation}, 10(2):99--127, 2002.
+
+\bibitem{imit4}
+Julian Togelius, Renzo de~nardi, and Simon Lucas.
+\newblock Towards automatic personalised content creation for racing games.
+\newblock pages 252 -- 259, 05 2007.
+
+\bibitem{imit5}
+N.~{van Hoorn}, J.~{Togelius}, D.~{Wierstra}, and J.~{Schmidhuber}.
+\newblock Robust player imitation using multiobjective evolution.
+\newblock In {\em 2009 IEEE Congress on Evolutionary Computation}, pages
+  652--659, 2009.
+
+\bibitem{imit3}
+Niels Van~Hoorn, Julian Togelius, Daan Wierstra, and J\"{u}rgen Schmidhuber.
+\newblock Robust player imitation using multiobjective evolution.
+\newblock In {\em Proceedings of the Eleventh Conference on Congress on
+  Evolutionary Computation}, CEC’09, page 652–659. IEEE Press, 2009.
 
 \bibitem{mpc}
 Robin Verschueren, Stijn Bruyne, Mario Zanon, Janick Frasch, and Moritz Diehl.
