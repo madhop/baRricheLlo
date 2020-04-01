@@ -17,46 +17,47 @@ Warning--empty journal in bycicle
 Warning--empty year in bycicle
 Warning--empty journal in atari
 Warning--empty year in atari
+Warning--empty booktitle in formularl
 Warning--empty booktitle in mpc
-You've used 11 entries,
+You've used 13 entries,
             2118 wiz_defined-function locations,
-            566 strings with 5950 characters,
-and the built_in function-call counts, 3366 in all, are:
-= -- 309
-> -- 163
+            577 strings with 6230 characters,
+and the built_in function-call counts, 4045 in all, are:
+= -- 369
+> -- 204
 < -- 3
-+ -- 65
-- -- 54
-* -- 216
-:= -- 571
-add.period$ -- 31
-call.type$ -- 11
-change.case$ -- 60
++ -- 81
+- -- 68
+* -- 267
+:= -- 687
+add.period$ -- 37
+call.type$ -- 13
+change.case$ -- 73
 chr.to.int$ -- 0
-cite$ -- 16
-duplicate$ -- 138
-empty$ -- 267
-format.name$ -- 54
-if$ -- 703
+cite$ -- 19
+duplicate$ -- 162
+empty$ -- 319
+format.name$ -- 68
+if$ -- 841
 int.to.chr$ -- 0
-int.to.str$ -- 11
-missing$ -- 10
-newline$ -- 56
-num.names$ -- 22
-pop$ -- 76
+int.to.str$ -- 13
+missing$ -- 12
+newline$ -- 66
+num.names$ -- 26
+pop$ -- 92
 preamble$ -- 1
-purify$ -- 49
+purify$ -- 60
 quote$ -- 0
-skip$ -- 103
+skip$ -- 118
 stack$ -- 0
-substring$ -- 144
-swap$ -- 30
+substring$ -- 175
+swap$ -- 32
 text.length$ -- 3
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 44
-warning$ -- 5
-while$ -- 28
-width$ -- 13
-write$ -- 110
-(There were 5 warnings)
+type$ -- 52
+warning$ -- 6
+while$ -- 33
+width$ -- 15
+write$ -- 130
+(There were 6 warnings)
