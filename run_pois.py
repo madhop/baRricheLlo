@@ -13,6 +13,7 @@ import pandas as pd
 import numpy as np
 from pois_rule.policies.weight_hyperpolicy import PeRuleBasedPolicy
 from pois_rule.baselines.pbpois import pbpois as pois
+from pois_rule.policies.eval_policy import eval_policy
 import pois_rule.baselines.common.tf_util as U
 import pickle
 from fqi.reward_function import *
@@ -72,16 +73,23 @@ def run_experiment(num_iterations, timestep_length, perception_delay, action_del
     sess = U.single_threaded_session()
     sess.__enter__()
     
+    def eval_policy_closure(**args):
+        return eval_policy(env=env, **args)
+    
     def make_env():
         return env
+    
+    rho_att = []
+    
     pois.learn(make_env, make_policy, num_theta=num_theta, horizon=horizon,
                max_iters=num_iterations, sampler=sampler, feature_fun=None,
                line_search_type='parabola', gamma=gamma, eval_frequency=eval_frequency,
                eval_episodes=eval_episodes, eval_policy=eval_policy_closure,
                episodes_per_theta=episodes_per_scenario,
                rho_att = rho_att,
-               eval_theta_path=directory_output + '/logs' + '/eval_theta_episodes-' + time_str + '.csv',
-               save_to=out_dir + '/' + directory_output + '/models/'+time_str+'/', **alg_args)
+               #eval_theta_path=directory_output + '/logs' + '/eval_theta_episodes-' + time_str + '.csv',
+               #save_to=out_dir + '/' + directory_output + '/models/'+time_str+'/', 
+               **alg_args)
 
 
 if __name__ == '__main__':

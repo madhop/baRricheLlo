@@ -11,7 +11,7 @@ def eval_policy(pi, n_episodes=100, env=None, env_sampler=None, network="round_r
         for i in range(n_episodes):
 
             start = time.time()
-            s = env.reset(network=network)
+            s = env.reset()
             t = 0
             rew = 0
             if print_states:
