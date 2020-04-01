@@ -65,7 +65,7 @@ class Projection(Reward_function):
 
 
 class MeanController(object):
-    def __init__(self, env, ref_df, alpha1=0.5, alpha2=0.02, beta1=0.055, gamma1=3, gamma2=73.5, gamma3=116, k=20):
+    def __init__(self, ref_df, env=None, alpha1=0.5, alpha2=0.02, beta1=0.055, gamma1=3, gamma2=73.5, gamma3=116, k=20):
         # Init
         self.env = env
         # Throttle params
@@ -196,6 +196,12 @@ class MeanController(object):
         info = {'rho': rho, 'delta_O': delta_O, 'delta_ref_O': delta_ref_O, 'vr': Vref_proj, 'v': V,
                 'steer_r': self.ref_df['Steer'].values[ref_id], 'ref_id': ref_id, 'delta': delta}
         return [steer, brake, throttle], info
+    
+    def action_closure(self, obs, params):
+         #set params
+         #act
+         action, _ = self.act(obs)
+         return action
 
     def playGame(self, episode_count=1, max_steps=100000, save_data=False):
         step = 0

@@ -19,8 +19,8 @@ torcs_features = [
 "pitch",
 "yaw",
 "speedGlobalX",
-"speedGlobalY",
-"track_angle"
+"speedGlobalY"
+#"track_angle"
 ]
 
 
