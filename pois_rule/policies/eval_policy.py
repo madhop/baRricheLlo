@@ -38,7 +38,7 @@ def eval_policy(pi, n_episodes=100, env=None, env_sampler=None, network="round_r
             if verbose:
                 print("Episode {0}: Return = {1}, Duration = {2}, Time = {3} s".format(i, rew, t, time.time() - start))
             rewards.append(rew)
-            logs.append(env._get_info())
+            #logs.append(env._get_info())
     elif env_sampler is not None:
         pi.set_mean()
         theta = pi.get_theta()
