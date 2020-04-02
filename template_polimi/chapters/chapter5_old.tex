@@ -1,0 +1,120 @@
+\chapter{Theoretical Background}
+\label{Theoretical Background}
+\thispagestyle{empty}
+
+TESTO CAPITOLO 5
+
+\subsection{Autonomous Driving}
+Autonomous Driving is a broad concept which branches in different tasks, such as lane-keeping, parking, driving in different areas, in which perception plays a big role.
+Here we propose some of the applications of reinforcement learning to controlling an autonomous vehicle.
+
+- Controlling an Autonomous Vehicle with Deep Reinforcement Learning
+This paper https://arxiv.org/pdf/1909.12153.pdf shows an example of end-to-end reinforcement learning application to autonomous drive, using a proximal policy optimization algorithms by means of a neural network which maps the state to the controls. It learns two different policies: the driver and the stopper, and the reward is the squared proximity to a target position. The work aims at realizing the autonomous exploration of a parking lot based on deep reinforcement learning. It describes how a policy is trained to compute sophisticated control commands which depend on an estimate of the current vehicle state. This is done by designing an appropriate Markov decision process and a corresponding proximal policy optimization learning algorithm. For that purpose a simulated environment is used for data generation. Here, information about the vehicle's surrounding are measured by, e. g., laser scanners and are further extended by a rough knowledge about the geometry of the drivable area.
+Here, the state is composed by: steering wheel angle and longitudinal acceleration; the state transition is made by single-track-models. The vehicle is assumed to have only one wheel at the front and back respectively, each centered between the real ones. Finally, two reward functions are used in order to train a driver and a stopper.
+
+
+
+- CARMA: A Deep Reinforcement Learning Approach to Autonomous Driving
+In this paper they experiment different setups of Deep Neural Networks, such as CNN and RNN as functions approximator of a reinfocement learning agent.
+They formulate the state-space as follows: At each timestep, the agent receives an image I t of the environment, an estimate of the agent's speed, an estimate of the agent's distance to the center of the road, and an estimate of the angle between the agent's forward vector and the center of the road. At each timestep t, the agent can perform a discrete action: acceleration a = (Brake, DoNothing, Accelerate) and steer t = (TurnLef, DoNothing, TurnRight). Thus,there are a total of 9 possible actions the car can take at each timestep.
+Then, they experimented different modeling approaches based on Q-Learning, involving CNN and RNN agents.
+
+
+- Simulation-based reinforcement learning for autonomous driving:
+This paper applies via reinforcement throughe Proximal Policy Optimization (PPO) with a contin-ous action space operating on multiple tensors of multiple shapes: a front camera, a high-level navigation command, car speed, and car acceleration. Thus, they adopted a custom policy that operates on multiple input tensors coming from one observation. They operated within the CARLA simulator. Their policy controls only the steering, while throttle is controlled via a PID controller with the speed set to a constant.
+They modeled continuous actions with the Gaussian distribution.
+The agent receives as its observation an RGB image from a single front camera from which extract semantic segmentation and car metrics such as speed and acceleration. The agent is also provided with high-level navigation command. 
+
+
+
+- Finn et al. proposed an Inverse Reinforcement Learning \cite{inverse} approach to integrate human demonstrations with reinforcement learning. They applied the algorithm to optimal robotic control.
+
+
+
+
+TORCS is the state-of-the-art simuator for racing. Later on we will describe more in detail the architecture
+
+
+
+The Open Racing Car Simulator (TORCS) [7] is a state-
+of-the-art open source car racing simulator which provides
+a sophisticated physics engine, full 3D visualization, several
+tracks, several models of cars, and various game modes (e.g.,
+practice, quick race, championship, etc.). The car dynamics
+is accurately simulated and the physics engine takes into
+account many aspects of racing cars such as traction, aero-
+dynamics, fuel consumption, etc.
+Each car is controlled by an automated driver or bot. At
+each control step (game tick), a bot can access the current
+game state, which includes several information about the
+car and the track, as well as the information about the
+other cars on the track; a bot can control the car using the
+points; red line is the resulting Bézier curve.
+gas/brake pedals, the gear stick, and steering wheel. The
+game distribution includes many programmed bots which can
+be easily customized or extended to build new bots.
+
+
+
+TORCS provides many dif-
+ferent cars (bots) that can be driven through a controller. Each
+bot provides all information about the environment (e.g., the
+whole track and exact position of other cars) for the controller
+and the controller decides on the actuators (e.g., acceleration,
+brake, and clutch) accordingly. A more realistic extension of
+TORCS has been designed [3] 1 that includes ten more bots,
+each of these bots have been equipped by some limited sensors
+to provide information about the car’s environment at a fixed
+time rate (22 ms in version 1.3.4 of TORCS). The bot "listens"
+for actions such as acceleration, clutch, braking, gear, and steer
+from the controller. The actions provided by the controller are
+applied to the vehicle and cause the vehicle to act on the track.
+
+
+TORCS is a well-known car racing simulator. There are ten
+special bots in TORCS [3], [4] that are controllable through
+network ports by a client (controller). There are some (virtual)
+sensors connected to these bots that observe the environment and
+send the information to the controller (see [3] for the full list
+and description of the sensors). There are 19 proximity sensors
+(the value of the ith sensor is shown by dist i ) in front of the bot
+with predefined angles that provide the distance between the
+vehicle and the edges of the track toward their angle. The range
+of these sensors (shown by max D in this paper) is 200 m in the
+current version of TORCS. The angle of the proximity sensor
+i is shown by angle i , and it is a value in [90 ◦ , 90 ◦ ]. These
+angles can be set at the beginning of the simulation. The index
+of the proximity sensor in front of the vehicle is 0 (called the
+zero sensor) and the index of the other sensors is set from −9 to
+9. In the rest of this paper, we assume angle x = angle −x . There
+are 36 opponent sensors (the value of the ith sensor is shown
+by opp i ) that are only sensitive to opponents. These sensors are
+all evenly distributed around the bot with every 10 ◦ (the index
+of the sensor in front is 18) and their range is 200 m. There
+is a track position sensor (the value is shown by trackPos) that
+provides a real value in the interval [−∞, ∞] (∞ refers to the
+maximum value of the type double in computer), where −1
+represents the right side and 1 represents the left side of the
+track and other values translate to out of the track. There are
+four wheel spin sensors (one for each wheel) that calculate the
+speed of the wheels spin. The value for the wheel i is shown
+by v i 3 and it is in m/s. There is an rpm sensor that provides the
+rotation per minutes of the engine and provides a real number in
+[0, 10 000]. The current gear is an integer in {−1, 0, . . . , 6} (−1
+is the rear gear and 0 is the neutral) that is also provided. There
+are three sensors for the current speed of the vehicle along its
+front (the value is shown by xSpeed), sides (the value is shown
+by ySpeed), and above (the value is shown by zSpeed). Finally,
+there is a sensor that calculates the current damage of the vehicle
+that is a real number in [0, 10 000].
+A controller should provide appropriate values for the fol-
+lowing actuators: acceleration pedal (shown by accelPedal in
+this paper), braking pedal (shown by brakePedal in this paper),
+and clutch pedal (shown by clutchValue in this paper) that are
+real values in [0, 1], gear (shown by gearValue in this paper) that
+is an integer in {−1, 0, . . . , 6}, and steer (shown by steerValue
+in this paper) that is a real value in [−1, 1], corresponding to
+full right and full left. The decision by the controller should be
+made within the simulation time interval (set to 22 ms in the ver-
+sion 1.3.4 of TORCS). Hence, if the designed controller is slow,
+then it might ac

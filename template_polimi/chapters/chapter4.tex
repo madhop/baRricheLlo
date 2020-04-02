@@ -11,7 +11,7 @@ Then, in the following section, we will show some successful application on rein
 \section{Theoretical Background}
 
 \subsection{Reinforcement Learning}
-Together with Supervised Learning and Unsupervised Learning, Reinforcement Learning is a branch of Machine Learning, the discipline which studies the way a computer program can learn from experience and improve its performance at a specified task. Whereas Supervised Learning algorithms are based on inductiove inference where the model is tipically trained using labelled data to perform classification or regression, and Unsupervised Learning exploits techniques of density estimation and clustering applied to unlabelled data, in the Reinforcement Learning paradigm an autonomous agent learns to improve its performance at an assigned task by interacting with its environment.
+Together with Supervised Learning and Unsupervised Learning, Reinforcement Learning is a branch of Machine Learning, the discipline which studies the way a computer program can learn from experience and improve its performance at a specified task. Whereas Supervised Learning algorithms are based on inductive inference where the model is tipically trained using labelled data to perform classification or regression, and Unsupervised Learning exploits techniques of density estimation and clustering applied to unlabelled data, in the Reinforcement Learning paradigm an autonomous agent learns to improve its performance at an assigned task by interacting with its environment.
 Tipically, Reinforcement Learning agents are not explicitly taught how to act by an expert. Instead, the agent is free to explore the environment in which it lives, and its performance is evaluated by a reward function. Its goal is to maximize the reward by acting accordingly. The resulting reward results from the sum of the reward gained at every single step in its exploration process: for each state, the agent chooses an action to take and receives a reward based on the usefulness of its decision. Eventually, the agent learns the way to obtain the highest reward by exploiting knowledge learned about the expected utility of different state-action pairs. The challenge of Reinforcement Learning is to design the best tradeoff between exploration and exploitation, that is the capability of an agent of use its knowledge to obtain high rewards and, by contrast, being capable of exploring new possibilities in such a way not to remain stuck in a local optimum. Intuitively, the exploration process is high at the first iterations of the learning process, while it should decrease with accumulating knowledge.
 
 \subsubsection{Markov Decision Process}
@@ -47,16 +47,21 @@ In order to evaluate the usefulness of a policy, we now introduce the concept of
 
 
 \[V^\pi(s) = \mathbb{E}_\pi{\left[R_t|s_t=s\right]}= \mathbb{E}_\pi\left[\sum^{\infty}_{i=0}\gamma^ir_{t+i+1|s_t=s}\right] = \mathbb{E}_\pi\left[r_{t+1} + \sum^{\infty}_{i=0}\gamma^ir_{t+i+2|s_t=s}\right]\]
-. . . finire
 
+From which one can derive the recursive so-called Bellman Equation:
 
 Parallel to the value functions is the concept of action-value function, or Q-value, which is the expected return after taking an action \(a_t\) in state \(s_t\) and thereafter following policy \(\pi\):
 \[Q^\pi(s_t,a_t)=\mathbb{E}_{r_{i \geq t},s_{i>t} \sim ,a_{i>t} \sim \pi}[R_t|s_t,a_t]\]
-from which can be derived the recursive form the Bellman Equation:
+and the relative Bellman Equation:
 \[Q^\pi(s_t,a_t)=\mathbb{E}_{r_t,s_{t+1} \sim E }\left[ r(s_t,a_t) + \gamma \mathbb{E}_{a_{t+1} \sim \pi}\left[Q^\pi (s_{t+1},a_{t+1})\right]\right]\]
 
+To obtain the best policy that yields the best value function there are several methods, the one discussed here takes into consideration a quality function (also known as Q-value) to
+evaluate the estimated accumulated rewards obtained following a certain policy. It has a similardefinition of the value function but the Q-value takes also into consideration the action. So
+it established the long term rewards of applying an action to a state and then following the considered policy. 
 
 \subsection{Temporal Difference Learning}
+Temporal difference learning (TD) \cite{ilr} algorithms are able to learn from raw experiences without the need for a model of the environment. They combine ideas form dynamic-programming and from Monte Carlo methods but while Monte Carlo algorithms need to reach the end of a learning episode to update the value function TD is able to update it at the end of each step and so there is not the need to ignore some episode as in typical Mote Carlo algorithms.
+To be able to change the value function at each step it is needed to make estimations based on already learned ones, and this can be done with some ideas form dynamic-programming, but while DP needs a precise model of the environment dynamics TD does not and is so more suitable for unpredictable tasks.
 \subsubsection{SARSA}
 
 \subsubsection{Q-Learning}
@@ -87,13 +92,6 @@ mization is too slow to be practical with large, unconstrained function approxim
 
 
 
-
-
-
-
-
-
-- FQI
 
 	When the state and action spaces are finite and small enough, the Q-function can be represented in tabular form, and its approximation (in batch and in on-line mode) as well as the control policy derivation are straightforward. However, when dealing with continuous or very large discrete state and/or action spaces, the Q-function cannot be represented anymore by a table with one entry for each state-action pair. Moreover, in the context of reinforcement learning an approximation of the Q-function all over the state-action space must be determined from finite and generally very sparse sets of four-tuples.
 To overcome this generalization problem, a particularly attractive framework is the one used by Ormoneit and Sen (2002) which applies the idea of fitted value iteration (Gordon, 1999) to kernel-based reinforcement learning, and reformulates the Q-function determination problem as a sequence of kernel-based regression problems. Actually, this framework makes it possible to take full advantage in the context of reinforcement learning of the generalization capabilities of any regression algorithm, and this contrary to stochastic approximation algorithms (Sutton, 1988; Tsitsiklis, 1994) which can only use parametric function approximators (for example, linear combinations of feature vectors or neural networks). In the rest of this paper we will call this framework the fitted Q iteration
@@ -137,34 +135,33 @@ Autonomous driving tasks where RL could be applied include: controller optimizat
 
 
 
-In this section we'll describe some of the applications of Reinforcement Learning in the context of videogames, autonomous driving and racing. 
+In this section we will describe some of the applications of Reinforcement Learning in the context of videogames, autonomous driving and racing. 
 
 
 \subsection{Reinforcement Learning in Videogames}
 
-All the Reinforcement Learning algorithms require interaction with the environment to learn a policy the gathered experience. Trajectories can be collected by using real world environment or through a simulator. 
+All the Reinforcement Learning algorithms require interaction with the environment to learn a policy from the gathered experience. Trajectories can be collected by using real world environment or through a simulator. 
 Both approaches have pros and cons, and the choice mainly depends on the context and the application of the learning agent. 
-A simulator is preferred when the exploration is not dangerous, whereas simulator when the real agent can hurt itself or damage environment. 
-The drawbacks of learning in a physical system reside mainly in the fact that exploration may be dangerous, and learning is expensive. A learning agent is often a robot, composed of mechanical parts, which may perform a range of movements that can be harmful - to itself, to other people, to the environment itself - if not behaving in an intended manner. Think about a car hitting a wall, and with a person aboard. Simulators, on the other hand, are safe: everything is happening inside a computer, in a virtual world, and every - or almost - can be properly tuned before putting the code on the physical robot. Another downside of learning in the real world is expensiveness: machine learning, relying on statistics, requires vast amount of data to be available, which in a RL context translates in a big number of repetition of an experiment. In a physical environment the components are typically more expensive than on a simulator, which requires AC current to power one or more machines. A robot requires one or more engines, which can be electrical (consuming much more than computers) or combustion-like, which require some kind of fuel, like gasoline. Moreover, wears comes into play, which requires fixing, or replacing, for instance the wear of tyres due by friction with asphalt. 
-Another advantage in using a simulated environment is the simplicity of its usage: in a real world scenario, one would need to deal with sensors, data processing, and phyisical actuators, which might require spending a vast amount of time in managing hardware and software aspects (e.g. hardware requirements, input-output compatibility between sensors, processing unit and actuators, errors with measurements). Moreover, some simulators provide high-level data, which makes it possible to skip the information extraction stages, which could be challenging. For instance, TORCS provide telemetry data for the cars, including speed and angle of steering, which otherwise should be computed with some kind of image analysis, such as image segmentation via supervised learning through a neural network, which is not a trivial task at all. 
-Finally, possibles repaires required when the robot crashes or hurts itself of the environment must be taken into account
-On the contrary, in the real world there is model-free, thus, the learning outcome is typically more accurate than on simulator, or better, it doesn't need aposteriori fine-tunings, which may be need to be taken into account when learning in a simulation environment. In fact, whether simulators may be preferred for the reasons listed above, they have drawbacks, too.
-A simulated environment must replicate the world and an agent to a certain degree of accuracy: replicating a perfect copy would be unfeasible, because of the power of computation required to run it, and the intrinsic complexity of the rules which govern it, which today are known to a certain extent. On the other side, a simple representation of the world is much more lean to run, and simple to be coded, but may be undermodeling with respect to the task. The main difficulty here is finding is the best trade off. Another aspect to take into consideration when choosing to learn on a simulated environment is that the computed parameters of the equations ruling the world and the actions to fulfill a task may be different to the real ones, thus may need some fine tuning when embodied into the machine. This is due to all the aspects which are not taken into account by the model of the simulator. For instance, wear of components and deformation dynamics are ruled by complex models which are hard to replicate on simulators.
+A physical environmen is preferred when the exploration is not dangerous, whereas simulator when the real agent can hurt itself or damage environment. 
+The drawbacks of learning in a physical system reside mainly in the fact that exploration may be dangerous, and learning is expensive. A learning agent is often a robot, composed of mechanical parts, which may perform a range of movements that can be harmful - to itself, to other people, to the environment itself - if not behaving in an intended manner. Think about a car hitting a wall, and with a person aboard. Simulators, on the other hand, are safe: everything is happening inside a computer, in a virtual world, and everything - or almost - can be properly tuned before putting the code on the physical robot. Another downside of learning in the real world is expensiveness: machine learning, relying on statistics, requires vast amount of data to be available, which in a RL context translates in a big number of repetition of an experiment. In a physical environment the components are typically more expensive than on a simulator, which requires AC current to power one or more machines. A robot requires one or more engines, which can be electrical (consuming much more than computers) or combustion-like, which require some kind of fuel, like gasoline. Moreover, wear comes into play, which requires fixing, or replacing, for instance the wear of tyres due by friction with asphalt.  Moreover, possibles repaires required when the robot crashes or hurts itself or the environment must be taken into account. 
+Another advantage in using a simulated environment is the simplicity of its usage: in a real world scenario, one would need to deal with sensors, data processing, and phyisical actuators, which might require spending a vast amount of time in managing hardware and software aspects (e.g. hardware requirements, input-output compatibility between sensors, processing unit and actuators, errors with measurements). Moreover, some simulators provide high-level data, which makes it possible to skip the information extraction stages, which could be challenging. For instance, TORCS provide telemetry data for the cars, including speed and angle of steering, which otherwise should be computed with some kind of image analysis, such as image segmentation via supervised learning through a neural network, which is not a trivial task at all.
+Whether simulators may be preferred for the reasons listed above, they have drawbacks, too. A simulated environment must replicate the world and an agent to a certain degree of accuracy: replicating a perfect copy would be unfeasible, because of the power of computation required to run it, and the intrinsic complexity of the rules which govern it, which today are known to a certain extent. On the other side, a simple representation of the world is much more lean to run, and simple to be coded, but may be undermodeling with respect to the task. The main difficulty here is finding is the best trade off. On the contrary, the real world there is model-free by definition, thus, the learning outcome is typically more accurate than on simulator, or better, it doesn't need aposteriori fine-tunings, which may be need to be taken into account when learning in a simulated environment. 
+Another aspect to take into consideration when choosing to learn on a simulated environment is that the computed parameters of the equations ruling the world and the actions to fulfill a task may be different to the real ones, thus may need some fine tuning when embodied into the machine. This is due to all the aspects which are not taken into account by the model of the simulator. For instance, wear of components and deformation dynamics are ruled by complex models which are hard to replicate on simulators.
 As said, the choice between real environment and a simulated one mainly depends on the context and the application of the learning agent. When exploration is not dangerous, real world environments are preferred whereas simulator when the real agent can hurt itself or damage environment.
-Thanks to the flexibility of the reinforcement learning algorithms, which enable an agent to learn a behavior from its experience, by giving a representation of the world a which don't require an apriori knowledge of its dynamics, reinforcement learning is particularly suitable to the contexts which permit to perform many tries of a particular task. For this reason, videogames and computer simulators are adapt to run a reinforcement learning algorithm on.
-A notorius videogame played by a RL autonomous agent is Atari \cite{atari} by Google's Deepmind. By learning a deep convolutional neural network to approximate the Q-function, Mnih et al. successfully construct a Deep Reinforcement Learning framework called Deep Q-Network (DQN) which plays Atari games in human level. It takes as representation of the world the raw pixels and learns an end-to-end policy which maximizes the q-values.
+RL is particularly suitable to contexts that permit to perform many tries of a particular task, because its algorithms enable an agent to learn from its experience by giving a representation of the environment without an apriori knowledge of its dynamics. For this reason, videogames and computer simulators are adapt to run a reinforcement learning algorithm on.
+A notorius videogame played by a RL autonomous agent is Atari \cite{atari} by Google's Deepmind. By learning a deep convolutional neural network to approximate the Q-function, Mnih et al. successfully construct a Deep Reinforcement Learning framework called Deep Q-Network (DQN) which plays Atari games at human level. It takes as representation of the world the raw pixels and learns an end-to-end policy which maximizes the q-values.
 Another famous example is Alphago also by Deepmind \cite{alphago}, which beated for several years consecutively the human champion at Go game. This is not a videogame but a board game, but the case is noteworthy, because such game is known for being one of the most complex  for his huge set of rules, which makes brute-force approaches infeasible. To achieve this result, it has been trained with a supervised learning neural network from past experience, and then, a reinforcement learning algorithms has been applied to try and beat itself's own play. 
-In racing games, which is the scope of our thesis, different solutions has been proposed over the years. In the next section we'll introduce the concept of autonomous driving and in particular in the racing context. We'll expose the problem of finding the optimal trajectory and explore some of the state-of-the-art-techniques which tackle this issue.
+In racing games, which is the scope of our thesis, different solutions has been proposed over the years. In the next section we will introduce the concept of autonomous driving and in particular in the racing context. We will expose the problem of finding the optimal trajectory and explore some of the state-of-the-art-techniques which tackle this issue.
 
 
 \subsection{Autonomous Driving in Videogames}
 Finding a racing line that allows to achieve a competitive lap-time is a key problem in real-world car racing as well as in the development of non-player characters for a commercial racing game.
 The optimal racing line is defined as the line to follow to achieve the best lap-time possible on a given track with a given car. The optimal racing line is the path that a driver should follow to complete a lap on a given track in the smallest amount of time possible. As the lap-time depends both on the distance raced and on the average racing speed, finding the optimal racing involves two different sub-problems: racing the shortest distance possible and racing as fast as possible along the track.
 
-Over the years, different attempts to achieve time-optimal racing, evolving together with technology. Besides Reinforcement Learning, controlling a self-driving car can be done with a planner, if the optimal trajectory is a priori computed, or by a controller. In this section, we provide an overview of such techniques. 
+Over the years, different attempts to achieve time-optimal racing have been made, evolving together with technology. Besides Reinforcement Learning, controlling a self-driving car can be done with a planner - if the optimal trajectory is computed apriori - or by a controller. In this section, we provide an overview of such techniques. 
 
 
-Botta et al. \cite{botta} show how to encode a racing line by a set of connected B\'{e}zier curves, such that each gene defines a small portion of the racing line. B\'{e}zier curves are a family of parametrized curves widely used in computer graphics and in related fields. Initially used for drawing cars, nowadays B\'{e}zier curves are frequently used in vector graphics to model smooth paths, as they offer a compact and convenient representation.
+Botta et al. \cite{botta} show how to encode a racing line by a set of connected B\'{e}zier curves, such that each one defines a small portion of the racing line. B\'{e}zier curves are a family of parametrized curves widely used in computer graphics and in related fields. Initially used for drawing cars, nowadays B\'{e}zier curves are frequently used in vector graphics to model smooth paths, as they offer a compact and convenient representation.
 A B\'{e}zier curve is defined by a set of control points, with the first and the last one being respectively the beginning and the end of the curve, while the intermediate control points do not usually lie on it. Therefore, the evolution is responsible of the entire design of the racing line.  
   \begin{figure}
     \centering
@@ -189,12 +186,12 @@ The main idea behind calculation of the steer angle is to find the proximity sen
   \includegraphics[width=10cm]{./img/ahura-steer}
   \caption{From \cite{ahura}. Red vector, the yellow vector, green vectors, and the blue vector represent the zero sensor, the base sensor, auxiliary sensors, and the final angle to take the turn, respectively.}
 \end{figure}
-\item Speed controller: The aim of the speed controller is to determine the speed that the vehicle can move according to the current situation without considering opponents. This decision then is translated to the acceleration/breaking pedals. This module uses the estimated turn angle together with the vacant distance in front to decide the safe speed.
-The target speed is mapped with a nonlinear function to values of acceleration and brake. Then, it is necessary to make sure that these values are applied in an appropriate way.  During the brake, the spin of thewheels might become smaller than the speed of the vehicle that
-means the wheels are slipping. Also, during the acceleration, the spin of the wheels might increase more than the speed of the vehicle that means the vehicle is in traction. The ABS and ASR technologies solve these issues through keeping the speed of the spinning wheels and the speedof vehicle as close as possible.
-Moreover, a gearing system is implemented, based based on the minimum and maximum values of the rpm for each gear.
-\item Opponent manager: This module creates a map of oppoents around and finds the vacant slot to overtake. This action may entail modification of the speed and steer calculated by the speed and steer controller modules.
-Ahura’s opponent manager contains two modules, steer reviser and speed reviser, that are responsible to revise steer and speed for overtaking. The information about opponents provided by opp sensors contain their distance and angle from the current position of the vehicle. This means that the position of opponents is provided in a polar coordinates system with the center of the measuring vehicle. Ahura builds a spatial map of the position of opponents based on the information provided by the opp sensors. This map is used to revise steer and speed of the vehicle for overtaking purposes.
+\item Speed controller: The aim of the speed controller is to determine the speed of the vehicle according to the current situation without considering opponents. This decision then is translated to the acceleration/breaking pedals. This module uses the estimated turn angle together with the vacant distance in front to decide the safe speed.
+The target speed is mapped with a nonlinear function to values of acceleration and brake. Then, it is necessary to make sure that these values are applied in an appropriate way.  During the brake, the spin of the wheels might become smaller than the speed of the vehicle that
+means the wheels are slipping. Also, during the acceleration, the spin of the wheels might increase more than the speed of the vehicle that means the vehicle is in traction. The ABS and ASR technologies solve these issues through keeping the speed of the spinning wheels and the speed of vehicle as close as possible.
+Moreover, a gearing system is implemented, based on the minimum and maximum values of the rpm for each gear.
+\item Opponent manager: This module creates a map of opponents around and finds the vacant slot to overtake. This action may entail modification of the speed and steer calculated by the speed and steer controller modules.
+Ahura’s opponent manager contains two modules, steer reviser and speed reviser, that are responsible to revise steer and speed for overtaking. The information about opponents provided by opp sensors contain their distance and angle from the current position of the vehicle. This means that the position of opponents is provided in a polar coordinates system with the center of the measuring vehicle. Ahura builds a spatial map of the position of opponents, which is used to revise steer and speed of the vehicle for overtaking purposes.
 \item Dynamic adjuster: This module uses the mechanical specifications of the track (friction, bumps) as well as recorded difficulties the controller has experienced during the earlier laps and adjusts the current driving style.
 The dynamics parameters are estimated using an optimization-based approach to find the best values so that Ahura can drive a specific bot in TORCS. There are 23 parameters in Ahura that need to be determined: eight parameters for the steer controller, ten parameters for the speed controller, five parameters for the opponent manager.
 They were determined by using the optimization algorithm CMA-ES \cite{cmaes}, which has a good performance in continuous space, works with nonlinear systems, no constraint handling technique is required, and it is appropriate for nonseparable search spaces.
@@ -207,7 +204,7 @@ Existing advanced control based attempts to minimum-time driving usually provide
 In \cite{mpc}, the authors experimentally compared different time-optimal nonlinear MPC \cite{mpc_orig} formulations based on least squares objectives with an economic cost function in a real-time setup of small-scale model race cars, with the help of ACADO simulation toolkit from MATLAB \cite{acado}.
 MPC, standing for Model Predictive Control is a multivariable control algorithm that uses an internal dynamic model of the process, a cost function over the receding horizon and an optimization algorithm minimizing the cost function using the control input.
 The tight real-time bounds imposed on computational times make it necessary to reformulate the problem so as to allow for the use of efficient algorithms. To this end, they employed a nonlinear bicycle model \cite{bycicle} in a reformulation to spatial coordinates and proposed an infeasible-time-tracking objective for the best practical results.
-For an approximate solution of the time-optimal driving problem, the aim is to minimize the time required for the race car to reach the end of the fixed-length spatial prediction horizon. For prediction horizons which tend to infinity, this objective tends to the goal of driving time-optimally. As a consequence, long horizons are expected to yield a good approximation of the original problem in practice.
+For an approximate solution of the time-optimal driving problem, the aim is to minimize the time required for the race car to reach the end of the fixed-length spatial prediction horizon. For prediction horizons which tend to infinity this objective tends to the goal of driving time-optimally. As a consequence, long horizons are expected to yield a good approximation of the original problem in practice.
 In the author's formulation, by providing a suffciently small (i.e., infeasible) "target time" T ref they can have an approximate time-
 optimal MPC formulation in least-squares form. 
 The real-world experiments showed that this approach has potential, but the bicycle model proved insufficient at high velocities due to slip effects not being modelled.
@@ -226,17 +223,15 @@ The real-world experiments showed that this approach has potential, but the bicy
 
 \subsection{Reinforcement Learning in Racing Videogames}
 
-With the evolving of technologies and algorithms, the focus has been shifting towards reinforcement learning and in general data-driven algorithms, that has been proven to outperform classical algorithms in a variety of applications, including autonomous driving and racing.
+With the evolution of technologies and algorithms, the focus has been shifting towards reinforcement learning and in general data-driven algorithms, that has been proven to outperform classical algorithms in a variety of applications, including autonomous driving and racing.
 
 In \cite{formularl} the authors tackle the problem by exploring different formulations of the DDPG algorithm in TORCS.
 Here, telemetry data are used in order to make an agent learn to drive and outperform the standard bots included in the simulator.
 To achieve that, they provide the critic network of DDPG with a Long Short Term Memory \cite{lstm}, making the network recurrent, and enabling the agent to exploit the knowledge of the past. To this end, they also make the algorithm consider a window of multiple states and multiple reward instead of single ones.
 While in the standard algorithm a one-step target is used for updating the critic function, they adopt a multi-step targets strategy, which incorporate the next n rewards obtained along the trajectory starting from state s t and following a policy close to the current policy \(\pi\) at time step t.
 As concers the multiple states strategy, called by them Window sampling, the intuition is that in partially observable environments, accessing a single state does not reveal the full underlying state of the environment at each time step. Window sampling provides the agent additional information by feeding a window of the last w states to the actor and the critic network.
-Fianlly, they substitute the uniform distribution used by DDPG to sample the transition from the replay buffer with a Prioritized Experience Replay, which attempts to make learning more efficient by sampling more frequently transitions that are more important for learning.
-Their study was split in three parts, by training three different models. The first one uses a simple track and trained for 500 episodes. The learned model was tested without exploration on the
-same track the results were used to select the hyperparametrs
-for each of the algorithms used. The second one, the algorithm has been tested on a technically more complex track, while in the last part they evaluated the impact of adding future information of the track by adding a look ahead curvature and training in all three tracks.
+Finally, they substitute the uniform distribution used by DDPG to sample the transition from the replay buffer with a Prioritized Experience Replay, which attempts to make learning more efficient by sampling more frequently transitions that are more important for learning.
+Their study was split in three parts, by training three different models, in order to enhance the generalization capability. The first one uses a simple track and trained for 500 episodes. The learned model was tested without exploration on the same track and the results were used to select the hyperparameters for each of the algorithms used. In the second one the algorithm has been tested on a technically more complex track, while in the last part they evaluated the impact of adding future information of the track by adding a look ahead curvature and training in all three tracks.
 
 
 \subsection{Imitation Learning in Videogames}
@@ -244,14 +239,11 @@ for each of the algorithms used. The second one, the algorithm has been tested o
 A promising approach in building human-like artificial players is what is commonly known as Imitation Learning \cite{imit1}, \cite{imit2}, or Learning from Demonstration (LfD) \cite{lfd}, which consists in integrating some human expertise in the algorithm, be it collected data to which learn from or to be incorporate in a RL algorithm resulting in a hybrid solution.
 
 
-A popular algorithm called DAGGER \cite{dagger} provides a easy way for incorporating human experience. However, a human expert should always be available to provide feedback which is not convenient in
-practice. Finn et al. proposed the Inverse Reinforcement
-Learning (IRL) \cite{inv}, which automatically learns reward functions from human demonstrations for robotic control. Since it
-does not provide a mechanism to obtain feedback from the interaction with the environment, the generalization ability of imitation learning is limited.
+A popular algorithm called DAGGER \cite{dagger} provides an easy way for incorporating human experience. However, a human expert should always be available to provide feedback which is not convenient in practice. Finn et al. proposed the Inverse Reinforcement Learning (IRL) \cite{inverse}, which automatically learns reward functions from human demonstrations for robotic control. Since it does not provide a mechanism to obtain feedback from the interaction with the environment, the generalization ability of imitation learning is limited.
 
 Presented in \cite{dqlfd}, Deep Q-learning from Demonstrations (DQfD) vastly accelerates DQN by pretraining an initial behavior network, and also introducing a supervised loss and a L2 regularization loss when training the target network.
 
-In \cite{drlhp} the reward is from a reward predictor trained with human feedback rather than from  interactions with the environment. This method separates the goal learning from the behavior learning by training a reward predictor with non-expert human preferences, and the behavior of the agent is improved accordingly.
+In \cite{drlhp} the authors considered rewards computed by a predictor trained with human feedback rather than from  interactions with the environment. This method separates the goal learning from the behavior learning by training a reward predictor with non-expert human preferences, and the behavior of the agent is improved accordingly.
 
 \subsection{Imitation Learning in Racing Videogames}
 
@@ -259,7 +251,7 @@ Togelius and colleagues focused on the learning of a specific driving style usin
 
 
 In  \cite{cardamone}, Cardamone, Loiacono and Lanzi applied supervised learning to develop car controllers in TORCS from the logs collected from other driver, and developed controllers capable of driving in non-trivial tracks reaching a performance that is in some cases 15\% lower than that of the fastest bot available in
-the simulator (a good result if considered that supervised learning approaches generally yeld to poor performances).
+the simulator (a good result if considered that supervised learning approaches generally yeld poor performances).
 They considered two representations of the current state of the car:
 \begin{itemize}
 \item The first sensory representation is based on a rangefinder inputs usually employed in simulated car racing competitions.
@@ -310,12 +302,18 @@ Their experiment consisted in running the Inferno bot on three tracks: G-track-1
 as outputs.
 
 
+\begin{figure}[t]
+ \centering
+  \captionsetup{width=10cm}
+  \includegraphics[width=10cm]{./img/cinesi}
+  \caption{From \cite{cinesi}. The framework of Reinforcement Learning, Imitation Learning, and their integration. The demonstrations of human experts can be used to pretrain a model for RL, to shape the reward/policy of RL, and so on.}
+\end{figure}
 
-This paper \cite{cinesi} aims at improving the achievements of DQfD \cite{dqfd} in integrating reinforcement learning with human demonstrations using TORCS.
+This paper \cite{cinesi} aims at improving the achievements of DQlfD \cite{dqlfd} in integrating reinforcement learning with human demonstrations using TORCS.
 Their goal is to bring experts demonstrations together with reinforcement learning, try to let the agent learn an appropriate policy by interacting with the environment on itself, and learn from expert’s demonstrations at the same time.
 Their contribute develops in three parts:
 \begin{itemize}
-\item They shift from the discrete action domain contained in \cite{dqfd} to a continuous action domain.
+\item They shift from the discrete action domain contained in \cite{dqlfd} to a continuous action domain.
 In order to determine the similarity between actions, they
 approximately evaluate the two considered actions by their
 mean squared error.  As DQN uses a greedy way to find the optimal policy, and the actions are finite discrete values, it is easy to calculate the supervised error for DQfD. However, in continuous action domain, the greedy policy is inapplicable, so they try to use the output of actor network directly for supervision. They combine a supervised loss with the original TD-loss to update the parameters of the critic network, and control the weighting between the losses by a given parameter.
@@ -334,14 +332,6 @@ action to be similar enough with the demonstrator’s action. Meanwhile, this ac
 \end{itemize}
 Their claim is that their method not only masters the preferences in choosing the lane, but also outperforms human expert demonstration in
 average reward.
-
-
-\begin{figure}
- \centering
-  \captionsetup{width=10cm}
-  \includegraphics[width=10cm]{./img/cinesi}
-  \caption{From \cite{cinesi}. The framework of Reinforcement Learning, Imitation Learning, and their integration. The demonstrations of human experts can be used to pretrain a model for RL, to shape the reward/policy of RL, and so on.}
-\end{figure}
 
 
 

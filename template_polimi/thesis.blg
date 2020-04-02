@@ -8,13 +8,13 @@ A level-1 auxiliary file: chapters/chapter1.aux
 A level-1 auxiliary file: chapters/chapter2.aux
 A level-1 auxiliary file: chapters/chapter3.aux
 A level-1 auxiliary file: chapters/chapter4.aux
+A level-1 auxiliary file: chapters/chapter5.aux
 A level-1 auxiliary file: chapters/chapter6.aux
 A level-1 auxiliary file: chapters/chapter7.aux
 A level-1 auxiliary file: chapters/chapter8.aux
 The style file: plain.bst
 Database file #1: bibl_thesis.bib
-Warning--I didn't find a database entry for "inv"
-Warning--I didn't find a database entry for "dqfd"
+Warning--I didn't find a database entry for "ilr"
 Warning--can't use both author and editor fields in lfd
 Warning--empty journal in drlhp
 Warning--empty journal in bycicle
@@ -25,45 +25,45 @@ Warning--empty booktitle in imit1
 Warning--empty booktitle in formularl
 Warning--empty booktitle in imit4
 Warning--empty booktitle in mpc
-You've used 24 entries,
+You've used 25 entries,
             2118 wiz_defined-function locations,
-            643 strings with 8346 characters,
-and the built_in function-call counts, 8924 in all, are:
-= -- 837
-> -- 472
+            647 strings with 8514 characters,
+and the built_in function-call counts, 9128 in all, are:
+= -- 857
+> -- 479
 < -- 10
-+ -- 187
-- -- 162
-* -- 604
-:= -- 1442
-add.period$ -- 71
-call.type$ -- 24
-change.case$ -- 152
++ -- 190
+- -- 164
+* -- 612
+:= -- 1481
+add.period$ -- 74
+call.type$ -- 25
+change.case$ -- 156
 chr.to.int$ -- 0
-cite$ -- 34
-duplicate$ -- 364
-empty$ -- 658
-format.name$ -- 162
-if$ -- 1904
+cite$ -- 35
+duplicate$ -- 374
+empty$ -- 675
+format.name$ -- 164
+if$ -- 1945
 int.to.chr$ -- 0
-int.to.str$ -- 24
-missing$ -- 24
-newline$ -- 121
-num.names$ -- 48
-pop$ -- 185
+int.to.str$ -- 25
+missing$ -- 25
+newline$ -- 126
+num.names$ -- 50
+pop$ -- 189
 preamble$ -- 1
-purify$ -- 129
+purify$ -- 132
 quote$ -- 0
-skip$ -- 299
+skip$ -- 306
 stack$ -- 0
-substring$ -- 435
-swap$ -- 117
+substring$ -- 440
+swap$ -- 118
 text.length$ -- 10
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 94
+type$ -- 98
 warning$ -- 10
-while$ -- 68
-width$ -- 26
-write$ -- 250
-(There were 12 warnings)
+while$ -- 70
+width$ -- 27
+write$ -- 260
+(There were 11 warnings)

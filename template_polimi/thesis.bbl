@@ -35,6 +35,12 @@ Padraig Cunningham and Sarah Delany.
 \newblock k-nearest neighbour classifiers.
 \newblock {\em Mult Classif Syst}, 04 2007.
 
+\bibitem{inverse}
+Abbeel Finn, Levine.
+\newblock Guided cost learning: Deep inverse optimal control via policy
+  optimization.
+\newblock {\em International Conference on Machine Learning (ICML}, 2016.
+
 \bibitem{imit2}
 B.~{Gorman}, C.~{Thurau}, C.~{Bauckhage}, and M.~{Humphrys}.
 \newblock Bayesian imitation of human behavior in interactive computer games.
