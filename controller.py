@@ -65,12 +65,13 @@ class Projection(Reward_function):
 
 
 class MeanController(object):
-    def __init__(self, ref_df, env=None, alpha1=0.5, alpha2=0.02, beta1=0.055, gamma1=3, gamma2=73.5, gamma3=116, k=20):
+    def __init__(self, ref_df, env=None, alpha1=0.5, alpha2=0.02, speed_y_thr=5, beta1=0.055, gamma1=3, gamma2=73.5, gamma3=116, k=20):
         # Init
         self.env = env
         # Throttle params
         self.alpha1 = alpha1
         self.alpha2 = alpha2
+        self.speed_y_thr = speed_y_thr
         # Break params
         self.beta1 = beta1
         # Steering params
@@ -198,10 +199,21 @@ class MeanController(object):
         return [steer, brake, throttle], info
     
     def action_closure(self, obs, params):
-         #set params
-         #act
-         action, _ = self.act(obs)
-         return action
+        #set params
+        params = params()
+        print('params:', params)
+        self.alpha1 = params[0]
+        self.alpha2 = params[1]
+        self.speed_y_thr = params[2]
+        # Break params
+        self.beta1 = params[3]
+        # Steering params
+        self.gamma1 = params[4]  # rho param
+        self.gamma2 = params[5]  # orientation parm
+        self.gamma3 = params[6]  # angle param
+        #act
+        action, _ = self.act(obs, False)
+        return action
 
     def playGame(self, episode_count=1, max_steps=100000, save_data=False):
         step = 0

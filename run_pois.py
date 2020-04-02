@@ -25,12 +25,11 @@ from gym_torcs_ctrl import TorcsEnv
 default_values = np.array(
         [[0.5, 1],
          [0.02, 1.],
+         [5, 1],
          [0.055, 1],
          [3., 1],
          [73.5, 1],
-         [116, 1],
-         [20, 1],
-         [5, 1]]
+         [116, 1]]
     )
 
 def starter(x):
