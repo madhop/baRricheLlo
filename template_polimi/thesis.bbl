@@ -70,6 +70,12 @@ Georg~Schildbach Jason~Kong, Mark~Pfeiffer.
 \newblock Kinematic and dynamic vehicle models for autonomous driving control
   design.
 
+\bibitem{ddpg}
+Alexander~Pritzel Lillicrap, Hunt.
+\newblock Continuous control with deep reinforcement learning.
+\newblock {\em International Conference on Learning Representations (ICLR)},
+  2016.
+
 \bibitem{acado}
 MATLAB.
 \newblock Acado toolkit.
@@ -78,6 +84,11 @@ MATLAB.
 \bibitem{atari}
 Silver Mnih, Kavukcuoglu.
 \newblock Playing atari with deep reinforcement learning.
+
+\bibitem{il}
+Takayuki Osa, Joni Pajarinen, and Gerhard Neumann.
+\newblock {\em An Algorithmic Perspective on Imitation Learning}.
+\newblock Now Publishers Inc., Hanover, MA, USA, 2018.
 
 \bibitem{imit1}
 Steffen Priesterjahn, Oliver Kramer, Alexander Weimer, and Andreas Goebels.
