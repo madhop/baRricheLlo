@@ -50,17 +50,15 @@ In order to evaluate the usefulness of a policy, we now introduce the concept of
 
 From which one can derive the recursive so-called Bellman Equation:
 
-Parallel to the value functions is the concept of action-value function, or Q-value, which is the expected return after taking an action \(a_t\) in state \(s_t\) and thereafter following policy \(\pi\):
+Analog to the value functions is the concept of action-value function, or Q-value, which is the expected return after taking an action \(a_t\) in state \(s_t\) and thereafter following policy \(\pi\):
 \[Q^\pi(s_t,a_t)=\mathbb{E}_{r_{i \geq t},s_{i>t} \sim ,a_{i>t} \sim \pi}[R_t|s_t,a_t]\]
 and the relative Bellman Equation:
 \[Q^\pi(s_t,a_t)=\mathbb{E}_{r_t,s_{t+1} \sim E }\left[ r(s_t,a_t) + \gamma \mathbb{E}_{a_{t+1} \sim \pi}\left[Q^\pi (s_{t+1},a_{t+1})\right]\right]\]
 
-To obtain the best policy that yields the best value function there are several methods, the one discussed here takes into consideration a quality function (also known as Q-value) to
-evaluate the estimated accumulated rewards obtained following a certain policy. It has a similardefinition of the value function but the Q-value takes also into consideration the action. So
-it established the long term rewards of applying an action to a state and then following the considered policy. 
+To obtain the best policy that yields the best value function there are several methods, the one discussed here takes into consideration a quality function (also known as Q-value) to evaluate the estimated accumulated rewards obtained following a certain policy. It has a similardefinition of the value function but the Q-value takes also into consideration the action. So it established the long term rewards of applying an action to a state and then following the considered policy. 
 
 \subsection{Temporal Difference Learning}
-Temporal difference learning (TD) \cite{ilr} algorithms are able to learn from raw experiences without the need for a model of the environment. They combine ideas form dynamic-programming and from Monte Carlo methods but while Monte Carlo algorithms need to reach the end of a learning episode to update the value function TD is able to update it at the end of each step and so there is not the need to ignore some episode as in typical Mote Carlo algorithms.
+Temporal difference learning (TD) \cite{irl} algorithms are able to learn from raw experiences without the need for a model of the environment. They combine ideas form dynamic-programming and from Monte Carlo methods but while Monte Carlo algorithms need to reach the end of a learning episode to update the value function TD is able to update it at the end of each step and so there is not the need to ignore some episode as in typical Mote Carlo algorithms.
 To be able to change the value function at each step it is needed to make estimations based on already learned ones, and this can be done with some ideas form dynamic-programming, but while DP needs a precise model of the environment dynamics TD does not and is so more suitable for unpredictable tasks.
 \subsubsection{SARSA}
 
@@ -98,8 +96,54 @@ It is not possible to straightforwardly apply Q-learning to continuous action sp
 
 
 
+- rl algorithms can be divided intwo two catergories: 
+	- action-based methods (policy gradients PG):
+		perform a search in a parametric polocy space 
+	- parameter-based methods
 
 
+
+
+
+
+
+
+
+
+
+
+- A policy can be parametric, belonging to a parametric policy space 
+\(\Pi_\theta = {\pi_\theta:\theta \in \Theta \subseteq \mathbb{R}^p}\)
+
+- The agent has a hyperpolicy $v$ used to sample the policy parameters at the beginning of each episode
+
+- the hyperpolicy belongs to a hyperpolicy space \(\mathcal{N}_\mathcal{P} = {v_\rho:\rho \in \mathcal{P} \subseteq \mathbb{R}^r}\)
+
+
+- the expected return can be expressed as expectation over the policy parameter space $\Theta$: \[\] \[ J_D(\rho) = \int_{\Theta} \int_{\mathcal{T}} v_\rho(\theta)p(\tau|\theta)R(\tau)d\tau d\theta, \] or over the trajectory space $\mathcal{T}$: \[J_D(\theta) = \int_{\mathcal{T}} p(\tau|\theta)R(\tau)d\tau\].
+
+
+- the goal of a parameter-based learnint agent is to determine the hyperparameters \(\rho*\) so as to maximize \(J_D(\rho)\), while an action-ased learning agent aims to find the policy parameters \(\theta*\) that maximize \(J_D(\theta)\). In the former case, the stochasticiy of the hyperpolicy is a sufficient source of exploration, hence deterministc action policies are typically considered. On the contrary, in the latter, the exploration needs to be enforced by means of the stochasticiy of $\pi_\theta$.
+
+
+
+
+
+\subsection{Policy Optimization}
+
+
+
+
+\subsubsection{Policy Optimization via Importance Sampling}
+\cite{pois}
+
+
+- framework: policy that maximizes jd within a prametric space of stochastic differentiable policies.
+
+\begin{itemize}
+\item action
+\item parameter
+\end{itemize}
 
 
 

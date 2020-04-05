@@ -81,6 +81,13 @@ MATLAB.
 \newblock Acado toolkit.
 \newblock \url{https://acado.github.io/documentation.html}.
 
+\bibitem{pois}
+Alberto~Maria Metelli, Matteo Papini, Francesco Faccio, and Marcello Restelli.
+\newblock Policy optimization via importance sampling.
+\newblock In S.~Bengio, H.~Wallach, H.~Larochelle, K.~Grauman, N.~Cesa-Bianchi,
+  and R.~Garnett, editors, {\em Advances in Neural Information Processing
+  Systems 31}, pages 5442--5454. Curran Associates, Inc., 2018.
+
 \bibitem{atari}
 Silver Mnih, Kavukcuoglu.
 \newblock Playing atari with deep reinforcement learning.
@@ -118,6 +125,11 @@ Maddison Silver, Huang.
 K.~O. {Stanley} and R.~{Miikkulainen}.
 \newblock Evolving neural networks through augmenting topologies.
 \newblock {\em Evolutionary Computation}, 10(2):99--127, 2002.
+
+\bibitem{irl}
+Richard~S. Sutton and Andrew~G. Barto.
+\newblock {\em Introduction to Reinforcement Learning}.
+\newblock MIT Press, Cambridge, MA, USA, 1st edition, 1998.
 
 \bibitem{imit4}
 Julian Togelius, Renzo de~nardi, and Simon Lucas.
