@@ -201,7 +201,6 @@ class MeanController(object):
     def action_closure(self, obs, params):
         #set params
         params = params()
-        print('params:', params)
         self.alpha1 = params[0]
         self.alpha2 = params[1]
         self.speed_y_thr = params[2]

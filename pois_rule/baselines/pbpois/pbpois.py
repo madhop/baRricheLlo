@@ -292,6 +292,7 @@ def learn(env_maker, pol_maker, eval_policy,
         if it % eval_frequency == 0:
             print("Evaluating:")
             rho = pol.eval_params()
+            print('Higher params:', rho)
             rho = np.reshape(rho, (int(len(rho)/2), 2), 'F')
             pol.set_actor_params(rho[:, 0])
             def pi_wrapper(ob):
@@ -348,7 +349,9 @@ def learn(env_maker, pol_maker, eval_policy,
             else:
                 frozen_pol = pol.freeze()
                 for ep in range(num_theta):
+                    print('sampling episode:', ep)
                     theta = frozen_pol.resample()
+                    print('theta:', theta)
                     #actor_params.append(theta)
                     ret = 0
                     disc_ret = 0

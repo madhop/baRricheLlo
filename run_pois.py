@@ -23,14 +23,15 @@ from controller import MeanController
 from gym_torcs_ctrl import TorcsEnv
 import time
 
+init_logstd = 10.
 default_values = np.array(
-        [[0.5, 100.],
-         [0.02, 100.],
-         [5, 100.],
-         [0.055, 100.],
-         [3., 100.],
-         [73.5, 100.],
-         [116, 100.]]
+        [[0.5, init_logstd],
+         [0.02, init_logstd],
+         [5, init_logstd],
+         [0.055, init_logstd],
+         [3., init_logstd],
+         [73.5, init_logstd],
+         [116, init_logstd]]
     )
 
 def starter(x):
@@ -94,7 +95,8 @@ run_experiment(num_iterations=10000,
                horizon=600,
                eval_episodes=1,
                out_dir='POIS_logs', 
-               verbose=2)
+               verbose=2,
+               num_theta=10)
 
 
 
