@@ -24,45 +24,45 @@ Warning--empty booktitle in imit1
 Warning--empty booktitle in formularl
 Warning--empty booktitle in imit4
 Warning--empty booktitle in mpc
-You've used 29 entries,
+You've used 28 entries,
             2118 wiz_defined-function locations,
-            670 strings with 9225 characters,
-and the built_in function-call counts, 10543 in all, are:
-= -- 989
-> -- 560
+            666 strings with 9074 characters,
+and the built_in function-call counts, 10339 in all, are:
+= -- 969
+> -- 553
 < -- 11
-+ -- 221
-- -- 190
-* -- 703
-:= -- 1719
-add.period$ -- 87
-call.type$ -- 29
-change.case$ -- 177
++ -- 218
+- -- 188
+* -- 695
+:= -- 1680
+add.period$ -- 84
+call.type$ -- 28
+change.case$ -- 173
 chr.to.int$ -- 0
-cite$ -- 39
-duplicate$ -- 434
-empty$ -- 781
-format.name$ -- 190
-if$ -- 2247
+cite$ -- 38
+duplicate$ -- 424
+empty$ -- 764
+format.name$ -- 188
+if$ -- 2206
 int.to.chr$ -- 0
-int.to.str$ -- 29
-missing$ -- 31
-newline$ -- 146
-num.names$ -- 60
-pop$ -- 219
+int.to.str$ -- 28
+missing$ -- 30
+newline$ -- 141
+num.names$ -- 58
+pop$ -- 215
 preamble$ -- 1
-purify$ -- 150
+purify$ -- 147
 quote$ -- 0
-skip$ -- 347
+skip$ -- 340
 stack$ -- 0
-substring$ -- 501
-swap$ -- 133
+substring$ -- 496
+swap$ -- 132
 text.length$ -- 11
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 110
+type$ -- 106
 warning$ -- 10
-while$ -- 82
-width$ -- 31
-write$ -- 305
+while$ -- 80
+width$ -- 30
+write$ -- 295
 (There were 10 warnings)
