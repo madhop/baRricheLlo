@@ -21,6 +21,7 @@ from fqi.utils import *
 import pandas as pd
 from controller import MeanController
 from gym_torcs_ctrl import TorcsEnv
+import time
 
 default_values = np.array(
         [[0.5, 1],
@@ -35,19 +36,15 @@ default_values = np.array(
 def starter(x):
     return [0, 0, 1, 7]
 
-def run_experiment(num_iterations, timestep_length, perception_delay, action_delay, port, seed, horizon, out_dir='.',
-                   parallel=False, episodes_per_scenario=1, verbose=True, num_theta=10, num_workers=5, punish_jerk=True,
+def run_experiment(num_iterations, timestep_length, horizon, out_dir='.',
+                   parallel=False, episodes_per_scenario=1, verbose=True, num_theta=1, num_workers=5, punish_jerk=True,
                    gamma=0.999, eval_frequency=10, eval_episodes=20, scale_reward=1., jerk_pun=0.5, hsd_pun=2.,
                    continuous=False, po=False, three_actions=False, **alg_args):
     
     
     ref_df = pd.read_csv('trajectory/ref_traj.csv')
-    demos_path = 'trajectory/dataset_offroad_human.csv'
-    demos_penalty = pd.read_csv(demos_path)
-    demos_penalty = demos_penalty[demos_penalty.time > 70]
-    penalty = LikelihoodPenalty(kernel='gaussian', bandwidth=1.0)
-    penalty.fit(demos_penalty[penalty_cols].values)
-    reward_function = Temporal_projection(ref_df, penalty=None)
+    reward_function = Spatial_projection(ref_df, penalty=None)
+    #reward_function = Temporal_projection(ref_df, penalty=None)
 
     env = TorcsEnv(reward_function, collision_penalty=-1000, state_cols=state_cols, ref_df=ref_df, vision=False,
                    throttle=True, gear_change=False, brake=True, start_env=False, damage_th=10.0, slow=False,
@@ -69,8 +66,8 @@ def run_experiment(num_iterations, timestep_length, perception_delay, action_del
         return pi
     
     sampler = None
-    sess = U.single_threaded_session()
-    sess.__enter__()
+    """sess = U.single_threaded_session()
+    sess.__enter__()"""
     
     def eval_policy_closure(**args):
         return eval_policy(env=env, **args)
@@ -80,18 +77,29 @@ def run_experiment(num_iterations, timestep_length, perception_delay, action_del
     
     rho_att = []
     
+    time_str = str(int(time.time()))
     pois.learn(make_env, make_policy, num_theta=num_theta, horizon=horizon,
                max_iters=num_iterations, sampler=sampler, feature_fun=None,
                line_search_type='parabola', gamma=gamma, eval_frequency=eval_frequency,
                eval_episodes=eval_episodes, eval_policy=eval_policy_closure,
                episodes_per_theta=episodes_per_scenario,
                rho_att = rho_att,
-               #eval_theta_path=directory_output + '/logs' + '/eval_theta_episodes-' + time_str + '.csv',
-               #save_to=out_dir + '/' + directory_output + '/models/'+time_str+'/', 
+               eval_theta_path=out_dir + '/logs' + '/eval_theta_episodes-' + time_str + '.csv',
+               save_to=out_dir + '/models/'+time_str+'/', 
                **alg_args)
 
+#%% run experiment
+run_experiment(num_iterations=10000, 
+               timestep_length=0.1,
+               horizon=600,
+               eval_episodes=1,
+               out_dir='POIS_logs', 
+               verbose=2)
 
-if __name__ == '__main__':
+
+
+#%% main
+"""if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--max_iterations", type=int, default=10000,
                          help='Maximum number of timesteps')
@@ -166,3 +174,4 @@ if __name__ == '__main__':
                    var_step_size=args.var_step_size
 
                    )
+"""

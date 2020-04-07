@@ -145,6 +145,7 @@ def optimize_offline(pol, newpol, actor_params, rets, grad_tol=1e-4, bound_tol=1
                      rmax=None, delta=0.2, use_parabola=False, verbose=True,
                      step_size=1,
                      var_step_size = 0.1):
+    print('Optimizing offline')
     improvement = 0.
     rho = pol.eval_params()
 
@@ -184,8 +185,10 @@ def optimize_offline(pol, newpol, actor_params, rets, grad_tol=1e-4, bound_tol=1
         # assert np.dot(grad, natgrad) >= 0
 
         grad_norm = np.sqrt(np.dot(grad, natgrad))
+        print('grad:', grad)
+        print('natgrad:', natgrad)
         if grad_norm < grad_tol:
-            if verbose: print("stopping - gradient norm < gradient_tol")
+            if verbose: print("stopping - gradient norm < gradient_tol - grad_norm:", grad_norm)
             if verbose > 1: print(rho)
             return rho, improvement, i
 
@@ -431,7 +434,8 @@ def learn(env_maker, pol_maker, eval_policy,
                                                     var_step_size=var_step_size)
                 print("Finished %d offline iterations" %num_off_it)
                 offline_iters_counts.append(num_off_it)
-                np.save(os.path.join(save_to, 'offline_iters'), offline_iters_counts)
+                if save_to:
+                    np.save(os.path.join(save_to, 'offline_iters'), offline_iters_counts)
                 newpol.set_params(rho)
                 # assert(improvement>=0.)
                 # Expected performance

@@ -4,7 +4,7 @@ from fqi.utils import *
 import pandas as pd
 from controller import MeanController
 from gym_torcs_ctrl import TorcsEnv
-
+from time import time
 
 def starter(x):
     return [0, 0, 1, 7]
@@ -25,7 +25,9 @@ if __name__ == '__main__':
                    throttle=True, gear_change=False, brake=True, start_env=False, damage_th=10.0, slow=False,
                    faster=False, graphic=True, starter=starter)
 
-    C = MeanController(ref_df, env , gamma1=3, gamma2=73.5, gamma3=116, alpha1=0.5, alpha2=0.02, beta1=0.055, k=20)
+    s = time()
+    C = MeanController(ref_df, env, gamma1=3, gamma2=73.5, gamma3=116, alpha1=0.5, alpha2=0.02, beta1=0.055, k=20)
     episode = C.playGame()
     C.env.end()
-    pickle.dump(episode, open('../episode_to_check.pkl', 'wb'))
+    print('Elapsed time {}'.format(time() - s))
+    #pickle.dump(episode, open('../episode_no_graphic.pkl', 'wb'))

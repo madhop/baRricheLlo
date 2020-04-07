@@ -12,6 +12,8 @@ import time
 from utils_torcs import *
 
 
+def_path = os.path.expanduser('~/.torcs/config/raceman/practice.xml')
+
 class TorcsEnv(gym.Env):
     terminal_judge_start = 500  # Speed limit is applied after this step
     termination_limit_progress = 5  # [km/h], episode terminates if car is running slower than this limit
@@ -19,12 +21,13 @@ class TorcsEnv(gym.Env):
 
     initial_reset = True
 
-    def __init__(self, reward_function, state_cols, ref_df, vision=False, throttle=False, gear_change=False,
-                 brake=False, start_env=True, track_length=5783.85, damage_th=4.0, slow=True, faster=False, 
-                 graphic=True, speed_limit=5, verbose=True, collision_penalty=-1000, low_speed_penalty=-1000,
-                 starter=auto_driver.get_action):
+    def __init__(self, reward_function, state_cols, ref_df, practice_path=def_path, vision=False, throttle=False,
+                 gear_change=False, brake=False, start_env=True, track_length=5783.85, damage_th=4.0, slow=True,
+                 faster=False, graphic=True, speed_limit=5, verbose=True, collision_penalty=-1000,
+                 low_speed_penalty=-1000, starter=auto_driver.get_action):
 
         self.starter = starter
+        self.pracice_path = practice_path
         self.vision = vision
         self.throttle = throttle
         self.gear_change = gear_change
@@ -158,7 +161,7 @@ class TorcsEnv(gym.Env):
         else:
             # Reward computation
             # Compute the current state
-            """current_state = self.observation_to_state(self.observation, self.p1_observation, self.p2_observation,
+            current_state = self.observation_to_state(self.observation, self.p1_observation, self.p2_observation,
                                                       self.prev_u)
             current_state_df = np.concatenate([current_state.reshape(1, -1), np.zeros((1, 1))], axis=1)
             # Compute the next state
@@ -166,8 +169,8 @@ class TorcsEnv(gym.Env):
             next_state_df = np.concatenate([next_state.reshape(1, -1), np.ones((1, 1)) * obs['trackPos']], axis=1)
             data = pd.DataFrame(data=np.concatenate([current_state_df, next_state_df], axis=0),
                                 columns=self.state_cols + ['trackPos'])
-            reward = self.reward_function(data)"""
-            reward = 0
+            reward = self.reward_function(data)
+            #reward = 0
             # gym-torcs reward
             """sp = np.array(obs['speed_x'])
             progress = sp*np.cos(obs['angle']) - np.abs(sp*np.sin(obs['angle'])) - sp * np.abs(obs['trackPos'])
@@ -280,7 +283,7 @@ class TorcsEnv(gym.Env):
                 print("### TORCS is RELAUNCHED ###")
 
         # Modify here if you use multiple tracks in the environment
-        self.client = snakeoil3.Client(p=3001, vision=self.vision, graphic=self.graphic)  # Open new UDP in vtorcs
+        self.client = snakeoil3.Client(p=3001, vision=self.vision, graphic=self.graphic, practice_path=self.pracice_path)  # Open new UDP in vtorcs
         self.client.MAX_STEPS = np.inf
 
         client = self.client
@@ -369,7 +372,7 @@ class TorcsEnv(gym.Env):
         if self.graphic:
             command_str = 'torcs -nofuel -nodamage -nolaptime'
         else:
-            command_str = 'torcs -r /home/driver/.torcs/config/raceman/practice.xml -nofuel -nodamage -nolaptime'
+            command_str = 'torcs -r {} -nofuel -nodamage -nolaptime'.format(self.practice_path)
         if self.vision is True:
             command_str += ' -vision'
 
