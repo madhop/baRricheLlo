@@ -201,7 +201,16 @@ class MeanController(object):
     def action_closure(self, obs, params):
         #set params
         params = params()
-        self.alpha1 = params[0]
+        self.alpha1 = np.exp(params[0])
+        self.alpha2 = np.exp(params[1])
+        self.speed_y_thr = np.exp(params[2])
+        # Break params
+        self.beta1 = np.exp(params[3])
+        # Steering params
+        self.gamma1 = np.exp(params[4])  # rho param
+        self.gamma2 = np.exp(params[5])  # orientation parm
+        self.gamma3 = np.exp(params[6])  # angle param
+        """self.alpha1 = params[0]
         self.alpha2 = params[1]
         self.speed_y_thr = params[2]
         # Break params
@@ -209,7 +218,8 @@ class MeanController(object):
         # Steering params
         self.gamma1 = params[4]  # rho param
         self.gamma2 = params[5]  # orientation parm
-        self.gamma3 = params[6]  # angle param
+        self.gamma3 = params[6]  # angle param"""
+        
         #act
         action, _ = self.act(obs, False)
         return action

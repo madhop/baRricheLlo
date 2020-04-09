@@ -101,6 +101,7 @@ def line_search_parabola(pol, newpol, actor_params, rets, alpha, natgrad,
     delta_bound_old = -np.inf
     bound_init, _ = newpol.eval_bound(actor_params, rets, pol, rmax,
                                    normalize, use_rmax, use_renyi, delta)
+    print('bound_init:', bound_init)
     rho_old = rho_init = newpol.eval_params()
 
     for i in range(max_search_ite):
@@ -111,7 +112,7 @@ def line_search_parabola(pol, newpol, actor_params, rets, alpha, natgrad,
         bound, renyi = newpol.eval_bound(actor_params, rets, pol, rmax,
                                   normalize, use_rmax, use_renyi, delta)
 
-        #print("Line search iteration %d, Bound:%f   , Renyi: %f" %(i,bound, renyi))
+        print("Line search iteration %d, Bound:%f   , Renyi: %f" %(i,bound, renyi))
         if np.isnan(bound):
             warnings.warn('Got NaN bound value: rolling back!')
             return rho_old, epsilon_old, delta_bound_old, i + 1
@@ -188,7 +189,7 @@ def optimize_offline(pol, newpol, actor_params, rets, grad_tol=1e-4, bound_tol=1
         print('grad:', grad)
         print('natgrad:', natgrad)
         if grad_norm < grad_tol:
-            if verbose: print("stopping - gradient norm < gradient_tol - grad_norm:", grad_norm)
+            if verbose: print("stopping - gradient norm < gradient_tol")
             if verbose > 1: print(rho)
             return rho, improvement, i
 
@@ -282,6 +283,7 @@ def learn(env_maker, pol_maker, eval_policy,
     old_actor_params, old_rets, old_disc_rets, old_lens = [], [], [], []
     rho_att.append('timesteps_so_far')
     best_rew = -np.inf
+    best_learned_rew = -np.inf
     if eval_theta_path is not None:
 
         with open(eval_theta_path, 'w', newline='') as out_file:
@@ -351,13 +353,19 @@ def learn(env_maker, pol_maker, eval_policy,
                 for ep in range(num_theta):
                     print('sampling episode:', ep)
                     theta = frozen_pol.resample()
-                    print('theta:', theta)
                     #actor_params.append(theta)
-                    ret = 0
+                    """ret = 0
                     disc_ret = 0
-                    ep_len = 0
+                    ep_len = 0"""
                     for _ in range(episodes_per_theta):
+                        print('theta:', theta)
                         r, dr, el = eval_trajectory(env, frozen_pol, gamma, horizon, feature_fun)
+                        print('theta:', theta)
+                        print('Reward of this theta:', r)
+                        if r > best_learned_rew and save_to is not None:
+                            print('Saving best learned')
+                            np.save(save_to + '/best_learned', theta)
+                            best_learned_rew = r
                         '''ret += r
                         disc_ret += dr
                         ep_len += el'''
@@ -436,6 +444,10 @@ def learn(env_maker, pol_maker, eval_policy,
                                                     step_size=step_size,
                                                     var_step_size=var_step_size)
                 print("Finished %d offline iterations" %num_off_it)
+                print(colorize('old rho:', 'green'))
+                print(old_rho)
+                print(colorize('rho:', 'green'))
+                print(rho)
                 offline_iters_counts.append(num_off_it)
                 if save_to:
                     np.save(os.path.join(save_to, 'offline_iters'), offline_iters_counts)

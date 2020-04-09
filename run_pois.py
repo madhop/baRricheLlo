@@ -15,6 +15,7 @@ from pois_rule.policies.weight_hyperpolicy import PeRuleBasedPolicy
 from pois_rule.baselines.pbpois import pbpois as pois
 from pois_rule.policies.eval_policy import eval_policy
 import pois_rule.baselines.common.tf_util as U
+from pois_rule.baselines import logger
 import pickle
 from fqi.reward_function import *
 from fqi.utils import *
@@ -22,17 +23,20 @@ import pandas as pd
 from controller import MeanController
 from gym_torcs_ctrl import TorcsEnv
 import time
+init_logstd = 0.5
+"""default_values = np.array(
+        [[np.log(0.5), init_logstd],
+         [np.log(0.02), init_logstd],
+         [np.log(5), init_logstd],
+         [np.log(0.055), init_logstd],
+         [np.log(3.), init_logstd],
+         [np.log(73.5), init_logstd],
+         [np.log(116), init_logstd]]
+    )"""
 
-init_logstd = 10.
-default_values = np.array(
-        [[0.5, init_logstd],
-         [0.02, init_logstd],
-         [5, init_logstd],
-         [0.055, init_logstd],
-         [3., init_logstd],
-         [73.5, init_logstd],
-         [116, init_logstd]]
-    )
+default_means = np.array([0.5, 0.02, 5, 0.055, 3., 73.5, 116])
+default_means = np.log(default_means)
+default_logstd = np.ones(7)*init_logstd
 
 def starter(x):
     return [0, 0, 1, 7]
@@ -59,16 +63,16 @@ def run_experiment(num_iterations, timestep_length, horizon, out_dir='.',
     
     def make_policy(name, b=0, c=0):
         pi = policyConstructor(name=name, ob_space=env.observation_space, ac_space=env.action_space,
-                                 means_init=default_values[:, 0],
-                                 logstds_init=default_values[:, 1],
+                                 means_init=default_means, #default_values[:, 0],
+                                 logstds_init=default_logstd, #default_values[:, 1],
                                  verbose=verbose,
                                  n_actions=n_actions,
                                  action_closure=action_closure)
         return pi
     
     sampler = None
-    """sess = U.single_threaded_session()
-    sess.__enter__()"""
+    sess = U.single_threaded_session()
+    sess.__enter__()
     
     def eval_policy_closure(**args):
         return eval_policy(env=env, **args)
@@ -79,6 +83,7 @@ def run_experiment(num_iterations, timestep_length, horizon, out_dir='.',
     rho_att = []
     
     time_str = str(int(time.time()))
+    logger.configure(dir=out_dir + '/logs', format_strs=['stdout', 'csv'], suffix=time_str)
     pois.learn(make_env, make_policy, num_theta=num_theta, horizon=horizon,
                max_iters=num_iterations, sampler=sampler, feature_fun=None,
                line_search_type='parabola', gamma=gamma, eval_frequency=eval_frequency,
@@ -94,9 +99,11 @@ run_experiment(num_iterations=10000,
                timestep_length=0.1,
                horizon=600,
                eval_episodes=1,
-               out_dir='POIS_logs', 
+               out_dir='POIS_logs',
                verbose=2,
-               num_theta=10)
+               num_theta=3,
+               delta=0.2,
+               eval_frequency=5)
 
 
 

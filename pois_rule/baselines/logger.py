@@ -357,6 +357,7 @@ class Logger(object):
 Logger.DEFAULT = Logger.CURRENT = Logger(dir=None, output_formats=[HumanOutputFormat(sys.stdout)])
 Logger.SUMO = Logger(dir=None, output_formats=[HumanOutputFormat(sys.stdout)])
 
+
 def configure(dir=None, format_strs=None, suffix=''):
     if dir is None:
         dir = os.getenv('OPENAI_LOGDIR')
