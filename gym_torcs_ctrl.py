@@ -172,9 +172,9 @@ class TorcsEnv(gym.Env):
             reward = self.reward_function(data)
             #reward = 0
             # gym-torcs reward
-            sp = np.array(obs['speed_x'])
+            """sp = np.array(obs['speed_x'])
             progress = sp*np.cos(obs['angle']) - np.abs(sp*np.sin(obs['angle'])) - sp * np.abs(obs['trackPos'])
-            reward = progress
+            reward = progress"""
 
 
         # Save u as previous action for the next step
