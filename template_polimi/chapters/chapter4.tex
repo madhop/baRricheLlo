@@ -2,37 +2,9 @@
 \label{State of the Art}
 \thispagestyle{empty}
 
-scaletta:
 
-
-
-- Reinforcement learning v
-	- markov decision process v
-	- environment v
-	- reward v
-	- policy v
-	- policy evaluation finire
-	- online-offline
-	- onpolicy-offpolicy
-	- actionbased-parameterbased
-- Temporal difference learning v
-	- sarsa
-	- q learning
-- Deep reinforcement learning
-	- actor critic methods
-	- fitted q iteration
-	- ddpg
-- Policy optimization
-	- pg
-    - pgpe
-	- pois
-- IL
-	- behavioral cloning
-
-
-The objective of this chapter is to go into detail about key aspects of reinforcement learning, the core topic of this thesis. In particular, we will describe the concept of Decision Markov Process, the experiment environment, the concept of state, actions, and reward function. Eventually, we will give insight about the algorithms we used in this project: Fitted Q-Iteration, and Deep Deterministic Policy Gradient. 
+The objective of this chapter is to go into detail about the key aspects of reinforcement learning, the core topic of this thesis. In particular, we will describe the concept of Decision Markov Process, the experiment environment, the concept of state, actions, and reward function. Eventually, we will give insight about the algorithms we used in this project: Fitted Q-Iteration, and Deep Deterministic Policy Gradient. 
 Then, in the following section, we will show some successful application on reinforcement learning to autonomous driving, videogames, and in particular racing games.
-
 
 \section{Theoretical Background}
 
@@ -68,84 +40,134 @@ If from a state \(s_t\) the agent takes always the same action \(a_t\), the poli
 Otherwise, if the taking of an action rather than another is due to a probability distribution, the policy is called stochastic:
 \(\pi(a_t|s_t) = p_i, 0<=p_i<=1\)
 
-\subsection{Policy Evaluation}
-In order to evaluate the usefulness of a policy, we now introduce the concept of Value Function, which is computed as the discounted sum of rewards as discussed before in the return.
 
+\subsubsection{Policy Evaluation}
+$V\pi(s)$ is defined as the expected long-term return of the current state under policy $\pi$. 
+\[V^\pi(s) = \mathbb{E}_\pi{\left[R_t|s_t=s\right]}= \mathbb{E}_\pi\left[\sum^{\infty}_{i=0}\gamma^ir_{t+i+1|s_t=s}\right] = \mathbb{E}_\pi\left[r_{t+1} + \sum^{\infty}_{i=0}\gamma^ir_{t+i+2|s_t=s}\right],\]
+from which one can derive the recursive so-called Bellman Equation:
 
-\[V^\pi(s) = \mathbb{E}_\pi{\left[R_t|s_t=s\right]}= \mathbb{E}_\pi\left[\sum^{\infty}_{i=0}\gamma^ir_{t+i+1|s_t=s}\right] = \mathbb{E}_\pi\left[r_{t+1} + \sum^{\infty}_{i=0}\gamma^ir_{t+i+2|s_t=s}\right]\]
-
-From which one can derive the recursive so-called Bellman Equation:
+\[V^\pi(s) = \sum_a\pi(a|s)\sum_{s_{t+1}}p(s_{t+1}|s_t,a)[r(s,a,s{t+1})+\gamma V^\pi(s_{t+1})].\]
 
 Analog to the value functions is the concept of action-value function, or Q-value, which is the expected return after taking an action \(a_t\) in state \(s_t\) and thereafter following policy \(\pi\):
 \[Q^\pi(s_t,a_t)=\mathbb{E}_{r_{i \geq t},s_{i>t} \sim ,a_{i>t} \sim \pi}[R_t|s_t,a_t]\]
 and the relative Bellman Equation:
 \[Q^\pi(s_t,a_t)=\mathbb{E}_{r_t,s_{t+1} \sim E }\left[ r(s_t,a_t) + \gamma \mathbb{E}_{a_{t+1} \sim \pi}\left[Q^\pi (s_{t+1},a_{t+1})\right]\right]\]
 
-To obtain the best policy that yields the best value function there are several methods, the one discussed here takes into consideration a quality function (also known as Q-value) to evaluate the estimated accumulated rewards obtained following a certain policy. It has a similardefinition of the value function but the Q-value takes also into consideration the action. So it established the long term rewards of applying an action to a state and then following the considered policy. 
+Q-value is often used to find the best value function, i.e. the best policy, and these methods are discussed below.
+
+
+
+There are two main approaches for solving RL problems: methods based on value functions and policy search. So called actor-critic approaches employ both value functions and policy search.
+Before going into detail about the algorithms employed in the literature, here is presented some terminology referred to the algorithms.
+
+\subsubsection{Model-based vs Model-free}
+ Model-based reinforcement learning has an agent try to understand the world and create a model to represent it. Here the model is trying to capture 2 functions, the transition function from states $T$ and the reward function $R$. From this model, the agent has a reference and can plan accordingly.
+\subsubsection{On-Policy vs Off-Policy}
+the off-policy scenario refers to the situation that the policy you want to evaluate is different from the data generating policy. In other words, you behave in one way, but you want to evaluate the value of another policy. This should be contrasted with the on-policy scenario that the policy you want to evaluate is the same policy that generates (or generated) data.
+\subsubsection{Offline vs Online}
+the offline sampling scenario (and not "offline policy") is the scenario that you already have some samples and now you want to perform tasks like policy evaluation. In this scenario, the agent cannot have any further interaction with the environment. In other words, the data are given and fixed. This should be contrasted with the online sampling scenario that the agent actually interacts with the environment.
+
+\subsubsection{Function Approximation}
 
 \subsection{Temporal Difference Learning}
 Temporal difference learning (TD) \cite{irl} algorithms are able to learn from raw experiences without the need for a model of the environment. They combine ideas form dynamic-programming and from Monte Carlo methods but while Monte Carlo algorithms need to reach the end of a learning episode to update the value function TD is able to update it at the end of each step and so there is not the need to ignore some episode as in typical Mote Carlo algorithms.
 To be able to change the value function at each step it is needed to make estimations based on already learned ones, and this can be done with some ideas form dynamic-programming, but while DP needs a precise model of the environment dynamics TD does not and is so more suitable for unpredictable tasks.
 \subsubsection{SARSA}
-
+SARSA, which states for stands for 
+\[Q(s_t,a_t)=Q(s_t,a_t)+\alpha(r_{t+1}+\gammaQ(s_{t+1},a_{t+1})-Q(s_t,a_t))\]
 \subsubsection{Q-Learning}
-\subsubsection{Issues with Temporal Difference Learning}
-\subsection{Deep Reinforcement Learning}
+\[Q(s_t,a_t)=Q(s_t,a_t)+\alpha(r_{t+1}+\gammamax_aQ(s_{t+1},a_t)-Q(s_t,a_t))\]
 
-\subsubsection{Actor-Critic Methods}
-The "Critic" estimates the value function. This could be the action-value (the Q value) or state-value (the V value).
-The "Actor" updates the policy distribution in the direction suggested by the Critic (such as with policy gradients).
-and both the Critic and Actor functions are parameterized with neural networks. In the derivation above, the Critic neural network parameterizes the Q value - so, it is called Q Actor Critic.
+\subsubsection{Deep Q-Network}
+succeeded at solving problems with high-dimensional
+state spaces (e.g. pixels), but can only handle discrete, low-
+dimensional action spaces (e.g. left, right).
+\subsubsection{Double Deep Q-Newtork}
+
+
 \subsubsection{Fitted Q-Iteration}
+When the state and action spaces are finite and small enough, the Q-function can be represented
+in tabular form, and its approximation (in batch and in on-line mode) as well as the control policy
+derivation are straightforward. However, when dealing with continuous or very large discrete state
+and/or action spaces, the Q-function cannot be represented anymore by a table with one entry for
+each state-action pair. Moreover, in the context of reinforcement learning an approximation of the
+Q-function all over the state-action space must be determined from finite and generally very sparse
+sets of four-tuples.
+To overcome this generalization problem, a particularly attractive framework is the one used by
+Ormoneit and Sen (2002) which applies the idea of fitted value iteration (Gordon, 1999) to kernel-
+based reinforcement learning, and reformulates the Q-function determination problem as a sequence
+of kernel-based regression problems. Actually, this framework makes it possible to take full advan-
+tage in the context of reinforcement learning of the generalization capabilities of any regression
+algorithm, and this contrary to stochastic approximation algorithms (Sutton, 1988; Tsitsiklis, 1994)
+which can only use parametric function approximators (for example, linear combinations of feature
+vectors or neural networks). In the rest of this paper we will call this framework the fitted Q iteration
+algorithm so as to stress the fact that it allows to fit (using a set of four-tuples) any (parametric or
+non-parametric) approximation architecture to the Q-function.
+The fitted Q iteration algorithm is a batch mode reinforcement learning algorithm which yields
+an approximation of the Q-function corresponding to an infinite horizon optimal control problem
+with discounted rewards, by iteratively extending the optimization horizon
+
+
+
+\subsection{Policy Search}
+
+
+Another approach to tackle RL problems is what is called Policy Search (or Policy Optimization).
+Policy Search consists in optimizing a parametrized policy, instead of optimizing the Q-Value.
+Here we consider a parametrized policy $\pi_\theta$, belonging to a parametric policy space \(\Pi_\theta = \{\pi_\theta:\theta \in \Theta \subseteq \mathbb{R}^p\}\). The expected return can be expressed as expectation over the policy parameter space $\Theta$: \[\] \[ J_D(\rho) = \int_{\Theta} \int_{\mathcal{T}} \nu_\rho(\theta)p(\tau|\theta)R(\tau)d\tau d\theta, \] where $p(\tau|\theta)$ is the trajectory density function, or over the trajectory space $\mathcal{T}$: \[J_D(\theta) = \int_{\mathcal{T}} p(\tau|\theta)R(\tau)d\tau.\]
+We would like to optimize the policy by gradient ascent:
+\[\theta_{k+1} = \theta_k + \alpha \left. \nabla_{\theta} J_D(\theta) \right|_{\theta_k}.\]
+The gradient of policy performance,\(\nabla_{\theta}J(\pi_{\theta}),\) is called the policy gradient.
+
+
+
+\subsubsection{REINFORCE}
+
 
 \subsubsection{Deep Deterministic Policy Gradient}
 \label{ddpg}
+
+{Actor-Critic Methods}
+The "Critic" estimates the value function. This could be the action-value (the Q value) or state-value (the V value).
+The "Actor" updates the policy distribution in the direction suggested by the Critic (such as with policy gradients).
+and both the Critic and Actor functions are parameterized with neural networks. In the derivation above, the Critic neural network parameterizes the Q value - so, it is called Q Actor Critic.
+
+
 It is not possible to straightforwardly apply Q-learning to continuous action spaces, because in continuous spaces finding the greedy policy requires an optimization of a t at every timestep; this optimization is too slow to be practical with large, unconstrained function approximators and nontrivial action spaces. Instead, here we used an actor-critic approach based on the DPG algorithm.
-
-
-
-
-
-
-
-\subsection{Policy Optimization}
-
-
-
-
-- A policy can be parametric, belonging to a parametric policy space 
-\(\Pi_\theta = {\pi_\theta:\theta \in \Theta \subseteq \mathbb{R}^p}\)
-
-- The agent has a hyperpolicy $v$ used to sample the policy parameters at the beginning of each episode
-
-- the hyperpolicy belongs to a hyperpolicy space \(\mathcal{N}_\mathcal{P} = {\nu_\rho:\rho \in \mathcal{P} \subseteq \mathbb{R}^r}\)
-
-
-- the expected return can be expressed as expectation over the policy parameter space $\Theta$: \[\] \[ J_D(\rho) = \int_{\Theta} \int_{\mathcal{T}} \nu_\rho(\theta)p(\tau|\theta)R(\tau)d\tau d\theta, \] where $p(\tau|\theta)$ is the trajectory density function, or over the trajectory space $\mathcal{T}$: \[J_D(\theta) = \int_{\mathcal{T}} p(\tau|\theta)R(\tau)d\tau\].
-
-
-- the goal of a parameter-based learning agent is to determine the hyperparameters \(\rho*\) so as to maximize \(J_D(\rho)\), while an action-ased learning agent aims to find the policy parameters \(\theta*\) that maximize \(J_D(\theta)\). In the former case, the stochasticiy of the hyperpolicy is a sufficient source of exploration, hence deterministc action policies are typically considered. On the contrary, in the latter, the exploration needs to be enforced by means of the stochasticiy of $\pi_\theta$.
 
 
 
 
 \subsubsection{Policy Optimization via Importance Sampling}
 
+Policy Optimization via Importance Sampling (POIS) \cite{pois} is a model-free actort-only policy optimization algorithm which tackles the problem of finding the best policy in a parametric space by mixing online and offline optimization to efficiently eploit the information contained in the collected trajectories. POIS takes into account the uncertainty introduced  by the importance sampling by optimizing a surrogate objective functions. 
+A distinction can be made between methods whose goal is to optimize the policy gradient and the ones that aim at finding parameters of the best hyperpolicy.
+In action-based methods, the learning agent performs a search in a parametric policy space by following the gradient of the utility function estimated by means of a batch of trajectories collected from the environment.
+Its goal is to find the policy parameters \(\theta*\) that maximize \(J_D(\theta)\). In such methods, the exploration tipically needs to be enforced by means of the stochasticiy of $\pi_\theta$.
+In parameter-based methods, the agent searches in the space of parameters by exploiting global optimizers or following a proper gradient direction. The agent is equipped with a hyperpolicy $\nu$ belonging to a hyperpolicy space \(\mathcal{N}_\mathcal{P} = \{\nu_\rho:\rho \in \mathcal{P} \subseteq \mathbb{R}^r\}\) used to sample the policy parameters at the beginning of each episode. The agent's goal is to determine the hyperparameters \(\rho*\) so as to maximize \(J_D(\rho)\). In such cases, the stochasticiy of the hyperpolicy is a sufficient source of exploration.
+There are two versions of the algorithm: Action-based POIS (A-POIS), which is based on a policy gradient approach, and Parameter-based POIS (P-POIS), which adopts the PGPE framework.
 
-
-In this framework lives the Policy Optimization via Importance Sampling (POIS) \cite{pois}, which tackles the problem of finding the best policy in a parametric space. There are two versions of the algorithm: Action-based POIS (A-POIS), which is based on a policy gradient approach, and Parameter-based POIS (P-POIS), which adopts the PGPE framework.
-
-In Action-based POIS (A-POIS), the goal is to find a policy that maximizes the performance index $J_D(\theta)\) within a parametric space \(\Pi_\Theta = \{ \pi_\theta:\theta \in \Theta \subseteq \mathbb{R}^p\}\) of stochastic differentiable policies.
+In A-POIS, the goal is to find a policy that maximizes the performance index $J_D(\theta)\) within a parametric space \(\Pi_\Theta = \{ \pi_\theta:\theta \in \Theta \subseteq \mathbb{R}^p\}\) of stochastic differentiable policies.
 The loss function cannot be directly optimized via gradient ascent since computing \(d_\alpha (p(\cdot|\theta')\|p(\cdot|\theta))\) requires the approximation of an integral over the trajectory space, and the transition model $P$ is unknown in a model-free setting, 
 Hence, a surrogate objective can be formulated as: \[\mathcal{L}_\lambda^{\text{A-POIS}}(\theta'/\theta)=\frac{1}{N} \sum^N_{i=1}w_{\theta'/\theta}(\tau_i)R(\tau_i)-\lambda\sqrt{\frac{\hat{d_2}(p(\cdot|\theta')\|p(\cdot|\theta))}{N}},\] where \[w_{\theta'/\theta}(\tau_i)=\frac{p(\tau_i|\theta')}{p(\tau_i|\theta)}=\prod^{H-1}_{t=0}\frac{\pi_{\theta'}(a_{\tau_i,t}|s_{\tau_i,t})}{\pi_{\theta}(a_{\tau_i,t}|s_{\tau_i,t})}.\]
 \(\pi(\cdot|s)\) is assumed to be a Gaussian distribution over actions whose mean depends on the state and whose covariance is state-independent and diagonal: \(\mathcal{N}(u_\mu(s),diag(\sigma^2))\), where $\theta=(\mu,\sigma)$.
 The learning process mixes online and offline optimization. At each online iteration $j$, a dataset of $N$ trajectories is collected by executing in the environment the current policy $\pi_{\theta_{0}^j}$. These trajectories are used to optimize the loss function \(\mathcal{L}^{\text{A-POIS}}_\lambda\). At each offline iteration $k$, the parameters are update via gradient ascent \[\theta^j_{k+1}=\theta^j_k+\alpha_k\mathcal{G}(\theta^j_k)^{-1}\nabla_{\theta^j_k}\mathcal{L}(\theta^j_k/\theta^j_0)\] where $\alpha_k > 0$ is the step size and $\mathcal{G}(\theta^j_k)$ is a positive semi-definite matrix.
 
 
-In the Parameter-based POIS (P-POIS), the goal is to learn the hyperparameters $\rho$ so as to maximize $J_D(\rho)$ within the parametrized policy space $\Pi_\Theta=\{\pi_\theta:\theta \in \Theta \subseteq \mathbb{R}^p\}$, with $\pi_\theta$ not differentiable. Here, the policy parameters $\theta$ are sampled at the beginning of each episode from a parametric hyperpolicy $\nu_\rho$ selected in a parametric space \(\mathcal{N}_\mathcal{P} = \{\nu_\rho:\rho \in \mathcal{P} \subseteq \mathbb{R}^r\}\).
+In P-POIS, the goal is to learn the hyperparameters $\rho$ so as to maximize $J_D(\rho)$ within the parametrized policy space $\Pi_\Theta=\{\pi_\theta:\theta \in \Theta \subseteq \mathbb{R}^p\}$, with $\pi_\theta$ not differentiable. Here, the policy parameters $\theta$ are sampled at the beginning of each episode from a parametric hyperpolicy $\nu_\rho$ selected in a parametric space \(\mathcal{N}_\mathcal{P} = \{\nu_\rho:\rho \in \mathcal{P} \subseteq \mathbb{R}^r\}\).
 To this end, a Gaussian hyperpolicy $\nu_\rho$ with diagonal covariance matrix is used, $\mathcal{N}(\mu,diag(\sigma^2))$ with $\rho=(\mu,\sigma)$.
 A surrogate objective can be formulated as: \[\mathcal{L}_\lambda^{\text{P-POIS}}(\rho'/\rho)=\frac{1}{N} \sum^N_{i=1}w_{\rho'/\rho}(\theta_i)R(\tau_i)-\lambda\sqrt{\frac{d_2(\nu_{\rho'}\|\nu_\rho)}{N}},\] where \[w_{\rho'/\rho}(\theta)=\frac{\nu_{\rho'}(\theta)p(\tau|\theta)}{\nu_rho(\theta)p(\tau|\theta)}=\frac{\nu_{\rho'}(\theta)}{\nu_\rho(\theta)}.\]
 Each trajectory $\tau_i$ is obtained by running an episode with action policy $\pi_{theta_i}$, and the corrisponding policy parameters $\theta_i$ are sampled independently from hyperpolicy $\nu_\rho$ at the beginning of each epidose. The hyperpolicy parameters are then updated offline as: \[\rho^j_{k+1}=\rho^j_k+\alpha_k\mathcal{G}(\rho_k^j)^{-1}\nabla_{p_k^j}\mathcal{L}(\rho^j_k/\rho^j_0)\]
+
+
+Deep Reinforcement Learning
+Neural networks are function approximators, which are particularly useful in reinforcement learning when the state space or action space are too large to be completely known.
+A neural network can be used to approximate a value function, or a policy function. That is, neural nets can learn to map states to values, or state-action pairs to Q values. Rather than use a lookup table to store, index and update all possible states and their values, which impossible with very large problems, we can train a neural network on samples from the state or action space to learn to predict how valuable those are relative to our target in reinforcement learning.
+Like all neural networks, they use coefficients to approximate the function relating inputs to outputs, and their learning consists to finding the right coefficients, or weights, by iteratively adjusting those weights along gradients that promise less error.
+In reinforcement learning, convolutional networks can be used to recognize an agent’s state when the input is visual; e.g. the screen that Mario is on, or the terrain before a drone. That is, they perform their typical task of image recognition.
+But convolutional networks derive different interpretations from images in reinforcement learning than in supervised learning. In supervised learning, the network applies a label to an image; that is, it matches names to pixels.
+
+
 
 
 
@@ -168,14 +190,10 @@ Each trajectory $\tau_i$ is obtained by running an episode with action policy $\
 
 
 
-
-
-- rl algorithms can be divided intwo two catergories: 
-	- action-based methods (policy gradients PG):
-		perform a search in a parametric polocy space 
-	- parameter-based methods
-
-
+-model-free vs model-based
+-onpolicy-offpolicy
+-online vs offline
+-deep reinforcement learning
 
 
 
