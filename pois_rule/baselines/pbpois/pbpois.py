@@ -35,12 +35,12 @@ def eval_trajectory(env, pol, gamma, horizon, feature_fun):
     while not done and t < horizon:
         s = feature_fun(ob) if feature_fun else ob
         a = pol.act(s)
-        ob, r, done, _ = env.step(a)
+        ob, r, done, info = env.step(a)
         ret += r
         disc_ret += gamma ** t * r
         t += 1
 
-    return ret, disc_ret, t
+    return ret, disc_ret, t, int(info['is_success'])
 
 
 # BINARY line search
@@ -242,7 +242,11 @@ def learn(env_maker, pol_maker, eval_policy,
           sampler=None,
           save_to=None,
           step_size=1,
-          var_step_size=0.1):
+          var_step_size=0.1,
+          out_dir=None,
+          logger_suffix=''):
+    if out_dir:
+        logger.configure(dir=out_dir + '/logs', format_strs=['stdout', 'csv', 'tensorboard', 'json'], suffix=logger_suffix)
     # Initialization
     env = env_maker()
     pol = pol_maker('pol', env.observation_space, env.action_space)
@@ -254,6 +258,7 @@ def learn(env_maker, pol_maker, eval_policy,
     episodes_so_far = 0
     thetas_so_far = 0
     timesteps_so_far = 0
+    full_laps = 0
     tstart = time.time()
     offline_iters_counts =[]
     if bound == 'std-d2':
@@ -281,6 +286,8 @@ def learn(env_maker, pol_maker, eval_policy,
     promise = -np.inf
     actor_params, rets, disc_rets, lens = [], [], [], []
     old_actor_params, old_rets, old_disc_rets, old_lens = [], [], [], []
+    rho_att.append('rew')
+    rho_att.append('full_laps')
     rho_att.append('timesteps_so_far')
     best_rew = -np.inf
     best_learned_rew = -np.inf
@@ -315,10 +322,13 @@ def learn(env_maker, pol_maker, eval_policy,
                 with open(eval_theta_path, 'a') as out_file:
                     dicti_writer = csv.DictWriter(out_file, fieldnames=rho_att)
                     dict_row = {}
-                    for row in range(len(rho_att)-1):
+                    for row in range(len(rho_att)-3):
                         dict_row[rho_att[row]] = rho_to_save[row // 2][row % 2]
                     dict_row["timesteps_so_far"] = timesteps_so_far
+                    dict_row["rew"] = rew
+                    dict_row["full_laps"] = full_laps
                     dicti_writer.writerow(dict_row)
+                    full_laps = 0
         logger.log('\n********** Iteration %i ************' % it)
         rho = pol.eval_params()  # Higher-order-policy parameters
         if save_to:
@@ -359,9 +369,10 @@ def learn(env_maker, pol_maker, eval_policy,
                     ep_len = 0"""
                     for _ in range(episodes_per_theta):
                         print('theta:', theta)
-                        r, dr, el = eval_trajectory(env, frozen_pol, gamma, horizon, feature_fun)
+                        r, dr, el, full_lap = eval_trajectory(env, frozen_pol, gamma, horizon, feature_fun)
                         print('theta:', theta)
                         print('Reward of this theta:', r)
+                        # save best sampled theta (this because sometimes the best is the default and we would not know what is the best it learned)
                         if r > best_learned_rew and save_to is not None:
                             print('Saving best learned')
                             np.save(save_to + '/best_learned', theta)
@@ -374,6 +385,7 @@ def learn(env_maker, pol_maker, eval_policy,
                         lens.append(el)
                         actor_params.append(theta)
                         timesteps_so_far += el
+                        full_laps += full_lap
 
                     '''rets.append(ret / episodes_per_theta)
                     disc_rets.append(disc_ret / episodes_per_theta)
@@ -395,8 +407,7 @@ def learn(env_maker, pol_maker, eval_policy,
             logger.log("Performance (plain, undiscounted): ", np.mean(rets[-episodes_this_iter:]))
             # Data regarding the episodes collected in this iteration
             logger.record_tabular("Iteration", it)
-            logger.record_tabular("InitialBound", newpol.eval_bound(actor_params, norm_disc_rets, pol, rmax,
-                                                                    normalize, use_rmax, use_renyi, delta))
+            #logger.record_tabular("InitialBound", newpol.eval_bound(actor_params, norm_disc_rets, pol, rmax, normalize, use_rmax, use_renyi, delta))
             logger.record_tabular("EpLenMean", np.mean(lens[-episodes_this_iter:]))
             logger.record_tabular("EpRewMean", np.mean(norm_disc_rets[-episodes_this_iter:]))
             logger.record_tabular("UndEpRewMean", np.mean(norm_disc_rets[-episodes_this_iter:]))

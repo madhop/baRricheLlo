@@ -221,8 +221,11 @@ class TorcsEnv(gym.Env):
 
         # 4) Running backward
         if np.cos(obs['angle']) < 0: # Episode is terminated if the agent runs backward
+            if self.verbose and not raw:
+                print('Running backward')
             episode_terminate = True
             running_backward = True
+            reward += self.low_speed_penalty
         else:
             running_backward = False
         

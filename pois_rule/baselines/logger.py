@@ -382,6 +382,7 @@ def configure(dir=None, format_strs=None, suffix=''):
             format_strs = os.getenv('OPENAI_LOG_FORMAT_MPI', 'log').split(',')
     format_strs = filter(None, format_strs)
     output_formats = [make_output_format(f, dir, log_suffix) for f in format_strs]
+    print('output_formats:', output_formats)
 
     Logger.CURRENT = Logger(dir=dir, output_formats=output_formats)
     Logger.SUMO = Logger(dir=dir, output_formats=[make_output_format('csv', dir, '-sumo'+log_suffix)])

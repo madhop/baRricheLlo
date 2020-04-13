@@ -23,7 +23,7 @@ import pandas as pd
 from controller import MeanController
 from gym_torcs_ctrl import TorcsEnv
 import time
-init_logstd = 0.5
+init_logstd = 0.1
 """default_values = np.array(
         [[np.log(0.5), init_logstd],
          [np.log(0.02), init_logstd],
@@ -51,7 +51,7 @@ def run_experiment(num_iterations, timestep_length, horizon, out_dir='.',
     reward_function = Spatial_projection(ref_df, penalty=None)
     #reward_function = Temporal_projection(ref_df, penalty=None)
 
-    env = TorcsEnv(reward_function, collision_penalty=-1000, state_cols=state_cols, ref_df=ref_df, vision=False,
+    env = TorcsEnv(reward_function, collision_penalty=-10000, low_speed_penalty=-10000, state_cols=state_cols, ref_df=ref_df, vision=False,
                    throttle=True, gear_change=False, brake=True, start_env=False, damage_th=10.0, slow=False,
                    faster=False, graphic=True, starter=starter)
     
@@ -80,10 +80,12 @@ def run_experiment(num_iterations, timestep_length, horizon, out_dir='.',
     def make_env():
         return env
     
-    rho_att = []
+    rho_att = ['alpha1_mean','alpha1_var', 'alpha2_mean','alpha2_var', 'speed_y_thr_mean','speed_y_thr_var', 
+               'beta1_mean','beta1_var', 'gamma1_mean','gamma1_var', 'gamma2_mean','gamma2_var',
+               'gamma3_mean', 'gamma3_var']
     
     time_str = str(int(time.time()))
-    logger.configure(dir=out_dir + '/logs', format_strs=['stdout', 'csv'], suffix=time_str)
+    #logger.configure(dir=out_dir + '/logs', format_strs=['stdout', 'csv', 'tensorboard', 'json'], suffix=time_str)
     pois.learn(make_env, make_policy, num_theta=num_theta, horizon=horizon,
                max_iters=num_iterations, sampler=sampler, feature_fun=None,
                line_search_type='parabola', gamma=gamma, eval_frequency=eval_frequency,
@@ -91,19 +93,19 @@ def run_experiment(num_iterations, timestep_length, horizon, out_dir='.',
                episodes_per_theta=episodes_per_scenario,
                rho_att = rho_att,
                eval_theta_path=out_dir + '/logs' + '/eval_theta_episodes-' + time_str + '.csv',
-               save_to=out_dir + '/models/'+time_str+'/', 
+               save_to=out_dir + '/models/'+time_str+'/',
                **alg_args)
 
 #%% run experiment
 run_experiment(num_iterations=10000, 
                timestep_length=0.1,
-               horizon=600,
+               horizon=1000,
                eval_episodes=1,
                out_dir='POIS_logs',
-               verbose=2,
-               num_theta=3,
-               delta=0.2,
-               eval_frequency=5)
+               verbose=True,
+               num_theta=100,
+               delta=1,
+               eval_frequency=1)
 
 
 
