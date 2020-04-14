@@ -18,7 +18,7 @@ Then, in the following section, we will show some successful application on rein
 \end{figure}
 Together with Supervised Learning and Unsupervised Learning \cite{elements}, Reinforcement Learning is a branch of Machine Learning, the discipline which studies the way a computer program can learn from experience and improve its performance at a specified task. Whereas Supervised Learning algorithms are based on inductive inference where the model is tipically trained using labelled data to perform classification or regression, and Unsupervised Learning exploits techniques of density estimation and clustering applied to unlabelled data, in the Reinforcement Learning paradigm an autonomous agent learns to improve its performance at an assigned task by interacting with its environment.
 
-Tipically, Reinforcement Learning agents are not explicitly taught how to act by an expert. Instead, the agent is free to explore the environment in which it lives, and its performance is evaluated by a reward function. Its goal is to maximize the reward by acting accordingly. The resulting reward results from the sum of the reward gained at every single step in its exploration process: for each state, the agent chooses an action to take and receives a reward based on the usefulness of its decision (see Figure \ref{fig:rl-loop}). Eventually, the agent learns the way to obtain the highest reward by exploiting knowledge learned about the expected utility of different state-action pairs. The challenge of Reinforcement Learning is to design the best tradeoff between exploration and exploitation, that is the capability of an agent of use its knowledge to obtain high rewards and, by contrast, being capable of exploring new possibilities in such a way not to remain stuck in a local optimum. Intuitively, the exploration process is high at the first iterations of the learning process, while it should decrease with accumulating knowledge.
+Tipically, Reinforcement Learning agents are not explicitly taught how to act by an expert. Instead, the agent is free to explore the environment in which it lives, and its performance is evaluated by a reward function. Its goal is to maximize the reward by acting accordingly. The resulting reward results from the sum of the reward gained at every single step in its exploration process: for each state, the agent chooses an action to take and receives a reward based on the usefulness of its decision (see Figure~\ref{fig:rl-loop}). Eventually, the agent learns the way to obtain the highest reward by exploiting knowledge learned about the expected utility of different state-action pairs. The challenge of Reinforcement Learning is to design the best tradeoff between exploration and exploitation, that is the capability of an agent of use its knowledge to obtain high rewards and, by contrast, being capable of exploring new possibilities in such a way not to remain stuck in a local optimum. Intuitively, the exploration process is high at the first iterations of the learning process, while it should decrease with accumulating knowledge.
 
 
 \subsubsection{Markov Decision Process}
@@ -64,18 +64,9 @@ and the relative Bellman Equation:
 
 
 \subsubsection{Model-based vs Model-free}
-In practical situations, interacting with the real environment
-could be limited due to many reasons including safety and
-cost. Learning a model for environment dynamics may reduce
-the amount of interactions required with the real environ-
-ment. Moreover, exploration can be performed on the learned6
-models.
+In practical situations, interacting with the real environment could be limited due to many reasons including safety and cost. Learning a model for environment dynamics may reduce the amount of interactions required with the real environment. Moreover, exploration can be performed on the learned models.
 Model-based reinforcement learning has an agent try to understand the world and create a model to represent it. Here the model is trying to capture two functions, the transition function from states $T$ and the reward function $R$. From this model, the agent has a reference and can plan accordingly.
-By contrast, in model-free approaches such knowledge
-is not a requirement. Instead, model-free learners sample the
-underlying MDP directly in order to gain knowledge about
-the unknown model, in the form of value function estimates
-for example. 
+By contrast, in model-free approaches such knowledge is not a requirement. Instead, model-free learners sample the underlying MDP directly in order to gain knowledge about the unknown model, in the form of value function estimates for example. 
 
 
 \subsubsection{On-Policy vs Off-Policy}
