@@ -246,7 +246,7 @@ def learn(env_maker, pol_maker, eval_policy,
           out_dir=None,
           logger_suffix=''):
     if out_dir:
-        logger.configure(dir=out_dir + '/logs', format_strs=['stdout', 'csv', 'tensorboard', 'json'], suffix=logger_suffix)
+        logger.configure(dir=out_dir + '/logs', format_strs=['stdout', 'csv', 'tensorboard'], suffix=logger_suffix)
     # Initialization
     env = env_maker()
     pol = pol_maker('pol', env.observation_space, env.action_space)
@@ -475,7 +475,10 @@ def learn(env_maker, pol_maker, eval_policy,
 
         # Save data
         if save_weights:
-            logger.record_tabular('Weights', str(w_to_save))
+            #logger.record_tabular('Weights', str(w_to_save))
+            for row in range(0,len(rho_att)-3,2):
+                logger.record_tabular(rho_att[row], str(w_to_save[int(row/2)]))
+                logger.record_tabular(rho_att[row+1], str(w_to_save[int(row/2+7)]))
 
         with timed('summaries after'):
             unn_iws = newpol.eval_iws(actor_params, behavioral=pol, normalize=False)

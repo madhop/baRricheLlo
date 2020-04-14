@@ -53,7 +53,7 @@ def run_experiment(num_iterations, timestep_length, horizon, out_dir='.',
 
     env = TorcsEnv(reward_function, collision_penalty=-10000, low_speed_penalty=-10000, state_cols=state_cols, ref_df=ref_df, vision=False,
                    throttle=True, gear_change=False, brake=True, start_env=False, damage_th=10.0, slow=False,
-                   faster=False, graphic=True, starter=starter)
+                   faster=False, graphic=False, starter=starter)
     
     C = MeanController(ref_df)
     
@@ -94,6 +94,8 @@ def run_experiment(num_iterations, timestep_length, horizon, out_dir='.',
                rho_att = rho_att,
                eval_theta_path=out_dir + '/logs' + '/eval_theta_episodes-' + time_str + '.csv',
                save_to=out_dir + '/models/'+time_str+'/',
+               out_dir=out_dir,
+               logger_suffix=time_str,
                **alg_args)
 
 #%% run experiment
@@ -103,7 +105,7 @@ run_experiment(num_iterations=10000,
                eval_episodes=1,
                out_dir='POIS_logs',
                verbose=True,
-               num_theta=100,
+               num_theta=200,
                delta=1,
                eval_frequency=1)
 
