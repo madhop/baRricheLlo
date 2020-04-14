@@ -43,3 +43,7 @@ template_polimi/thesis.out
 template_polimi/thesis.toc
 
 *.npy
+
+*.json
+
+*.umberto-ubuntu
