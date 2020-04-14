@@ -3,22 +3,31 @@
 \thispagestyle{empty}
 
 
-The objective of this chapter is to go into detail about the key aspects of reinforcement learning, the core topic of this thesis. In particular, we will describe the concept of Decision Markov Process, the experiment environment, the concept of state, actions, and reward function. Eventually, we will give insight about the algorithms we used in this project: Fitted Q-Iteration, and Deep Deterministic Policy Gradient. 
+The objective of this chapter is to go into detail about the key aspects of reinforcement learning, the core topic of this thesis. In particular, we will describe the concept of Decision Markov Process, the experiment environment, the concept of state, actions, and reward function. Eventually, we will give insight about the main RL algorithms focusing on the ones we used in this project.
 Then, in the following section, we will show some successful application on reinforcement learning to autonomous driving, videogames, and in particular racing games.
 
 \section{Theoretical Background}
 
 \subsection{Reinforcement Learning}
-Together with Supervised Learning and Unsupervised Learning, Reinforcement Learning is a branch of Machine Learning, the discipline which studies the way a computer program can learn from experience and improve its performance at a specified task. Whereas Supervised Learning algorithms are based on inductive inference where the model is tipically trained using labelled data to perform classification or regression, and Unsupervised Learning exploits techniques of density estimation and clustering applied to unlabelled data, in the Reinforcement Learning paradigm an autonomous agent learns to improve its performance at an assigned task by interacting with its environment.
-Tipically, Reinforcement Learning agents are not explicitly taught how to act by an expert. Instead, the agent is free to explore the environment in which it lives, and its performance is evaluated by a reward function. Its goal is to maximize the reward by acting accordingly. The resulting reward results from the sum of the reward gained at every single step in its exploration process: for each state, the agent chooses an action to take and receives a reward based on the usefulness of its decision. Eventually, the agent learns the way to obtain the highest reward by exploiting knowledge learned about the expected utility of different state-action pairs. The challenge of Reinforcement Learning is to design the best tradeoff between exploration and exploitation, that is the capability of an agent of use its knowledge to obtain high rewards and, by contrast, being capable of exploring new possibilities in such a way not to remain stuck in a local optimum. Intuitively, the exploration process is high at the first iterations of the learning process, while it should decrease with accumulating knowledge.
+\begin{figure}[t]
+ \centering
+  \captionsetup{width=10cm}
+  \includegraphics[width=10cm]{./img/rl}
+  \caption{The basic RL loop. An agent in a state $s_t$ takes an action $a_t$ in an environment, which takes it in a state $s_{t+1}$ and receives a reward accordingly.
+   \label{fig:rl-loop}
+\end{figure}
+Together with Supervised Learning and Unsupervised Learning \cite{elements}, Reinforcement Learning is a branch of Machine Learning, the discipline which studies the way a computer program can learn from experience and improve its performance at a specified task. Whereas Supervised Learning algorithms are based on inductive inference where the model is tipically trained using labelled data to perform classification or regression, and Unsupervised Learning exploits techniques of density estimation and clustering applied to unlabelled data, in the Reinforcement Learning paradigm an autonomous agent learns to improve its performance at an assigned task by interacting with its environment.
+
+Tipically, Reinforcement Learning agents are not explicitly taught how to act by an expert. Instead, the agent is free to explore the environment in which it lives, and its performance is evaluated by a reward function. Its goal is to maximize the reward by acting accordingly. The resulting reward results from the sum of the reward gained at every single step in its exploration process: for each state, the agent chooses an action to take and receives a reward based on the usefulness of its decision (see Figure \ref{fig:rl-loop}). Eventually, the agent learns the way to obtain the highest reward by exploiting knowledge learned about the expected utility of different state-action pairs. The challenge of Reinforcement Learning is to design the best tradeoff between exploration and exploitation, that is the capability of an agent of use its knowledge to obtain high rewards and, by contrast, being capable of exploring new possibilities in such a way not to remain stuck in a local optimum. Intuitively, the exploration process is high at the first iterations of the learning process, while it should decrease with accumulating knowledge.
+
 
 \subsubsection{Markov Decision Process}
 The Reinforcement Learning problem can be formalized as a Markov Decision Process. A MDP is a tuple composed by:
 \begin{itemize}
-  \item A finite set of states \(D\): it encompasses every possible state of the process
-  \item A finite set of actions \(A\): it represents the possible action the agent can take at any moment
-  	\item A reward function \(r = \psi(s_t,a_t,s_{t+1})\), which represents the reward given to the agent at state \(s_t\) taking the action \(a_t\) landing in the state \(s_{t+1}\)
-  	\item A transition probability model \(T(s_t,a_t,s_{t+1}) = p(s_{t+1}|s_t,a_t)\), which indicates the probability of landing in a state \(s_{t+1}\) being in a state \(s_t\) taking an action \(a_t\)
+  \item A finite set of states \(D\): it encompasses every possible state of the process;
+  \item A finite set of actions \(A\): it represents the possible action the agent can take at any moment;
+  	\item A reward function \(r = \psi(s_t,a_t,s_{t+1})\), which represents the reward given to the agent at state \(s_t\) taking the action \(a_t\) landing in the state \(s_{t+1};\)
+  	\item A transition probability model \(T(s_t,a_t,s_{t+1}) = p(s_{t+1}|s_t,a_t)\), which indicates the probability of landing in a state \(s_{t+1}\) being in a state \(s_t\) taking an action \(a_t.\)
 \end{itemize}
 
 This provides the framework in which Reinforcement Learning operates: its goal is to find a policy \(\pi\) which specifies the actions to take in each state in order to maximize the reward over time i.e. fulfill the task.
@@ -38,7 +47,7 @@ The goal of reinforcement learning is finding a policy \(\pi\), which maps state
 If from a state \(s_t\) the agent takes always the same action \(a_t\), the policy is deterministic:
 \(\pi(s_t) = a_t\)
 Otherwise, if the taking of an action rather than another is due to a probability distribution, the policy is called stochastic:
-\(\pi(a_t|s_t) = p_i, 0<=p_i<=1\)
+\(\pi(a_t|s_t) = p_i, 0 \leq p_i \leq 1\)
 
 
 \subsubsection{Policy Evaluation}
@@ -54,107 +63,65 @@ and the relative Bellman Equation:
 \[Q^\pi(s_t,a_t)=\mathbb{E}_{r_t,s_{t+1} \sim E }\left[ r(s_t,a_t) + \gamma \mathbb{E}_{a_{t+1} \sim \pi}\left[Q^\pi (s_{t+1},a_{t+1})\right]\right]\]
 
 
-
 \subsubsection{Model-based vs Model-free}
-Model-based reinforcement learning has an agent try to understand the world and create a model to represent it. Here the model is trying to capture 2 functions, the transition function from states $T$ and the reward function $R$. From this model, the agent has a reference and can plan accordingly.
+In practical situations, interacting with the real environment
+could be limited due to many reasons including safety and
+cost. Learning a model for environment dynamics may reduce
+the amount of interactions required with the real environ-
+ment. Moreover, exploration can be performed on the learned6
+models.
+Model-based reinforcement learning has an agent try to understand the world and create a model to represent it. Here the model is trying to capture two functions, the transition function from states $T$ and the reward function $R$. From this model, the agent has a reference and can plan accordingly.
+By contrast, in model-free approaches such knowledge
+is not a requirement. Instead, model-free learners sample the
+underlying MDP directly in order to gain knowledge about
+the unknown model, in the form of value function estimates
+for example. 
+
+
 \subsubsection{On-Policy vs Off-Policy}
-the off-policy scenario refers to the situation that the policy you want to evaluate is different from the data generating policy. In other words, you behave in one way, but you want to evaluate the value of another policy. This should be contrasted with the on-policy scenario that the policy you want to evaluate is the same policy that generates (or generated) data.
 
-
-Learning algorithms can be on-policy or off-policy depend-
-ing on whether the updates are conducted on fresh trajectories
-generated by the policy or by another policy, that could be
-generated by an older version of the policy or provided by an
-expert. On-policy methods such as SARSA [35], estimate the
-value of a policy while using the same policy for control.
-However, off-policy methods such as Q-learning [23], use
-two policies: the behavior policy, the policy used to generate
-behavior; and the target policy, the one being improved on. An
-advantage of this separation is that the target policy may be
-deterministic (greedy), while the behavior policy can continue
-to sample all possible actions, [1].
+Learning algorithms can be on-policy or off-policy: in the former case, the policy is updated while using the same policy for control. In the latter, the trajectory through which the policy is updated is created by another policy, that could be generated by an older version of the policy or provided by an expert.
+Off-policy methods, use two policies: the behavior policy, that is the policy used to generate behavior, and the target policy, the one being improved on. An advantage of this separation is that the target policy may be deterministic, while the behavior policy can continue to sample all possible actions.
 
 \subsubsection{Offline vs Online}
-the offline sampling scenario (and not "offline policy") is the scenario that you already have some samples and now you want to perform tasks like policy evaluation. In this scenario, the agent cannot have any further interaction with the environment. In other words, the data are given and fixed. This should be contrasted with the online sampling scenario that the agent actually interacts with the environment.
+
+Another distinction can be made between offline and online algorithms. In offline algorithms, after collecting some samples, the policy is evaluated without the agent having further interaction with the environment. In other words, the data are given and fixed. In offline algorithms, on the contrary, the agent keeps interacting with the environment,
 
 \subsubsection{Function Approximation}
-Tabular representations are the simplest way to store learned
-estimates (of e.g. values, policies or models), where each state-
-action pair has a discrete estimate associated with it. When
-estimates are represented discretely, each additional feature
-tracked in the state leads to an exponential growth in the
-number of state-action pair values that must be stored [36].
-This problem is commonly referred to in the literature as the
-“curse of dimensionality”, a term originally coined by Bellman
-[37]. In simple environments this is rarely an issue, but it
-may lead to an intractable problem in real-world applications,
-due to memory and/or computational constraints. Learning
-over a large state-action space is possible, but may take an
-unacceptably long time to learn useful policies. Many real-
-world domains feature continuous state and/or action spaces;
-these can be discretised in many cases. However, large discreti-
-sation steps may limit the achievable performance in a domain,
-whereas small discretisation steps may result in a large state-
-action space where obtaining a sufficient number of samples
-for each state-action pair is impractical. Alternatively, function
-approximation may be used to generalise across states and/or
-actions, whereby a function approximator is used to store and
-retrieve estimates. Function approximation is an active area
-of research in RL, offering a way to handle continuous state
-and/or action spaces, mitigate against the state-action space
-explosion and generalise prior experience to previously unseen
-state-action pairs. Tile coding is one of the simplest forms
-of function approximation, where one tile represents multiple
-states or state-action pairs [36]. Neural networks are also
-commonly used to implement function approximation, one of
-the most famous examples being Tesuaro’s application of RL
-to backgammon [38]. Recent work has applied deep neural
-networks as a function approximation method; this emerging
-paradigm is known as deep reinforcement learning (DRL).
-DRL algorithms have achieved human level performance (or
-above) on complex tasks such as playing Atari games [22] and
-playing the board game Go [39].
+The simplest way to store learned values, policies and models is by tabular representation. However, in a complex environment, the number of state-action pair values that must be stored is likely to be vast, leading to an un acceptable amount of time needed to scan them. This problem is commonly refferred to as the "curse of dimensionality". Many real-world domains involve continuous state and/or action spaces, that in some cases can be discretized, but is often impractical or unfeasible. Another possible approach is to adopt a function approximator, that can be used to generalise across states and/or actions, whereby a function approximator is used to store and retrieve estimates.
+Neural networks are typically adopted to this end, and this is commonly known as deep reinforcement learning.
+A neural network can be used to approximate a value function, or a policy function. That is, neural nets can learn to map states to values, or state-action pairs to Q values. Rather than use a lookup table to store, index and update all possible states and their values, which impossible with very large problems, we can train a neural network on samples from the state or action space to learn to predict how valuable those are relative to our target in reinforcement learning.
+Like all neural networks, they use coefficients to approximate the function relating inputs to outputs, and their learning consists to finding the right coefficients, or weights, by iteratively adjusting those weights along gradients that promise less error.
 
-
-\subsection{Temporal Difference Learning}
-Temporal difference learning (TD) \cite{irl} algorithms are able to learn from raw experiences without the need for a model of the environment. They combine ideas form dynamic-programming and from Monte Carlo methods but while Monte Carlo algorithms need to reach the end of a learning episode to update the value function TD is able to update it at the end of each step.
-At each step, the value function is computed with some estimations based on the already learned ones.
 
 \subsection{Value-Based Methods}
+A first category of RL algorithms are Value-Based Methods. Their goal is to find the best policy $\pi*$ by optimizing the Q-value function $Q*(s,a)$ . In this branch we can find Monte Carlo methods \cite{mc}, Dynamic Programming \cite{dp} and Temporal Difference Learning (TD) \cite{td}.
+In particular, TD algorithms are able to learn from raw experiences without the need for a model of the environment. They combine ideas form dynamic-programming and from Monte Carlo methods but while Monte Carlo algorithms need to reach the end of a learning episode to update the value function TD is able to update it at the end of each step.
+At each step, the value function is computed with some estimations based on the already learned ones.
 
-\subsubsection{SARSA}
-SARSA, which states for stands for 
-\[Q(s_t,a_t)=Q(s_t,a_t)+\alpha(r_{t+1}+\gamma Q(s_{t+1},a_{t+1})-Q(s_t,a_t))\]
 \subsubsection{Q-Learning}
+Q-learning is one of the most commonly used RL algorithms. It is a model-free off-policy TD algorithm that learns estimates of the utility of individual state-action pairs. Q-learning has been shown to converge to the optimum state-action values for a MDP with probability 1, so long as all the actions in all states are sampled infinitely. In practice, Q-learning will near near optimal state-action values provided a sufficient number of samples are obtained for each state-action pair. If a Q-learning agent has converged to the optimal Q values for a MDP and selects actions greediliy discounted rewards as calculated by the value function with $\pi*$. Agets implementing Q-learning update their Q values according to the following update rule: 
 \[Q(s_t,a_t)=Q(s_t,a_t)+\alpha(r_{t+1}+\gamma max_aQ(s_{t+1},a_t)-Q(s_t,a_t))\]
 
-Q-learning is one of the most commonly used RL algorithms. It is a model-free TD algorithm that learns estimates of the utility of individual state-action pairs. Q-learning has been shown to converge to the optimum state-action values for a MDP with probability 1, so long as all the actions in all states are sampled infinitely. In practice, Q-learning will near near optimal state-action values provided a sufficient number of samples are obtained for each state-action pair. If a Q-learning agent has converged to the optimal Q values for a MDP and selects actions greediliy discounted rewards as calculated by the value function with $\pi*$. Agets implementing Q-learning update their Q values according to the following update rule: 
+\subsubsection{SARSA}
+SARSA (State-Action-Reward-State-Action) is a model-free, on-policy TD algorithm.
+A SARSA agent interacts with the environment and updates the policy based on actions taken, hence this is known as an on-policy learning algorithm. The Q-value for a state-action is updated by an error, adjusted by the learning rate $\alpha$. Q values represent the possible reward received in the next time step for taking action $a$ in state $s$, plus the discounted future reward received from the next state-action observation.
+Agets implementing SARSA update their Q-values according to the following update rule:
+\[Q(s_t,a_t)=Q(s_t,a_t)+\alpha(r_{t+1}+\gamma Q(s_{t+1},a_{t+1})-Q(s_t,a_t))\]
+
+
+
 
 \subsubsection{Deep Q-Network}
-succeeded at solving problems with high-dimensional
-state spaces (e.g. pixels), but can only handle discrete, low-
-dimensional action spaces (e.g. left, right).
+Q-learning and SARSA (State-Action-Reward-State-Action) are two commonly used model-free RL algorithms. They differ in terms of their exploration strategies while their exploitation strategies are similar. While Q-learning is an off-policy method in which the agent learns the value based on action $a*$ derived from the another policy, SARSA is an on-policy method where it learns the value based on its current action aderived from its current policy. These two methods are simple to implement but lack generality as they do not have the ability to estimate values for unseen states.
+This can be overcome by more advanced algorithms such as Deep Q-Networks which use Neural Networks to estimate Q-values. 
+Deep Q-Networks (DQN) [22] incorporates a variant of the Q-learning algorithm, by using deep neural networks as a non-linear Q function approximator over high-dimensional state spaces. In practics, the neural network predicts the value of all actions without the use of any explicit domain-specific information or hand-designed features. DQN applies experience replay technique to break the correlation between successive experience samples and also for better sample efficiency. For increased stability, two networks are used where the parameters of the target network for DQN are fixed for a number of iterations while updating the parameters of the online network. 
+
 \subsubsection{Double Deep Q-Newtork}
 
 
 \subsubsection{Fitted Q-Iteration}
-When the state and action spaces are finite and small enough, the Q-function can be represented
-in tabular form, and its approximation (in batch and in on-line mode) as well as the control policy
-derivation are straightforward. However, when dealing with continuous or very large discrete state
-and/or action spaces, the Q-function cannot be represented anymore by a table with one entry for
-each state-action pair. Moreover, in the context of reinforcement learning an approximation of the
-Q-function all over the state-action space must be determined from finite and generally very sparse
-sets of four-tuples.
-To overcome this generalization problem, a particularly attractive framework is the one used by
-Ormoneit and Sen (2002) which applies the idea of fitted value iteration (Gordon, 1999) to kernel-
-based reinforcement learning, and reformulates the Q-function determination problem as a sequence
-of kernel-based regression problems. Actually, this framework makes it possible to take full advan-
-tage in the context of reinforcement learning of the generalization capabilities of any regression
-algorithm, and this contrary to stochastic approximation algorithms (Sutton, 1988; Tsitsiklis, 1994)
-which can only use parametric function approximators (for example, linear combinations of feature
-vectors or neural networks). In the rest of this paper we will call this framework the fitted Q iteration
-algorithm so as to stress the fact that it allows to fit (using a set of four-tuples) any (parametric or
-non-parametric) approximation architecture to the Q-function.
+
 The fitted Q iteration algorithm is a batch mode reinforcement learning algorithm which yields
 an approximation of the Q-function corresponding to an infinite horizon optimal control problem
 with discounted rewards, by iteratively extending the optimization horizon
@@ -164,9 +131,7 @@ with discounted rewards, by iteratively extending the optimization horizon
 \subsection{Policy Search}
 \subsection{Policy-Based Methods}
 
-Another approach to tackle RL problems is what is called Policy Search (or Policy Optimization).
-Policy Search consists in optimizing a parametrized policy, instead of optimizing the Q-Value.
-Here we consider a parametrized policy $\pi_\theta$, belonging to a parametric policy space \(\Pi_\theta = \{\pi_\theta:\theta \in \Theta \subseteq \mathbb{R}^p\}\). The expected return can be expressed as expectation over the policy parameter space $\Theta$: \[\] \[ J_D(\rho) = \int_{\Theta} \int_{\mathcal{T}} \nu_\rho(\theta)p(\tau|\theta)R(\tau)d\tau d\theta, \] where $p(\tau|\theta)$ is the trajectory density function, or over the trajectory space $\mathcal{T}$: \[J_D(\theta) = \int_{\mathcal{T}} p(\tau|\theta)R(\tau)d\tau.\]
+Another approach to tackle RL problems is what is called Policy-Based Methods (also known as Policy Search, or Policy Optimization). These methods consist in optimizing a parametrized policy, instead of optimizing the Q-Value. Here we consider a parametrized policy $\pi_\theta$, belonging to a parametric policy space \(\Pi_\theta = \{\pi_\theta:\theta \in \Theta \subseteq \mathbb{R}^p\}\). The expected return can be expressed as expectation over the policy parameter space $\Theta$: \[\] \[ J_D(\rho) = \int_{\Theta} \int_{\mathcal{T}} \nu_\rho(\theta)p(\tau|\theta)R(\tau)d\tau d\theta, \] where $p(\tau|\theta)$ is the trajectory density function, or over the trajectory space $\mathcal{T}$: \[J_D(\theta) = \int_{\mathcal{T}} p(\tau|\theta)R(\tau)d\tau.\]
 We would like to optimize the policy by gradient ascent:
 \[\theta_{k+1} = \theta_k + \alpha \left. \nabla_{\theta} J_D(\theta) \right|_{\theta_k}.\]
 The gradient of policy performance,\(\nabla_{\theta}J(\pi_{\theta}),\) is called the policy gradient.
@@ -176,20 +141,28 @@ The gradient of policy performance,\(\nabla_{\theta}J(\pi_{\theta}),\) is called
 \subsubsection{REINFORCE}
 
 
-\subsubsection{Deep Deterministic Policy Gradient}
-\label{ddpg}
 
 {Actor-Critic Methods}
 The "Critic" estimates the value function. This could be the action-value (the Q value) or state-value (the V value).
 The "Actor" updates the policy distribution in the direction suggested by the Critic (such as with policy gradients).
 and both the Critic and Actor functions are parameterized with neural networks. In the derivation above, the Critic neural network parameterizes the Q value - so, it is called Q Actor Critic.
 
+\subsubsection{Deep Deterministic Policy Gradient}
+\label{ddpg}
+
+
+\begin{figure}[t]
+ \centering
+  \captionsetup{width=10cm}
+  \includegraphics[width=10cm]{./img/ac}
+  \caption{The framework of Reinforcement Learning, Imitation Learning, and their integration. The demonstrations of human experts can be used to pretrain a model for RL, to shape the reward/policy of RL, and so on.}
+   \label{fig:cinesi}
+\end{figure}
+
+
+But DQNs can only handle discrete, low-dimensional action spaces. DDPG(Deep Deterministic Policy Gradient)is a model-free, off-policy, actor-critic algorithm that tackles this problem by learning policies in high dimensional, continuous action spaces.
 
 It is not possible to straightforwardly apply Q-learning to continuous action spaces, because in continuous spaces finding the greedy policy requires an optimization of a t at every timestep; this optimization is too slow to be practical with large, unconstrained function approximators and nontrivial action spaces. Instead, here we used an actor-critic approach based on the DPG algorithm.
-
-
-
-
 
 
 Deep Deterministic Policy Gradient (DDPG), actor-critic algorithm that can learn policies for
@@ -200,17 +173,6 @@ exploration is performed by adding noise to the actor policy.
 Like DQN, to stabilise learning a replay buffer is used to
 minimize data correlation. A separate actor-critic specific
 target network is also used.
-
-
-
-
-
-
-
-
-
-
-
 By combinging the insights of DQN with the actor-critic deterministic policy gradient algorithms, DDPG allows for solving a wide variety of continuous control tasks. DDPG utilizes an actor function $\mu(s|\theta^\mu)$, specifying the current policy, and a critic function $Q(s,a|\theta^Q),$ both approximated by neural networks. At each step, based on the current state $s_t$, the agent chooses an action according to $a_t=\mu(s_t|\theta^\mu) + \mathcal{N},$ with a noise process $\mathcal{N}$ to allow for exploration, and obtains a reward $r_t$ and a new state $s_{t+1}$ from the environment. The observed transitions ($s_t,a_t,t_t,s_{t+1}$) are stored in a replay buffer. At each step, a minibatch of $N$ transitions is uniformely sampled from the buffer. The parameters of the critic network are then optimized using Adam optimization to minimize the loss given as: \[L(\theta^Q) = \frac{1}{N}\sum^N_{i=1}(y_i-Q(s_i,a_i|\theta^Q))^2\]
 \[y_i=r_i+\gamma Q'(s_{i+1}|\theta^{\mu'}|\theta^{Q'})\]
 where $y_i$ is the one-step target with the discount factor $\gamma$. Here, $Q'(s,a|\theta^{Q'})$ and $\mu'(s|\theta^{\mu'})$ are target networkds associated with $Q(s,a|\theta^{\theta^Q})$ and $\mu(s|\theta^\mu).$ Their parameters are updated at each step using soft updates, i.e. \(\theta' \leftarrow \tau theta + (1-\tau)\theta'\) with $\tau \ll 1.$ To update the parameters of the actor network, a step proportional to the sampled gradient of the critic with respect to the action is taken, which is given by: \[\nabla_{\theta^\mu}J\approx\frac{1}{N}\sum^N_{i=1}\nabla_aQ(s,a|\theta^Q)|_{s=s_i,a=\mu(s_i)}\nabla_{\theta_\mu}\mu(s|\theta^\mu)|_{s=s_i}.\]
@@ -237,17 +199,6 @@ A surrogate objective can be formulated as: \[\mathcal{L}_\lambda^{\text{P-POIS}
 Each trajectory $\tau_i$ is obtained by running an episode with action policy $\pi_{theta_i}$, and the corrisponding policy parameters $\theta_i$ are sampled independently from hyperpolicy $\nu_\rho$ at the beginning of each epidose. The hyperpolicy parameters are then updated offline as: \[\rho^j_{k+1}=\rho^j_k+\alpha_k\mathcal{G}(\rho_k^j)^{-1}\nabla_{p_k^j}\mathcal{L}(\rho^j_k/\rho^j_0)\]
 
 
-Deep Reinforcement Learning
-Neural networks are function approximators, which are particularly useful in reinforcement learning when the state space or action space are too large to be completely known.
-A neural network can be used to approximate a value function, or a policy function. That is, neural nets can learn to map states to values, or state-action pairs to Q values. Rather than use a lookup table to store, index and update all possible states and their values, which impossible with very large problems, we can train a neural network on samples from the state or action space to learn to predict how valuable those are relative to our target in reinforcement learning.
-Like all neural networks, they use coefficients to approximate the function relating inputs to outputs, and their learning consists to finding the right coefficients, or weights, by iteratively adjusting those weights along gradients that promise less error.
-In reinforcement learning, convolutional networks can be used to recognize an agent’s state when the input is visual; e.g. the screen that Mario is on, or the terrain before a drone. That is, they perform their typical task of image recognition.
-But convolutional networks derive different interpretations from images in reinforcement learning than in supervised learning. In supervised learning, the network applies a label to an image; that is, it matches names to pixels.
-
-
-
-
-
 
 
 \subsection{Imitation Learning}
@@ -264,53 +215,6 @@ But convolutional networks derive different interpretations from images in reinf
 \label{teacher-student}
 
 \cite{il}
-
-
-
--model-free vs model-based
--onpolicy-offpolicy
--online vs offline
--deep reinforcement learning
-
-
-
-
-
-	When the state and action spaces are finite and small enough, the Q-function can be represented in tabular form, and its approximation (in batch and in on-line mode) as well as the control policy derivation are straightforward. However, when dealing with continuous or very large discrete state and/or action spaces, the Q-function cannot be represented anymore by a table with one entry for each state-action pair. Moreover, in the context of reinforcement learning an approximation of the Q-function all over the state-action space must be determined from finite and generally very sparse sets of four-tuples.
-To overcome this generalization problem, a particularly attractive framework is the one used by Ormoneit and Sen (2002) which applies the idea of fitted value iteration (Gordon, 1999) to kernel-based reinforcement learning, and reformulates the Q-function determination problem as a sequence of kernel-based regression problems. Actually, this framework makes it possible to take full advantage in the context of reinforcement learning of the generalization capabilities of any regression algorithm, and this contrary to stochastic approximation algorithms (Sutton, 1988; Tsitsiklis, 1994) which can only use parametric function approximators (for example, linear combinations of feature vectors or neural networks). In the rest of this paper we will call this framework the fitted Q iteration
-algorithm so as to stress the fact that it allows to fit (using a set of four-tuples) any (parametric or non-parametric) approximation architecture to the Q-function.
-The fitted Q iteration algorithm is a batch mode reinforcement learning algorithm which yields an approximation of the Q-function corresponding to an infinite horizon optimal control problem with discounted rewards, by iteratively extending the optimization horizon (Ernst et al., 2003).
-At each step this algorithm may use the full set of four-tuples gathered from observation of the system together with the function computed at the previous step to determine a new training set which is used by a supervised learning (regression) method to compute the next function of the sequence. It produces a sequence of Q N -functions, approximations of the Q N -functions defined by Eqn (5). --> mettere algoritmo a pag 6 di tree based batch reinforcement learning
-
-- extra trees
-	Besides Tree Bagging, several other methods to build tree ensembles have been proposed that often improve the accuracy with respect to Tree Bagging (e.g. Random Forests, Breiman, 2001). In this paper, we evaluate our recently developed algorithm that we call "Extra-Trees", for extremely randomized trees (Geurts et al., 2004). Like Tree Bagging, this algorithm works by building several (M) trees. However, contrary to Tree Bagging which uses the standard CART algorithm to derive the trees from a bootstrap sample, in the case of Extra-Trees, each tree is built from the complete original training set. To determine a test at a node, this algorithm selects K cut-directions at random and for each cut-direction, a cut-point at random. It then computes a score for each of the K tests and
-chooses among these K tests the one that maximizes the score. Again, the algorithm stops splitting a node when the number of elements in this node is less than a parameter n min . Three parameters are associated to this algorithm: the number M of trees to build, the number K of candidate tests at each node and the minimal leaf size n min . The detailed tree building procedure is given in Appendix A.
-	
-	- Double learning
-	- Double FQI
-
-- DDPG
-	- DPG
-	
-
-
-
-- background:
-pag 3-4 cinesi
-
-
-
-Presented in [16], Deep Q-learning from Demonstrations
-(DQfD) vastly accelerates DQN by pretraining an initial
-behavior network, and also introducing a supervised loss and
-a L2 regularization loss when training the target network.
-
-A combination of the advantages of both, the speed of the Riccati controller and the generality of MPC, can be achieved by finding a function that maps state values to control variables, e. g., by training a deep neural network. Such a model could, for example, be learned supervised, as done for PILOTNET, or by reinforcement learning. The latter in particular led to excellent results in the training of such agents for controlling real-world systems such as robots or helicopters.
-Recent work also shows promising applications of reinforcement learning for autonomous driving by making strategic decisions. 
-Autonomous driving tasks where RL could be applied include: controller optimization, path planning and trajectory optimization, motion planning and dynamic path planning, development of high-level driving policies for complex navigation tasks, scenario-based policy learning for highways, intersections, merges and splits, reward learning with inverse reinforcement learning from expert data for intent prediction for traffic actors such as pedestrian, vehicles and finally learning of policies that ensures safety and perform risk estimation. Further, it turns out to be suitable in contexts of autonomous racing: the driverless racer could learn a policy that is able to outperform the performance of a human driver, or a policy taught by experts.
-
-
-
 
 
 \section{Related Works}

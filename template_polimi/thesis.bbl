@@ -47,6 +47,12 @@ N.~{Hansen}, S.~D. {Müller}, and P.~{Koumoutsakos}.
   with covariance matrix adaptation (cma-es).
 \newblock {\em Evolutionary Computation}, 11(1):1--18, 2003.
 
+\bibitem{elements}
+Trevor Hastie, Robert Tibshirani, and Jerome Friedman.
+\newblock {\em The Elements of Statistical Learning}.
+\newblock Springer Series in Statistics. Springer New York Inc., New York, NY,
+  USA, 2001.
+
 \bibitem{dqlfd}
 Todd Hester, Matej Vecer{\'i}k, Olivier Pietquin, Marc Lanctot, Tom Schaul,
   Bilal Piot, Andrew Sendonaris, Gabriel Dulac-Arnold, Ian Osband, John
