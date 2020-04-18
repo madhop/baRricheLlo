@@ -62,7 +62,7 @@ def run_experiment(num_iterations, timestep_length, horizon, delta=0.2, out_dir=
 
     env = TorcsEnv(reward_function, collision_penalty=-collision_penalty, low_speed_penalty=-10000, state_cols=state_cols, ref_df=ref_df, vision=False,
                    throttle=True, gear_change=False, brake=True, start_env=False, damage_th=10.0, slow=False,
-                   faster=False, graphic=True, starter=starter)
+                   faster=False, graphic=False, starter=starter)
     
     C = MeanController(ref_df)
     
