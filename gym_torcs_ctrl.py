@@ -161,7 +161,7 @@ class TorcsEnv(gym.Env):
         else:
             # Reward computation
             # Compute the current state
-            current_state = self.observation_to_state(self.observation, self.p1_observation, self.p2_observation,
+            """current_state = self.observation_to_state(self.observation, self.p1_observation, self.p2_observation,
                                                       self.prev_u)
             current_state_df = np.concatenate([current_state.reshape(1, -1), np.zeros((1, 1))], axis=1)
             # Compute the next state
@@ -169,6 +169,14 @@ class TorcsEnv(gym.Env):
             next_state_df = np.concatenate([next_state.reshape(1, -1), np.ones((1, 1)) * obs['trackPos']], axis=1)
             data = pd.DataFrame(data=np.concatenate([current_state_df, next_state_df], axis=0),
                                 columns=self.state_cols + ['trackPos'])
+            reward = self.reward_function(data)"""
+            current_state = np.array([self.observation['x'], self.observation['y']])   
+            current_state_df = np.concatenate([current_state.reshape(1, -1), np.zeros((1, 1))], axis=1)
+            # Compute the next state
+            next_state = np.array([self.make_observation(obs)['x'], self.make_observation(obs)['y']])
+            next_state_df = np.concatenate([next_state.reshape(1, -1), np.ones((1, 1)) * obs['trackPos']], axis=1)
+            data = pd.DataFrame(data=np.concatenate([current_state_df, next_state_df], axis=0),
+                                columns=['xCarWorld', 'yCarWorld'] + ['trackPos'])
             reward = self.reward_function(data)
             #reward = 0
             # gym-torcs reward

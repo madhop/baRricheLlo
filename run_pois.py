@@ -19,7 +19,6 @@ from pois_rule.baselines import logger
 import pickle
 from fqi.reward_function import *
 from fqi.utils import *
-import pandas as pd
 from controller import MeanController
 from gym_torcs_ctrl import TorcsEnv
 import time
@@ -33,27 +32,37 @@ init_logstd = 0.1
          [np.log(73.5), init_logstd],
          [np.log(116), init_logstd]]
     )"""
+"""
+-0.69076616,	-3.88496,	1.6196413,	-2.8960278,	1.1091019,	4.314237,	4.7429957	       -210.762518135787
+-0.65601856,	-3.9396932,	1.610632,	-2.9221127,	1.0915695,	4.269636,	4.743861	       -179.220295066277
+-0.7106042,     -3.789705,  1.57127,	-2.9225132,	1.1347715,	4.3603606,	4.6552763          -206.887423424249
+
+
+"""
 
 default_means = np.array([0.5, 0.02, 5, 0.055, 3., 73.5, 116])
 default_means = np.log(default_means)
-default_logstd = np.ones(7)*init_logstd
+#default_logstd = np.ones(7)*init_logstd
+#default_logstd = np.array([0.1, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2])
+default_means = np.array([-0.7106042,     -3.789705,  1.57127,	-2.9225132,	1.1347715,	4.3603606,	4.6552763])
+default_logstd = np.array([0.01, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05])
 
 def starter(x):
     return [0, 0, 1, 7]
 
-def run_experiment(num_iterations, timestep_length, horizon, out_dir='.',
+def run_experiment(num_iterations, timestep_length, horizon, delta=0.2, out_dir='.',
                    parallel=False, episodes_per_scenario=1, verbose=True, num_theta=1, num_workers=5, punish_jerk=True,
                    gamma=0.999, eval_frequency=10, eval_episodes=20, scale_reward=1., jerk_pun=0.5, hsd_pun=2.,
-                   continuous=False, po=False, three_actions=False, **alg_args):
+                   continuous=False, po=False, three_actions=False, collision_penalty=1000, **alg_args):
     
     
     ref_df = pd.read_csv('trajectory/ref_traj.csv')
     reward_function = Spatial_projection(ref_df, penalty=None)
     #reward_function = Temporal_projection(ref_df, penalty=None)
 
-    env = TorcsEnv(reward_function, collision_penalty=-10000, low_speed_penalty=-10000, state_cols=state_cols, ref_df=ref_df, vision=False,
+    env = TorcsEnv(reward_function, collision_penalty=-collision_penalty, low_speed_penalty=-10000, state_cols=state_cols, ref_df=ref_df, vision=False,
                    throttle=True, gear_change=False, brake=True, start_env=False, damage_th=10.0, slow=False,
-                   faster=False, graphic=False, starter=starter)
+                   faster=False, graphic=True, starter=starter)
     
     C = MeanController(ref_df)
     
@@ -84,10 +93,10 @@ def run_experiment(num_iterations, timestep_length, horizon, out_dir='.',
                'beta1_mean','beta1_var', 'gamma1_mean','gamma1_var', 'gamma2_mean','gamma2_var',
                'gamma3_mean', 'gamma3_var']
     
-    time_str = str(int(time.time()))
+    time_str = str(int(time.time())) + '_' + str(num_theta) + '_' + str(delta) + '_' + str(collision_penalty)
     #logger.configure(dir=out_dir + '/logs', format_strs=['stdout', 'csv', 'tensorboard', 'json'], suffix=time_str)
     pois.learn(make_env, make_policy, num_theta=num_theta, horizon=horizon,
-               max_iters=num_iterations, sampler=sampler, feature_fun=None,
+               max_iters=num_iterations, delta=delta, sampler=sampler, feature_fun=None,
                line_search_type='parabola', gamma=gamma, eval_frequency=eval_frequency,
                eval_episodes=eval_episodes, eval_policy=eval_policy_closure,
                episodes_per_theta=episodes_per_scenario,
@@ -106,85 +115,6 @@ run_experiment(num_iterations=10000,
                out_dir='POIS_logs',
                verbose=True,
                num_theta=200,
-               delta=1,
-               eval_frequency=1)
-
-
-
-#%% main
-"""if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--max_iterations", type=int, default=10000,
-                         help='Maximum number of timesteps')
-    parser.add_argument("--timestep_length", type=float, default=0.1,
-                        help='time elapsed between two steps (def 0.1)')
-    parser.add_argument("--perception_delay", type=float, default=0.0,
-                        help='how much time after the actual perception the system can use it (def 0.0)')
-    parser.add_argument("--action_delay", type=float, default=0.0,
-                        help='how much time after the actual decision the action is performed (def 0.0)')
-    parser.add_argument("--port", type=int, default=54325, help='TCP port')
-    parser.add_argument("--seed", type=int, default=8, help='Random seed')
-    parser.add_argument("--jerk_pun", type=float, default=0.25, help='punishment for jerk')
-    parser.add_argument("--hsd_pun", type=float, default=2., help='punishment for harsh slow down')
-    parser.add_argument("--scale_reward", type=float, default=1., help='Factor to scale reward function')
-    parser.add_argument('--horizon', type=int, help='horizon length for episode', default=600)
-    parser.add_argument('--episodes_per_scenario', type=int, help='Train episodes per scenario in a batch', default=4)
-    parser.add_argument('--eval_frequency', type=int, help='Number of iterations to perform policy evaluation', default=20)
-    parser.add_argument('--eval_episodes', type=int, help='Number of evaluation episodes', default=100)
-    parser.add_argument('--num_theta', type=int, help='Batch size of gradient step', default=10)
-    parser.add_argument('--num_workers', type=int, help='Number of parallel samplers', default=5)
-    parser.add_argument('--dir', help='directory where to save data', default='.')
-    parser.add_argument('--lr_strategy', help='', default='const', choices=['const', 'adam'])
-    parser.add_argument('--parallel', action='store_true', help='Whether to run parallel sampler')
-    parser.add_argument('--verbose', action='store_true', help='Print log messages')
-    parser.add_argument('--punish_jerk', action='store_true', help='Punish jerk in the reward function')
-    parser.add_argument('--continuous', action='store_true', help='Use continuous deceleration')
-    parser.add_argument('--po', action='store_true', help='partial observability')
-    parser.add_argument('--three_actions', action='store_true', help='partial observability')
-    parser.add_argument('--iw_norm', type=str, default='sn')
-    parser.add_argument('--bound', type=str, default='max-d2')
-    parser.add_argument('--adaptive_batch', type=int, default=0)
-    parser.add_argument('--delta', type=float, default=0.8)
-    parser.add_argument('--step_size', type=float, default=1)
-    parser.add_argument('--var_step_size', type=float, default=0.1)
-    parser.add_argument('--gamma', type=float, default=0.999)
-    parser.add_argument('--max_offline_iters', type=int, default=10)
-    args = parser.parse_args()
-    out_dir = args.dir
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
-
-    run_experiment(
-                   num_iterations=args.max_iterations,
-                   timestep_length=args.timestep_length,
-                   perception_delay=args.perception_delay,
-                   action_delay=args.action_delay,
-                   port=args.port,
-                   seed=args.seed,
-                   horizon=args.horizon,
-                   out_dir=out_dir,
-                   parallel=args.parallel,
-                   episodes_per_scenario=args.episodes_per_scenario,
-                   verbose=args.verbose,
-                   num_theta=args.num_theta,
-                   num_workers=args.num_workers,
-                   punish_jerk=args.punish_jerk,
-                   three_actions=args.three_actions,
-                   scale_reward=args.scale_reward,
-                   jerk_pun=args.jerk_pun,
-                   hsd_pun=args.hsd_pun,
-                   continuous=args.continuous,
-                   po=args.po,
-                   eval_frequency=args.eval_frequency,
-                   eval_episodes=args.eval_episodes,
-                   iw_norm=args.iw_norm,
-                   bound=args.bound,
-                   delta=args.delta,
-                   gamma=args.gamma,
-                   max_offline_iters=args.max_offline_iters,
-                   adaptive_batch=args.adaptive_batch,
-                   step_size=args.step_size,
-                   var_step_size=args.var_step_size
-
-                   )
-"""
+               delta=0.2, #0.001, #
+               eval_frequency=1,
+               collision_penalty=2000)

@@ -50,7 +50,7 @@ def eval_policy(pi, n_episodes=100, env=None, env_sampler=None, network="round_r
     std = np.std(rewards)
     if verbose:
         print("Average Return = {0} +- {1}".format(avg, std))
-    if env is not None:
-        env.reset()
+    """if env is not None:
+        env.reset()"""
 
     return avg, std, logs

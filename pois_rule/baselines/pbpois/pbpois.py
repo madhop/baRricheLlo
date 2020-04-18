@@ -261,6 +261,7 @@ def learn(env_maker, pol_maker, eval_policy,
     full_laps = 0
     tstart = time.time()
     offline_iters_counts =[]
+    num_off_it = 0
     if bound == 'std-d2':
         use_rmax = False
         use_renyi = True
@@ -288,6 +289,7 @@ def learn(env_maker, pol_maker, eval_policy,
     old_actor_params, old_rets, old_disc_rets, old_lens = [], [], [], []
     rho_att.append('rew')
     rho_att.append('full_laps')
+    rho_att.append('num_off_it')
     rho_att.append('timesteps_so_far')
     best_rew = -np.inf
     best_learned_rew = -np.inf
@@ -307,7 +309,7 @@ def learn(env_maker, pol_maker, eval_policy,
             def pi_wrapper(ob):
                 s = feature_fun(ob) if feature_fun else ob
                 return pol.act(s)
-
+            
             rew, _, logs = eval_policy(pi=pi_wrapper, n_episodes=eval_episodes, verbose=True)
             # Saving best
             if rew > best_rew and save_to is not None:
@@ -322,11 +324,12 @@ def learn(env_maker, pol_maker, eval_policy,
                 with open(eval_theta_path, 'a') as out_file:
                     dicti_writer = csv.DictWriter(out_file, fieldnames=rho_att)
                     dict_row = {}
-                    for row in range(len(rho_att)-3):
+                    for row in range(len(rho_att)-4):
                         dict_row[rho_att[row]] = rho_to_save[row // 2][row % 2]
                     dict_row["timesteps_so_far"] = timesteps_so_far
                     dict_row["rew"] = rew
                     dict_row["full_laps"] = full_laps
+                    dict_row["num_off_it"] = num_off_it
                     dicti_writer.writerow(dict_row)
                     full_laps = 0
         logger.log('\n********** Iteration %i ************' % it)
@@ -375,7 +378,7 @@ def learn(env_maker, pol_maker, eval_policy,
                         # save best sampled theta (this because sometimes the best is the default and we would not know what is the best it learned)
                         if r > best_learned_rew and save_to is not None:
                             print('Saving best learned')
-                            np.save(save_to + '/best_learned', theta)
+                            np.save(save_to + '/best_learned_' + str(r), theta)
                             best_learned_rew = r
                         '''ret += r
                         disc_ret += dr
@@ -476,7 +479,7 @@ def learn(env_maker, pol_maker, eval_policy,
         # Save data
         if save_weights:
             #logger.record_tabular('Weights', str(w_to_save))
-            for row in range(0,len(rho_att)-3,2):
+            for row in range(0,len(rho_att)-4,2):
                 logger.record_tabular(rho_att[row], str(w_to_save[int(row/2)]))
                 logger.record_tabular(rho_att[row+1], str(w_to_save[int(row/2+7)]))
 
