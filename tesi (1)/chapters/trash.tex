@@ -1,0 +1,68 @@
+parlare del ruolo di ppo
+obiettivo: miglioramento locale, non di stravolgere le azioni scelte
+come avviene l'iterazione two step policy
+tra gli algoritmi abbiamo scelto ppo perchè rispetto agli altri è più semplice più veloce di apprendere e generalità
+si prende la media per averlo deterministico
+
+loss: clip+vs no entropy perchè la deviazione standard è piccola
+
+
+avendo azioni discrete, per freno e acc
+meglio lavorare in continuo quindi no ddqn
+
+
+pois perchè è parameter based, no ppge perchè l'ha fatto marcello
+e poi perchè ha l'ottimizzazione offline delle trajectory
+
+sezione in più in problem formulation
+policy che usando esperienza tende imparare a guidare
+
+
+in 5: fqi usato per usare il batch di dimostrazioni
+ddpg per usare il replay dell'actor
+
+cap 6:
+fqi: grafici e limiti
+ddpg: features accenno anche senza grafico
+pois: medie deviazioni std, tempo medio
+ppo: plot di apprendimento, loss
+si mostrano le trajectory
+mostrare il reward rispetto al controllore, qui è maggiore qui è minore, la traj è cambiata
+
+
+giovedì:
+pois nel 6 ppo nel 6
+problem formulation nell'altro
+nel 5 fqi e ddpg
+
+
+future works:
+two-step: estensione con regole più dettagliate o applicazione di altri algoritmi o tentare altre features
+
+
+100hz e 10hz va in experiments
+range delle features
+
+nel action space
+o ppo action fig
+dimensione rete
+gamma utilizzato
+come tabella
+
+
+
+
+\section{Hyperparameters}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Driver}                                                                      & \textbf{Sampling time (Hz)} \\ \hline
+Reference  Trajectory   & 100                 \\ \hline
+Autonomous Agent        & 10              \\ \hline
+\end{tabular}
+\caption{The trajectories are sampled at a frequency of $100$Hz, while the pilot has been controlled at a frequency of $10$Hz, that we chose because it can be considered a good approximation of the reaction time of a human race driver.}
+\end{table}
+
+

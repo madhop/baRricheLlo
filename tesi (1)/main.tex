@@ -1,0 +1,100 @@
+\documentclass[11pt,a4paper,twoside,openright]{report}
+
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{afterpage}
+\usepackage{amsmath,amssymb}
+\usepackage{bm}
+\usepackage{float}
+\usepackage{mathtools}
+\usepackage{rotating}
+\usepackage{fancyhdr}
+\usepackage[figurewithin=none]{caption}
+\usepackage[font=small]{caption}
+%\usepackage[scriptsize]{caption}
+%\usepackage{subcaption}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+\usepackage{subfigure}
+\usepackage{hyperref}
+\usepackage[space]{grffile} 
+\usepackage{color}
+\usepackage{placeins}
+\usepackage{breqn}
+\usepackage{systeme}
+\usepackage{amssymb,amsmath}
+\setlength{\oddsidemargin} {2. cm}
+\setlength{\evensidemargin} {2. cm}
+\addtolength{\oddsidemargin} {-0.4 cm}
+\addtolength{\evensidemargin} {-0.4 cm}
+\linespread{1.1}
+
+
+\usepackage[english]{babel}
+
+\usepackage[utf8]{inputenc}
+
+
+\usepackage{url}
+
+\pagestyle{empty}
+
+\begin{document}
+\include{chapters/frontispiece}
+\thispagestyle{empty} \normalfont \cleardoublepage
+\thispagestyle{empty}  \cleardoublepage
+\pagenumbering{Roman}
+\include{chapters/abstract}
+\include{chapters/sommario}
+%\thispagestyle{empty} \vspace*{.75truecm} \cleardoublepage
+%\include{chapters/acknowledgements}
+\thispagestyle{empty} \vspace*{.75truecm} \normalfont \cleardoublepage
+\pagestyle{plain}\renewcommand{\chaptermark}[1]{\markboth{\chaptername\ \thechapter.\ #1}{}}
+\renewcommand{\sectionmark}[1]{\markright{\thesection.\ #1}}
+\fancyhead[LE,RO]{\bfseries\thepage}
+   
+\fancyhead[RE]{\bfseries\leftmark} 
+\fancyhead[LO]{\bfseries\rightmark}   
+\renewcommand{\headrulewidth}{0.3pt}
+
+%\pagenumbering{arabic}
+\setcounter{tocdepth}{3}
+\setcounter{secnumdepth}{3}
+
+\tableofcontents
+
+\listoffigures
+
+\listoftables
+
+\include{chapters/chapter1}
+\include{chapters/chapter2}
+\include{chapters/chapter3}
+\include{chapters/chapter4}
+\include{chapters/chapter5}
+\include{chapters/chapter6}
+\include{chapters/chapter7}
+\include{chapters/chapter8}
+
+\cleardoublepage
+
+% ---- Bibliography ----
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliographystyle{plain}
+\bibliography{bibl_thesis}
+\appendix
+
+%\pagestyle{fancy} 
+%\fancyfoot{}                                               
+%\renewcommand{\chaptermark}[1]{\markboth{\appendixname\ \thechapter.\ #1}{}} 
+%\renewcommand{\sectionmark}[1]{\markright{\thesection.\ #1}}         
+%\fancyhead[LE,RO]{\bfseries\thepage}    
+%                                        
+%\fancyhead[RE]{\bfseries\leftmark}    
+%\fancyhead[LO]{\bfseries\rightmark}     
+%\renewcommand{\headrulewidth}{0.3pt} 
+
+%\include{appendices/appendixA}
+
+
+\end{document}
